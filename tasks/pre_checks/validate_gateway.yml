@@ -1,0 +1,18 @@
+- name: Define default gateway
+  block:
+  - name: Get default gateway
+    shell: ip r | grep default | awk '{print $3}'
+    changed_when: true
+    register: get_gateway
+    when: he_default_gateway is none or he_default_gateway == '' or he_default_gateway is not defined
+  - debug: var=get_gateway
+  - name: Set he_gateway
+    set_fact:
+      he_gateway: "{{ he_default_gateway if he_default_gateway is not none else get_gateway.stdout_lines[0] }}"
+    register: he_gateway
+- debug: var=he_gateway
+
+- name: Fail if there is no gateway
+  fail:
+    msg: "No default gateway is defined"
+  when: he_gateway is none or he_gateway|trim == ''

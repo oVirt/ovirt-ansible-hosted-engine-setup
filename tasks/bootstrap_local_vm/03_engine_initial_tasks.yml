@@ -1,0 +1,92 @@
+---
+# 03
+- name: Initial tasks
+  tags: he_bootstrap_local_vm_engine_side
+  block:
+  - name: Wait for the local VM
+    wait_for_connection:
+      delay: 5
+      timeout: 180
+  - name: Add an entry for this host on /etc/hosts on the local VM
+    lineinfile:
+      dest: /etc/hosts
+      line: "{{ he_host_ip }} {{ he_host_name }}"
+  - name: Set FQDN
+    command: hostnamectl set-hostname {{ he_fqdn }}
+    environment: "{{ he_cmd_lang }}"
+    changed_when: True
+  - name: Force the local VM FQDN to temporary resolve on the natted network address
+    lineinfile:
+      path: /etc/hosts
+      line: "{{ hostvars['localhost']['local_vm_ip']['stdout_lines'][0] }} {{ he_fqdn }} # hosted-engine-setup-{{ hostvars['localhost']['he_local_vm_dir'] }}"
+  - name: Restore sshd reverse DNS lookups
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: '^UseDNS'
+      line: "UseDNS yes"
+  - name: Generate an answer file for engine-setup
+    template:
+      src: templates/heanswers.conf.j2
+      dest: /root/heanswers.conf
+      owner: root
+      group: root
+      mode: 0600
+  - name: Include before engine-setup custom tasks files for the engine VM
+    include_tasks: "{{ item }}"
+    with_fileglob: "hooks/enginevm_before_engine_setup/*.yml"
+    register: include_before_engine_setup_results
+  - debug: var=include_before_engine_setup_results
+  - name: Execute engine-setup
+    command: /usr/bin/engine-setup --offline --config-append=/root/ovirt-engine-answers --config-append=/root/heanswers.conf
+    environment: "{{ he_cmd_lang }}"
+    register: engine_setup_out
+    changed_when: True
+  - debug: var=engine_setup_out
+  - name: Include after engine-setup custom tasks files for the engine VM
+    include_tasks: "{{ item }}"
+    with_fileglob: "hooks/enginevm_after_engine_setup/*.yml"
+    register: include_after_engine_setup_results
+  - debug: var=include_after_engine_setup_results
+  - name: Configure LibgfApi support
+    command: engine-config -s LibgfApiSupported=true --cver=4.2
+    environment: "{{ he_cmd_lang }}"
+    register: libgfapi_support_out
+    changed_when: True
+    when: he_enable_libgfapi
+  - debug: var=libgfapi_support_out
+  - name: Restart ovirt-engine service for LibgfApi support
+    systemd:
+      state: restarted
+      name: ovirt-engine
+    register: restart_libgfapi_support_out
+    when: he_enable_libgfapi
+  - debug: var=restart_libgfapi_support_out
+  - name: Mask cloud-init services to speed up future boot
+    systemd:
+      masked: yes
+      name: "{{ item }}"
+    with_items:
+      - cloud-init-local
+      - cloud-init
+  - name: Clean up bootstrap answer file
+    file:
+      state: absent
+      path: /root/heanswers.conf
+  rescue:
+    - name: Fetch logs from the engine VM
+      include_tasks: fetch_engine_logs.yml
+      ignore_errors: yes
+    - name: Get local VM dir path
+      set_fact:
+        he_local_vm_dir={{ hostvars['localhost']['he_local_vm_dir'] }}
+    - name: Clean bootstrap VM
+      include_tasks: clean_localvm_dir.yml
+      delegate_to: localhost
+      connection: local
+    - name: Notify the user about a failure
+      fail:
+        msg: >
+          There was a failure deploying the engine on the local engine VM.
+          The system may not be provisioned according to the playbook
+          results: please check the logs for the issue,
+          fix accordingly or re-deploy from scratch.

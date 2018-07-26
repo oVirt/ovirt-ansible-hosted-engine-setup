@@ -1,0 +1,44 @@
+---
+# 02
+- name: Engine VM configuration tasks
+  block:
+  - name: Find configuration file for SCL PostgreSQL
+    shell: ls -vr1 /etc/ovirt-engine/engine.conf.d/*-scl-postgres-*.conf
+    environment: "{{ he_cmd_lang }}"
+    register: scl_conf_flist
+    changed_when: True
+  - debug: var=scl_conf_flist
+  - name: Check SCL PostgreSQL value
+    command: grep sclenv {{ scl_conf_flist.stdout_lines|first }}
+    environment: "{{ he_cmd_lang }}"
+    register: scl_conf
+    changed_when: True
+  - debug: var=scl_conf
+  - name: Update target VM details at DB level
+    command: scl enable {{ scl_conf.stdout_lines[0].split('=')[1].replace('\"','') }} -- psql -d engine -c "UPDATE vm_static SET {{ item.field }}={{ item.value }} WHERE vm_guid='{{ hostvars['localhost']['he_vm_details']['vm']['id'] }}'"
+    environment: "{{ he_cmd_lang }}"
+    become: true
+    become_user: postgres
+    become_method: sudo
+    changed_when: True
+    register: db_vm_update
+    with_items:
+      - { field: 'origin', value: 6 }
+  - debug: var=db_vm_update
+  - name: Insert Hosted Engine configuration disk uuid into Engine database
+    command: scl enable {{ scl_conf.stdout_lines[0].split('=')[1].replace('\"','') }} -- psql -d engine -c "UPDATE vdc_options SET option_value='{{ hostvars['localhost']['he_conf_disk_details']['disk']['id'] }}' WHERE option_name='HostedEngineConfigurationImageGuid' AND version='general'"
+    environment: "{{ he_cmd_lang }}"
+    become: true
+    become_user: postgres
+    become_method: sudo
+    changed_when: True
+    register: db_conf_update
+  - debug: var=db_conf_update
+  - name: Disable IPv6
+    lineinfile:
+      path: /etc/sysctl.conf
+      line: 'net.ipv6.conf.all.disable_ipv6=1'
+  - name: Reload sysctl
+    command: sysctl -p
+    environment: "{{ he_cmd_lang }}"
+    changed_when: True

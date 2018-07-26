@@ -1,0 +1,8 @@
+---
+- name: Install oVirt Hosted Engine packages
+  package:
+    name:  "ovirt-hosted-engine-setup"
+    state: present
+
+- name: Install engine appliance
+  include_tasks: install_appliance.yml

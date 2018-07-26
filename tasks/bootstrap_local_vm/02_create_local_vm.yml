@@ -1,0 +1,106 @@
+---
+# 02
+- name: Create hosted engine local vm
+  tags: he_bootstrap_local_vm
+  block:
+  - name: Register the engine FQDN as a host
+    add_host:
+      name: "{{ he_fqdn }}"
+      groups: engine
+      ansible_connection: smart
+      ansible_ssh_extra_args: -o StrictHostKeyChecking=no
+      ansible_ssh_pass: "{{ he_appliance_password }}"
+      ansible_user: root
+  - name: Initial tasks
+    block:
+    - name: Create directory for local VM
+      tempfile:
+        state: directory
+        path: "{{ he_local_vm_dir_path }}"
+        prefix: "{{ he_local_vm_dir_prefix }}"
+      register: otopi_localvm_dir
+    - name: Set local vm dir path
+      set_fact:
+        he_local_vm_dir: "{{ otopi_localvm_dir.path }}"
+    - name: Fix local VM directory permission
+      file:
+        state: directory
+        path: "{{ he_local_vm_dir }}"
+        owner: vdsm
+        group: kvm
+        mode: 0775
+    - include_tasks: install_appliance.yml
+      when: he_appliance_ova is none or he_appliance_ova|length == 0
+    - name: Register appliance PATH
+      set_fact:
+        he_appliance_ova_path: "{{ he_appliance_ova }}"
+      when: he_appliance_ova is not none and he_appliance_ova|length > 0
+    - debug: var=he_appliance_ova_path
+    - name: Extract appliance to local VM directory
+      unarchive:
+        src: "{{ he_appliance_ova_path }}"
+        dest: "{{ he_local_vm_dir }}"
+        extra_opts: ['--sparse']
+    - include_tasks: get_local_vm_disk_path.yml
+    - name: Get appliance disk size
+      command: qemu-img info --output=json {{ local_vm_disk_path }}
+      environment: "{{ he_cmd_lang }}"
+      changed_when: True
+      register: qemu_img_out
+    - debug: var=qemu_img_out
+    - name: Parse qemu-img output
+      set_fact:
+        virtual_size={{ qemu_img_out.stdout|from_json|json_query('"virtual-size"') }}
+      register: otopi_appliance_disk_size
+    - debug: var=virtual_size
+    - name: Create cloud init user-data and meta-data files
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - { src: templates/user-data.j2, dest: "{{ he_local_vm_dir }}/user-data" }
+        - { src: templates/meta-data.j2, dest: "{{ he_local_vm_dir }}/meta-data" }
+    - name: Create ISO disk
+      command: mkisofs -output {{ he_local_vm_dir }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8 {{ he_local_vm_dir }}/meta-data {{ he_local_vm_dir }}/user-data
+      environment: "{{ he_cmd_lang }}"
+      changed_when: True
+    - name: Create local VM
+      command: virt-install -n {{ he_vm_name }}Local --os-variant rhel7 --virt-type kvm --memory {{ he_mem_size_MB }} --vcpus {{ he_vcpus }}  --network network=default,mac={{ he_vm_mac_addr }},model=virtio --disk {{ local_vm_disk_path }} --import --disk path={{ he_local_vm_dir }}/seed.iso,device=cdrom --noautoconsole --rng /dev/random --graphics vnc --video vga --sound none --controller usb,model=none --memballoon none --boot hd,menu=off --clock kvmclock_present=yes
+      environment: "{{ he_cmd_lang }}"
+      register: create_local_vm
+      changed_when: True
+    - debug: var=create_local_vm
+    - name: Get local VM IP
+      shell: virsh -r net-dhcp-leases default | grep -i {{ he_vm_mac_addr }} | awk '{ print $5 }' | cut -f1 -d'/'
+      environment: "{{ he_cmd_lang }}"
+      register: local_vm_ip
+      until: local_vm_ip.stdout_lines|length >= 1
+      retries: 50
+      delay: 10
+      changed_when: True
+    - debug: var=local_vm_ip
+    - name: Remove eventually entries for the local VM from /etc/hosts
+      lineinfile:
+        dest: /etc/hosts
+        regexp: "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3} .*{{ he_fqdn }}[ .*]*"
+        state: absent
+    - name: Create an entry in /etc/hosts for the local VM
+      lineinfile:
+        dest: /etc/hosts
+        line: "{{ local_vm_ip.stdout_lines[0] }} {{ he_fqdn }}"
+        insertbefore: BOF
+    - name: Wait for SSH to restart on the local VM
+      local_action:
+        module: wait_for
+          host='{{ he_fqdn }}'
+          port=22
+          delay=30
+          timeout=300
+    rescue:
+      - include_tasks: clean_localvm_dir.yml
+      - name: Notify the user about a failure
+        fail:
+          msg: >
+            The system may not be provisioned according to the playbook
+            results: please check the logs for the issue,
+            fix accordingly or re-deploy from scratch.

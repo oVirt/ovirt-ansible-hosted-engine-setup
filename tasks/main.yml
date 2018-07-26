@@ -1,0 +1,53 @@
+---
+- block:
+  - name: Install required packages for oVirt Hosted Engine deployment
+    include_tasks: install_packages.yml
+    tags:
+      - he_packages
+      - never
+
+  - name: Clean environment before deployment
+    include_tasks: initial_clean.yml
+    when: he_initial_clean
+
+  - name: System configuration validations
+    include_tasks: "{{ item }}"
+    with_fileglob: "pre_checks/*.yml"
+    when: he_pre_checks
+
+  - name: 01_02 bootstrap local vm tasks
+    block:
+    - name: 01 Bootstrap local VM
+      include_tasks: bootstrap_local_vm/01_prepare_routing_rules.yml
+
+    - name: 02 Bootstrap local VM
+      include_tasks: bootstrap_local_vm/02_create_local_vm.yml
+    when: he_bootstrap_local_vm
+
+  - name: 03 Bootstrap local VM
+    include_tasks: bootstrap_local_vm/03_engine_initial_tasks.yml
+    when: he_bootstrap_local_vm_engine
+
+  - name: 04 Bootstrap local VM
+    include_tasks: bootstrap_local_vm/04_add_host.yml
+    when: he_bootstrap_local_vm_add_host
+
+  - name: Create Storage Domain
+    include_tasks: create_storage_domain.yml
+    when: he_create_storage_domain
+
+  - name: Create target hosted engine vm
+    include_tasks: create_target_vm/01_create_target_hosted_engine_vm.yml
+    when: he_create_target_vm
+
+  - name: Engine VM configuration
+    include_tasks: create_target_vm/02_engine_vm_configuration.yml
+    when: he_engine_vm_configuration
+
+  - name: Hosted engine final tasks
+    include_tasks: create_target_vm/03_hosted_engine_final_tasks.yml
+    when: he_final_tasks
+
+  - name: Final clean
+    include_tasks: final_clean.yml
+    when: he_final_clean

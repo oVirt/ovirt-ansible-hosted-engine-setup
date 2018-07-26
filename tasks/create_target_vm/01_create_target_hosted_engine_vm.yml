@@ -1,0 +1,125 @@
+---
+# 01
+- name: Create target Hosted Engine VM
+  block:
+  - name: Register the engine FQDN as a host
+    add_host:
+      name: "{{ he_fqdn }}"
+      groups: engine
+      ansible_connection: smart
+      ansible_ssh_extra_args: -o StrictHostKeyChecking=no
+      ansible_ssh_pass: "{{ he_appliance_password }}"
+      ansible_user: root
+  - include_tasks: auth_sso.yml
+  - name: Get local VM IP
+    shell: virsh -r net-dhcp-leases default | grep -i {{ he_vm_mac_addr }} | awk '{ print $5 }' | cut -f1 -d'/'
+    environment: "{{ he_cmd_lang }}"
+    register: local_vm_ip
+    changed_when: True
+  - debug: var=local_vm_ip
+  - name: Fetch host facts
+    ovirt_hosts_facts:
+      pattern: name={{ he_host_name }} status=up
+      auth: "{{ ovirt_auth }}"
+    register: host_result
+    until: host_result is succeeded and host_result.ansible_facts.ovirt_hosts|length >= 1
+    retries: 50
+    delay: 10
+  - debug: var=host_result
+  - name: Fetch Cluster ID
+    set_fact: cluster_id="{{ host_result.ansible_facts.ovirt_hosts[0].cluster.id }}"
+  - name: Fetch Cluster facts
+    ovirt_cluster_facts:
+      auth: "{{ ovirt_auth }}"
+    register: cluster_facts
+  - debug: var=cluster_facts
+  - name: Fetch Datacenter facts
+    ovirt_datacenter_facts:
+      auth: "{{ ovirt_auth }}"
+    register: datacenter_facts
+  - debug: var=datacenter_facts
+  - name: Fetch Cluster name
+    set_fact: cluster_name={{ ovirt_clusters|json_query("[?id=='" + cluster_id + "'].name")|first }}
+  - name: Fetch Datacenter ID
+    set_fact: datacenter_id={{ ovirt_clusters|json_query("[?id=='" + cluster_id + "'].data_center.id")|first }}
+  - name: Fetch Datacenter name
+    set_fact: datacenter_name={{ ovirt_datacenters|json_query("[?id=='" + datacenter_id + "'].name")|first }}
+    # TODO: properly get it from the engine via REST API once properly exposed
+    # see: https://bugzilla.redhat.com/show_bug.cgi?id=1542531
+  - name: Get Cluster CPU model
+    set_fact: cluster_cpu_model={{ ovirt_clusters|json_query("[?id=='" + cluster_id + "'].cpu.type")
+      |first
+      |trim
+      |replace('Intel ', '')|replace('AMD ', '')|replace('IBM ', '')
+      |replace(' Family', '')
+      |replace('Opteron G', 'Opteron_G')
+      |replace(' ', '-') }}
+  - debug: var=cluster_cpu_model
+  - name: Get storage domain details
+    ovirt_storage_domains_facts:
+      pattern: name={{ he_storage_domain_name }} and datacenter={{ datacenter_name }}
+      auth: "{{ ovirt_auth }}"
+    register: storage_domain_details
+  - debug: var=storage_domain_details
+  - name: Add HE disks
+    ovirt_disk:
+      name: "{{ item.name }}"
+      size: "{{ item.size }}"
+      format: "{{ item.format }}"
+      sparse: "{{ item.sparse }}"
+      description: "{{ item.description }}"
+      interface: virtio
+      storage_domain: "{{ he_storage_domain_name }}"
+      wait: True
+      timeout: 600
+      auth: "{{ ovirt_auth }}"
+    with_items:
+      - { name: 'he_virtio_disk', description: 'Hosted-Engine disk', size: "{{ he_disk_size_GB }}GiB", format: 'raw', sparse: "{{ False if he_domain_type == 'fc' or he_domain_type == 'iscsi' else True }}" }
+      - { name: 'he_sanlock', description: 'Hosted-Engine sanlock disk', size: '1GiB', format: 'raw', sparse: False }
+      - { name: 'HostedEngineConfigurationImage', description: 'Hosted-Engine configuration disk', size: '1GiB', format: 'raw', sparse: False }
+      - { name: 'he_metadata', description: 'Hosted-Engine metadata disk', size: '1GiB', format: 'raw', sparse: False }
+    register: add_disks
+  - name: Register disk details
+    set_fact:
+      he_virtio_disk_details: "{{ add_disks.results[0] }}"
+      he_sanlock_disk_details: "{{ add_disks.results[1] }}"
+      he_conf_disk_details: "{{ add_disks.results[2] }}"
+      he_metadata_disk_details: "{{ add_disks.results[3] }}"
+  - debug: var=add_disks
+  - name: Add VM
+    ovirt_vms:
+      state: stopped
+      cluster: "{{ cluster_name }}"
+      name: "{{ he_vm_name }}"
+      description: 'Hosted Engine Virtual Machine'
+      memory: "{{ he_mem_size_MB }}Mib"
+      cpu_cores: "{{ he_vcpus }}"
+      cpu_sockets: 1
+      graphical_console:
+        headless_mode: False
+        protocol:
+        - vnc
+        - spice
+      serial_console: True
+      operating_system: rhel_7x64
+      type: server
+      high_availability_priority: 1
+      delete_protected: True
+#      timezone: "{{ he_time_zone }}" # TODO: fix with the right parameter syntax
+      storage_domain: "{{ he_storage_domain_name }}"
+      disks:
+      - name: he_virtio_disk
+      nics:
+      - name: vnet0
+        profile_name: "{{ he_mgmt_network }}"
+        interface: virtio
+        mac_address: "{{ he_vm_mac_addr }}"
+      auth: "{{ ovirt_auth }}"
+    register: he_vm_details
+  - debug: var=he_vm_details
+  - name: Register external local VM uuid
+    shell: virsh -r domuuid {{ he_vm_name }}Local | head -1
+    environment: "{{ he_cmd_lang }}"
+    register: external_local_vm_uuid
+    changed_when: True
+  - debug: var=external_local_vm_uuid

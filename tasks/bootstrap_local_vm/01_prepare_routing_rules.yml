@@ -1,0 +1,60 @@
+  # 01
+- name: Prepare routing rules
+  tags: 'bootstrap'
+  block:
+  - name: Start libvirt
+    service:
+      name: libvirtd
+      state: started
+      enabled: yes
+  - name: Activate default libvirt network
+    virt_net:
+      name: default
+      state: active
+    register: virt_net_out
+  - debug: var=virt_net_out
+    # all of the next is a workaround for a network issue:
+    # vdsm installation breaks the routing by defining separate
+    # routing table for ovirtmgmt. But we need to enable communication
+    # between virbr0 and ovirtmgmt
+  - name: Get libvirt interfaces
+    virt_net:
+      command: facts
+  - name: Get routing rules
+    command: ip rule
+    environment: "{{ he_cmd_lang }}"
+    register: route_rules
+    changed_when: True
+  - debug: var=route_rules
+  - name: Save bridge name
+    set_fact:
+      virbr_default: "{{ ansible_libvirt_networks['default']['bridge'] }}"
+  - name: Wait for the bridge to appear on the host
+    command: ip link show {{ virbr_default }}
+    environment: "{{ he_cmd_lang }}"
+    changed_when: True
+    register: ip_link_show_bridge
+    until: ip_link_show_bridge.rc == 0
+    retries: 30
+    delay: 3
+  - name: Refresh network facts
+    setup:
+    when: virt_net_out.changed
+    tags: [ 'skip_ansible_lint' ]
+  - name: Prepare CIDR for {{ virbr_default }}
+    set_fact:
+      virbr_cidr: "{{ (hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['address']+'/'+hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['netmask']) |ipv4('host/prefix') }}"
+  - name: Add outbound route rules
+    command: ip rule add from {{ virbr_cidr }} priority 101 table main
+    environment: "{{ he_cmd_lang }}"
+    register: result
+    when: "\"101:\tfrom \"+virbr_cidr+\" lookup main\" not in route_rules.stdout"
+    changed_when: True
+  - debug: var=result
+  - name: Add inbound route rules
+    command: ip rule add from all to {{ virbr_cidr }} priority 100 table main
+    environment: "{{ he_cmd_lang }}"
+    register: result
+    changed_when: True
+    when: "\"100:\tfrom all to \"+virbr_cidr+\" lookup main\" not in route_rules.stdout"
+  - debug: var=result

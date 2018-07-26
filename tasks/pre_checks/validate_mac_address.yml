@@ -1,0 +1,14 @@
+- name: Define Engine VM MAC address
+  block:
+  - name: Generate unicast MAC address
+    shell: od -An -N6 -tx1 /dev/urandom | sed -e 's/^  *//' -e 's/  */:/g' -e 's/:$//' -e 's/^\(.\)[13579bdf]/\10/'
+    changed_when: true
+    register: mac_address
+  - debug: var=mac_address
+  - name: Set he_vm_mac_addr
+    set_fact:
+      he_vm_mac_addr: "{{ mac_address.stdout if he_vm_mac_addr is not defined or he_vm_mac_addr is none else he_vm_mac_addr }}"
+    register: he_vm_mac_addr
+- debug: var=he_vm_mac_addr
+
+## add a mac structure validation

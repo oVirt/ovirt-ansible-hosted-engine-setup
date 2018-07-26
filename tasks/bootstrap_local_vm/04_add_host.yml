@@ -1,0 +1,87 @@
+---
+ # 04
+- name: Add host
+  block:
+  - name: Wait for ovirt-engine service to start
+    uri:
+      url: http://{{ he_fqdn }}/ovirt-engine/services/health
+      return_content: yes
+    register: engine_status
+    until: "'DB Up!Welcome to Health Status!' in engine_status.content"
+    retries: 30
+    delay: 20
+  - debug: var=engine_status
+  - name: Detect VLAN ID
+    shell: ip -d link show {{ he_bridge_if }} | grep 'vlan ' | grep -Po 'id \K[\d]+' | cat
+    environment: "{{ he_cmd_lang }}"
+    register: vlan_id_out
+    changed_when: True
+  - debug: var=vlan_id_out
+  - name: Set Engine public key as authorized key without validating the TLS/SSL certificates
+    authorized_key:
+      user: root
+      state: present
+      key: https://{{ he_fqdn }}/ovirt-engine/services/pki-resource?resource=engine-certificate&format=OPENSSH-PUBKEY
+      validate_certs: False
+  - include_tasks: auth_sso.yml
+  - name: Enable GlusterFS at cluster level
+    ovirt_cluster:
+      data_center: "{{ he_data_center }}"
+      name: "{{ he_cluster }}"
+      auth: "{{ ovirt_auth }}"
+      virt: true
+      gluster: true
+    when: he_enable_hc_gluster_service is defined and he_enable_hc_gluster_service
+  - name: Set VLAN ID at datacenter level
+    ovirt_networks:
+      data_center: "{{ he_data_center }}"
+      name: "{{ he_mgmt_network }}"
+      vlan_tag: "{{ vlan_id_out.stdout }}"
+      auth: "{{ ovirt_auth }}"
+    when: vlan_id_out.stdout|length > 0
+  - name: Force host-deploy in offline mode
+    template:
+      src: templates/70-hosted-engine-setup.conf.j2
+      dest: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
+  - name: Add host
+    ovirt_hosts:
+      # TODO: add to the first cluster of the datacenter
+      # where we set the vlan id
+      name: "{{ he_host_name }}"
+      state: present
+      public_key: true
+      address: "{{ he_host_name }}"
+      auth: "{{ ovirt_auth }}"
+    async: 1
+    poll: 0
+  - name: Wait for the host to be up
+    ovirt_hosts_facts:
+      pattern: name={{ he_host_name }}
+      auth: "{{ ovirt_auth }}"
+    register: host_result_up_check
+    until: host_result_up_check is succeeded and host_result_up_check.ansible_facts.ovirt_hosts|length >= 1 and (host_result_up_check.ansible_facts.ovirt_hosts[0].status == 'up' or host_result_up_check.ansible_facts.ovirt_hosts[0].status == 'non_operational')
+    retries: 120
+    delay: 5
+  - debug: var=host_result_up_check
+  - name: Check host status
+    fail:
+      msg: >
+        The host has been set in non_operational status,
+        please check engine logs,
+        fix accordingly and re-deploy.
+    when: host_result_up_check is succeeded and host_result_up_check.ansible_facts.ovirt_hosts|length >= 1 and host_result_up_check.ansible_facts.ovirt_hosts[0].status == 'non_operational'
+  - name: Remove host-deploy configuration file
+    file:
+      state: absent
+      path: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
+  rescue:
+    - name: Fetch logs from the engine VM
+      include_tasks: fetch_engine_logs.yml
+      ignore_errors: yes
+    - include_tasks: clean_localvm_dir.yml
+    - name: Notify the user about a failure
+      fail:
+        msg: >
+          The system may not be provisioned according to the playbook
+          results: please check the logs for the issue,
+          fix accordingly or re-deploy from scratch.

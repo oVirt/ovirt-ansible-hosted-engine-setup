@@ -1,0 +1,72 @@
+---
+- name: Network interfaces
+  block:
+  - name: Detecting interface on existing management bridge
+    set_fact:
+      bridge_interface="{{ hostvars[inventory_hostname]['ansible_' + item ]['interfaces']|first }}"
+    when: "'ansible_' + item in hostvars[inventory_hostname]"
+    with_items:
+      - 'ovirtmgmt'
+      - 'rhevm'
+  - debug: var=bridge_interface
+  - name: Get all active network interfaces
+    vars:
+      acceptable_bond_modes: ['active-backup','balance-xor','broadcast','802.3ad']
+    set_fact:
+      otopi_net_host="{{ item }}"
+      type="{{ hostvars[inventory_hostname]['ansible_' + item]['type'] }}"
+      bond_valid_name="{{ item | regex_search('(^bond[0-9]+)') }}"
+    when: (
+        (
+          item != 'lo'
+        ) and (
+          bridge_interface is not defined
+        ) and (
+          'active' in hostvars[inventory_hostname]['ansible_' + item] and
+          hostvars[inventory_hostname]['ansible_' + item]['active']
+        ) and (
+          hostvars[inventory_hostname]['ansible_' + item]['type'] != 'bridge'
+        ) and (
+          hostvars[inventory_hostname]['ansible_' + item]['ipv4'] is defined
+        ) and (
+          (
+            hostvars[inventory_hostname]['ansible_' + item]['type'] != 'bonding'
+          ) or (
+            (
+              hostvars[inventory_hostname]['ansible_' + item]['type'] == 'bonding'
+            ) and (
+              hostvars[inventory_hostname]['ansible_' + item]['slaves'][0] is defined
+            ) and (
+              hostvars[inventory_hostname]['ansible_' + item]['mode'] in acceptable_bond_modes
+            )
+          )
+        )
+      )
+    with_items:
+      - "{{ ansible_interfaces | map('replace', '-','_') | list }}"
+    register: valid_network_interfaces
+  - debug: var=valid_network_interfaces
+  - name: Filter bonds with bad naming
+    set_fact:
+      net_iface="{{ item }}"
+    when:
+      not 'skipped' in item and ((item['ansible_facts']['type']  == 'ether') or ( (item['ansible_facts']['type'] == 'bonding') and (item['ansible_facts']['bond_valid_name'] != '')))
+    with_items:
+      - "{{ valid_network_interfaces['results'] }}"
+    register: bb_filtered_list
+  - debug: var=bb_filtered_list
+  - name: Generate output list
+    set_fact:
+       otopi_host_net: "{{ [bridge_interface] if bridge_interface is defined else bb_filtered_list.results | reject('skipped') | map(attribute='item.item') | list }}"
+    register: otopi_host_net
+  - debug: var=otopi_host_net
+  - name: Validate selected bridge interface if management bridge does not exists
+    fail:
+      msg: The selected network interface is not valid
+    when: he_bridge_if not in otopi_host_net and bridge_interface is not defined
+  - name: Set management bridge name
+    set_fact:
+      he_mgmt_network: "{{ [bridge_interface] if bridge_interface is defined else 'ovirtmgmt' }}"
+    register: he_mgmt_network
+  - debug: var=he_mgmt_network
+...
