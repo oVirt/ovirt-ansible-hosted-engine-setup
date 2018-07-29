@@ -15,6 +15,7 @@ he_final_clean:                    false
 # Default vars
 # Do not change these variables
 # Changes in this section are NOT supported
+
 he_cmd_lang:
   LANG: en_US.UTF-8
   LC_MESSAGES: en_US.UTF-8
@@ -49,12 +50,6 @@ he_dest_email: root@localhost
 he_source_email: root@localhost
 
 ## Mandatory variables:
-
-## passwords
-# TODO: use ansible-vault
-he_appliance_password: 123456
-he_admin_password: 123456
-
 
 he_bridge_if: eth0
 he_fqdn: engine.example.com
