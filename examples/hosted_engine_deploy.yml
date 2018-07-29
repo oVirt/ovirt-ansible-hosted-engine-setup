@@ -2,6 +2,8 @@
 - name: Pre checks
   hosts: localhost
   connection: local
+  vars_files:
+    - passwords.yml
   vars:
     he_pre_checks: true
   roles:
@@ -10,6 +12,8 @@
 - name: bootstrap_01_02
   hosts: localhost
   connection: local
+  vars_files:
+    - passwords.yml
   vars:
     he_pre_checks: false
     he_initial_clean: true
@@ -19,6 +23,8 @@
 
 - name: bootstrap_03
   hosts: engine
+  vars_files:
+    - passwords.yml
   vars:
     he_initial_clean: false
     he_bootstrap_local_vm: false
@@ -29,6 +35,8 @@
 - name: bootstrap_04
   hosts: localhost
   connection: local
+  vars_files:
+    - passwords.yml
   vars:
     he_initial_clean: false
     he_bootstrap_local_vm: false
@@ -40,6 +48,8 @@
 - name: Create storage domain
   hosts: localhost
   connection: local
+  vars_files:
+    - passwords.yml
   vars:
     he_initial_clean: false
     he_bootstrap_local_vm: false
@@ -52,6 +62,8 @@
 - name: Create target hosted-engine VM
   hosts: localhost
   connection: local
+  vars_files:
+    - passwords.yml
   vars:
     he_initial_clean: false
     he_bootstrap_local_vm: false
@@ -64,6 +76,8 @@
 
 - name: Engine VM configuration
   hosts: engine
+  vars_files:
+    - passwords.yml
   vars:
     he_initial_clean: false
     he_bootstrap_local_vm: false
@@ -78,6 +92,8 @@
 - name: Hosted-Engine final tasks
   hosts: localhost
   connection: local
+  vars_files:
+    - passwords.yml
   vars:
     he_initial_clean: false
     he_bootstrap_local_vm: false
@@ -93,6 +109,8 @@
 - name: Hosted-Engine final tasks
   hosts: localhost
   connection: local
+  vars_files:
+    - passwords.yml
   vars:
     he_initial_clean: false
     he_bootstrap_local_vm: false
