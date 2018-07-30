@@ -1,0 +1,14 @@
+---
+- name: Populate service facts
+  systemd:
+    name: "{{ item }}"
+  register: checked_services
+  with_items:
+    - firewalld
+- fail:
+    msg: "{{ service.name }} is masked or not running"
+  when: service.status.SubState != 'running' or service.status.LoadState == 'masked'
+  with_items: "{{ checked_services.results }}"
+  loop_control:
+    label: "{{ service.name }}"
+    loop_var: service
