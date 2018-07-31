@@ -1,0 +1,7 @@
+.tox
+*.retry
+roles/provision_docker
+*.tar.gz
+output/
+ovirt-ansible-engine-setup.spec
+exported-artifacts/
