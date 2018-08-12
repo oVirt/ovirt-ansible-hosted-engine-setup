@@ -2,9 +2,7 @@
 - block:
   - name: Install required packages for oVirt Hosted Engine deployment
     include_tasks: install_packages.yml
-    tags:
-      - he_packages
-      - never
+    when: he_install_packages
 
   - name: Clean environment before deployment
     include_tasks: initial_clean.yml
