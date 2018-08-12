@@ -1,125 +1,55 @@
 ---
-- name: Pre checks
-  hosts: localhost
-  connection: local
-  vars_files:
-    - passwords.yml
-  vars:
-    he_pre_checks: true
-  roles:
-    - role: oVirt.hosted-engine-setup
 
-- name: bootstrap_01_02
+- name: Hosted-Engine-Setup_Part_01
   hosts: localhost
   connection: local
   vars_files:
     - passwords.yml
   vars:
-    he_pre_checks: false
+    he_install_packages: true
+    he_pre_checks: true
     he_initial_clean: true
     he_bootstrap_local_vm: true
   roles:
     - role: oVirt.hosted-engine-setup
 
-- name: bootstrap_03
+- name: Hosted-Engine-Setup_Part_02
   hosts: engine
   vars_files:
     - passwords.yml
   vars:
-    he_initial_clean: false
-    he_bootstrap_local_vm: false
     he_bootstrap_local_vm_engine: true
   roles:
     - role: oVirt.hosted-engine-setup
 
-- name: bootstrap_04
+- name: Hosted-Engine-Setup_Part_03
   hosts: localhost
   connection: local
   vars_files:
     - passwords.yml
   vars:
-    he_initial_clean: false
-    he_bootstrap_local_vm: false
-    he_bootstrap_local_vm_engine: false
     he_bootstrap_local_vm_add_host: true
-  roles:
-    - role: oVirt.hosted-engine-setup
-
-- name: Create storage domain
-  hosts: localhost
-  connection: local
-  vars_files:
-    - passwords.yml
-  vars:
-    he_initial_clean: false
-    he_bootstrap_local_vm: false
-    he_bootstrap_local_vm_engine: false
-    he_bootstrap_local_vm_add_host: false
     he_create_storage_domain: true
-  roles:
-    - role: oVirt.hosted-engine-setup
-
-- name: Create target hosted-engine VM
-  hosts: localhost
-  connection: local
-  vars_files:
-    - passwords.yml
-  vars:
-    he_initial_clean: false
-    he_bootstrap_local_vm: false
-    he_bootstrap_local_vm_engine: false
-    he_bootstrap_local_vm_add_host: false
-    he_create_storage_domain: false
     he_create_target_vm: true
   roles:
     - role: oVirt.hosted-engine-setup
 
-- name: Engine VM configuration
+- name: Hosted-Engine-Setup_Part_04
   hosts: engine
   vars_files:
     - passwords.yml
   vars:
-    he_initial_clean: false
-    he_bootstrap_local_vm: false
-    he_bootstrap_local_vm_engine: false
-    he_bootstrap_local_vm_add_host: false
-    he_create_storage_domain: false
-    he_create_target_vm: false
     he_engine_vm_configuration: true
   roles:
     - role: oVirt.hosted-engine-setup
 
-- name: Hosted-Engine final tasks
+- name: Hosted-Engine-Setup_Part_05
   hosts: localhost
   connection: local
   vars_files:
     - passwords.yml
   vars:
-    he_initial_clean: false
-    he_bootstrap_local_vm: false
-    he_bootstrap_local_vm_engine: false
-    he_bootstrap_local_vm_add_host: false
-    he_create_storage_domain: false
-    he_create_target_vm: false
-    he_engine_vm_configuration: false
     he_final_tasks: true
-  roles:
-    - role: oVirt.hosted-engine-setup
-
-- name: Hosted-Engine final tasks
-  hosts: localhost
-  connection: local
-  vars_files:
-    - passwords.yml
-  vars:
-    he_initial_clean: false
-    he_bootstrap_local_vm: false
-    he_bootstrap_local_vm_engine: false
-    he_bootstrap_local_vm_add_host: false
-    he_create_storage_domain: false
-    he_create_target_vm: false
-    he_engine_vm_configuration: false
-    he_final_tasks: false
     he_final_clean: true
   roles:
     - role: oVirt.hosted-engine-setup
