@@ -39,7 +39,6 @@
     delay: 3
   - name: Refresh network facts
     setup:
-    when: virt_net_out.changed
     tags: [ 'skip_ansible_lint' ]
   - name: Prepare CIDR for {{ virbr_default }}
     set_fact:

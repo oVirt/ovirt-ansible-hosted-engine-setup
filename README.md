@@ -19,10 +19,6 @@ No.
 
 # Prerequisites
 
-* Add the official oVirt repository:
-```sh
-$ sudo yum install http://resources.ovirt.org/pub/yum-repo/ovirt-release42.rpm
-```
 * A fully qualified domain name prepared for your Engine and the host. Forward and reverse lookup records must both be set in the DNS.
 * `/var/tmp` has at least 5 GB of free space.
 * Unless you are using Gluster, you must have prepared storage for your Hosted-Engine environment (choose one):
@@ -49,7 +45,9 @@ All the playbooks can be found inside the `examples/` folder.
     he_pre_checks: true
     he_initial_clean: true
     he_bootstrap_local_vm: true
+    ovirt_repositories_ovirt_release_rpm: "http://plain.resources.ovirt.org/pub/yum-repo/ovirt-release42.rpm"
   roles:
+    - role: oVirt.repositories
     - role: oVirt.hosted-engine-setup
 
 - name: Hosted-Engine-Setup_Part_02
@@ -129,7 +127,7 @@ he_admin_password: 123456
 ```
 
 # Usage
-1. Check all the Prerequisites and requirements are met.
+1. Check all the prerequisites and requirements are met.
 2. Encrypt passwords.yml
 ```sh
 $ ansible-vault encrypt passwords.yml

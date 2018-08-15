@@ -1,5 +1,4 @@
 ---
-
 - name: Hosted-Engine-Setup_Part_01
   hosts: localhost
   connection: local
@@ -10,7 +9,9 @@
     he_pre_checks: true
     he_initial_clean: true
     he_bootstrap_local_vm: true
+    ovirt_repositories_ovirt_release_rpm: "http://plain.resources.ovirt.org/pub/yum-repo/ovirt-release42.rpm"
   roles:
+    - role: oVirt.repositories
     - role: oVirt.hosted-engine-setup
 
 - name: Hosted-Engine-Setup_Part_02
