@@ -64,9 +64,4 @@
     fail:
       msg: The selected network interface is not valid
     when: he_bridge_if not in otopi_host_net and bridge_interface is not defined
-  - name: Set management bridge name
-    set_fact:
-      he_mgmt_network: "{{ [bridge_interface] if bridge_interface is defined else 'ovirtmgmt' }}"
-    register: he_mgmt_network
-  - debug: var=he_mgmt_network
 ...
