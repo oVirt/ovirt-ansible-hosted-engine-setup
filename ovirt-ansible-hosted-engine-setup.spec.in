@@ -13,6 +13,7 @@ BuildArch:      noarch
 Url:            http://www.ovirt.org
 
 Requires: ansible >= 2.4
+Requires: python-netaddr
 
 %description
 This Ansible role installs required packages for oVirt Hosted-Engine deployment.
