@@ -24,6 +24,15 @@ No.
 * Unless you are using Gluster, you must have prepared storage for your Hosted-Engine environment (choose one):
     * [Prepare NFS Storage](https://ovirt.org/documentation/admin-guide/chap-Storage/#preparing-nfs-storage)
     * [Prepare ISCSI Storage](https://ovirt.org/documentation/admin-guide/chap-Storage/#preparing-iscsi-storage)
+* Install additional oVirt ansible roles:
+
+    ```bash
+    $ ansible-galaxy install oVirt.repositories # case-sensitive
+    ```
+
+    ```bash
+    $ ansible-galaxy install oVirt.engine-setup # case-sensitive
+    ```
 
 
 # Example Playbook
@@ -45,7 +54,7 @@ All the playbooks can be found inside the `examples/` folder.
     he_pre_checks: true
     he_initial_clean: true
     he_bootstrap_local_vm: true
-    ovirt_repositories_ovirt_release_rpm: "http://plain.resources.ovirt.org/pub/yum-repo/ovirt-release42.rpm"
+    ovirt_repositories_ovirt_release_rpm: "{{ ovirt_repo_release_rpm }}"
   roles:
     - role: oVirt.repositories
     - role: oVirt.hosted-engine-setup
@@ -55,11 +64,38 @@ All the playbooks can be found inside the `examples/` folder.
   vars_files:
     - passwords.yml
   vars:
-    he_bootstrap_local_vm_engine: true
+    he_bootstrap_pre_install_local_engine_vm: true
   roles:
     - role: oVirt.hosted-engine-setup
 
 - name: Hosted-Engine-Setup_Part_03
+  hosts: engine
+  vars_files:
+    - passwords.yml
+  vars:
+    ovirt_engine_setup_hostname: "{{ he_fqdn.split('.')[0] }}"
+    ovirt_engine_setup_organization: "{{ he_cloud_init_domain_name }}"
+    ovirt_engine_setup_dwh_db_host: "{{ he_fqdn.split('.')[0] }}"
+    ovirt_engine_setup_firewall_manager: null
+    ovirt_engine_setup_answer_file_path: /root/ovirt-engine-answers
+    ovirt_engine_setup_use_remote_answer_file: True
+    ovirt_engine_setup_accept_defaults: True
+    ovirt_engine_setup_update_all_packages: false
+    ovirt_engine_setup_offline: true
+    ovirt_engine_setup_admin_password: "{{ he_admin_password }}"
+  roles:
+    - role: oVirt.engine-setup
+
+- name: Hosted-Engine-Setup_Part_04
+  hosts: engine
+  vars_files:
+    - passwords.yml
+  vars:
+    he_bootstrap_post_install_local_engine_vm: true
+  roles:
+    - role: oVirt.hosted-engine-setup
+
+- name: Hosted-Engine-Setup_Part_05
   hosts: localhost
   connection: local
   vars_files:
@@ -71,7 +107,7 @@ All the playbooks can be found inside the `examples/` folder.
   roles:
     - role: oVirt.hosted-engine-setup
 
-- name: Hosted-Engine-Setup_Part_04
+- name: Hosted-Engine-Setup_Part_06
   hosts: engine
   vars_files:
     - passwords.yml
@@ -80,7 +116,7 @@ All the playbooks can be found inside the `examples/` folder.
   roles:
     - role: oVirt.hosted-engine-setup
 
-- name: Hosted-Engine-Setup_Part_05
+- name: Hosted-Engine-Setup_Part_07
   hosts: localhost
   connection: local
   vars_files:
@@ -122,7 +158,8 @@ he_admin_password: 123456
     "he_vm_mac_addr": "00:a5:3f:66:ba:12",
     "he_domain_type": "nfs",
     "he_storage_domain_addr": "192.168.100.50",
-    "he_storage_domain_path": "/var/nfs_folder"
+    "he_storage_domain_path": "/var/nfs_folder",
+    "ovirt_repo_release_rpm": "http://plain.resources.ovirt.org/pub/yum-repo/ovirt-release42.rpm"
 }
 ```
 

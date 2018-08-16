@@ -1,7 +1,5 @@
 ---
-# 02
 - name: Create hosted engine local vm
-  tags: he_bootstrap_local_vm
   block:
   - name: Register the engine FQDN as a host
     add_host:

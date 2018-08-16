@@ -1,5 +1,4 @@
 ---
- # 04
 - name: Add host
   block:
   - name: Wait for ovirt-engine service to start
@@ -75,13 +74,13 @@
       state: absent
       path: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
   rescue:
-    - name: Fetch logs from the engine VM
-      include_tasks: fetch_engine_logs.yml
-      ignore_errors: yes
-    - include_tasks: clean_localvm_dir.yml
-    - name: Notify the user about a failure
-      fail:
-        msg: >
-          The system may not be provisioned according to the playbook
-          results: please check the logs for the issue,
-          fix accordingly or re-deploy from scratch.
+  - name: Fetch logs from the engine VM
+    include_tasks: fetch_engine_logs.yml
+    ignore_errors: yes
+  - include_tasks: clean_localvm_dir.yml
+  - name: Notify the user about a failure
+    fail:
+      msg: >
+        The system may not be provisioned according to the playbook
+        results: please check the logs for the issue,
+        fix accordingly or re-deploy from scratch.
