@@ -95,7 +95,7 @@ All the playbooks can be found inside the `examples/` folder.
 ### __Note__:
 Unlike standard roles that are called once in a playbook, we call this role 5 times. The reason for that is due to the fact that Ansible allows executing a role only for one host. Thus, because we need to execute tasks on both `host` and `engine` hosts we had to call the role more than one time.
 
-## password.yml
+## passwords.yml
 
 ```yml
 ---
