@@ -8,7 +8,7 @@ USERCTL=no
 ZONE=public
 IPADDR={{ he_vm_ip_addr }}
 PREFIX={{ he_vm_ip_prefix }}
-he_gateway={{ he_gateway }}
+GATEWAY={{ he_gateway }}
 {% if he_dns_addr is string %}
 {% set DNS_ADDR_LIST = he_dns_addr.split(',') %}
 {% elif he_dns_addr is iterable %}
