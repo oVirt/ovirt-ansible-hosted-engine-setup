@@ -1,7 +1,6 @@
 ---
 - name: iSCSI related tasks
-  hosts: localhost
-  connection: local
+  hosts: "{{ he_ansible_host_name }}"
   tasks:
   - include_tasks: auth_sso.yml
   # - name: iSCSI discover
