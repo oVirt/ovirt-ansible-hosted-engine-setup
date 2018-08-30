@@ -10,7 +10,7 @@
   - name: Add an entry for this host on /etc/hosts on the local VM
     lineinfile:
       dest: /etc/hosts
-      line: "{{ he_host_ip }} {{ he_host_name }}"
+      line: "{{ hostvars['localhost']['he_host_ip'] }} {{ hostvars['localhost']['he_host_name'] }}"
   - name: Set FQDN
     command: hostnamectl set-hostname {{ he_fqdn }}
     environment: "{{ he_cmd_lang }}"
@@ -76,6 +76,8 @@
     - name: Fetch logs from the engine VM
       include_tasks: fetch_engine_logs.yml
       ignore_errors: yes
+      delegate_to: localhost
+      connection: local
     - name: Get local VM dir path
       set_fact:
         he_local_vm_dir={{ hostvars['localhost']['he_local_vm_dir'] }}
