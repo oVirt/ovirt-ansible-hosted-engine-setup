@@ -14,7 +14,7 @@
     changed_when: True
   - debug: var=scl_conf
   - name: Update target VM details at DB level
-    command: scl enable {{ scl_conf.stdout_lines[0].split('=')[1].replace('\"','') }} -- psql -d engine -c "UPDATE vm_static SET {{ item.field }}={{ item.value }} WHERE vm_guid='{{ hostvars['localhost']['he_vm_details']['vm']['id'] }}'"
+    command: scl enable {{ scl_conf.stdout_lines[0].split('=')[1].replace('\"','') }} -- psql -d engine -c "UPDATE vm_static SET {{ item.field }}={{ item.value }} WHERE vm_guid='{{ hostvars[he_ansible_host_name]['he_vm_details']['vm']['id'] }}'"
     environment: "{{ he_cmd_lang }}"
     become: true
     become_user: postgres
@@ -25,7 +25,7 @@
       - { field: 'origin', value: 6 }
   - debug: var=db_vm_update
   - name: Insert Hosted Engine configuration disk uuid into Engine database
-    command: scl enable {{ scl_conf.stdout_lines[0].split('=')[1].replace('\"','') }} -- psql -d engine -c "UPDATE vdc_options SET option_value='{{ hostvars['localhost']['he_conf_disk_details']['disk']['id'] }}' WHERE option_name='HostedEngineConfigurationImageGuid' AND version='general'"
+    command: scl enable {{ scl_conf.stdout_lines[0].split('=')[1].replace('\"','') }} -- psql -d engine -c "UPDATE vdc_options SET option_value='{{ hostvars[he_ansible_host_name]['he_conf_disk_details']['disk']['id'] }}' WHERE option_name='HostedEngineConfigurationImageGuid' AND version='general'"
     environment: "{{ he_cmd_lang }}"
     become: true
     become_user: postgres
