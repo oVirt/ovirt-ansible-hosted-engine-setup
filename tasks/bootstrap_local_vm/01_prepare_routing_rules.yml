@@ -1,6 +1,5 @@
-  # 01
+---
 - name: Prepare routing rules
-  tags: 'bootstrap'
   block:
   - name: Start libvirt
     service:

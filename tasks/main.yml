@@ -24,10 +24,14 @@
 
   - name: 03 Bootstrap local VM
     include_tasks: bootstrap_local_vm/03_engine_initial_tasks.yml
-    when: he_bootstrap_local_vm_engine
+    when: he_bootstrap_pre_install_local_engine_vm
 
   - name: 04 Bootstrap local VM
-    include_tasks: bootstrap_local_vm/04_add_host.yml
+    include_tasks: bootstrap_local_vm/04_engine_final_tasks.yml
+    when: he_bootstrap_post_install_local_engine_vm
+
+  - name: 05 Bootstrap local VM
+    include_tasks: bootstrap_local_vm/05_add_host.yml
     when: he_bootstrap_local_vm_add_host
 
   - name: Create Storage Domain

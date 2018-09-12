@@ -1,0 +1,52 @@
+---
+- name: Final engine tasks
+  block:
+  - name: Include after engine-setup custom tasks files for the engine VM
+    include_tasks: "{{ item }}"
+    with_fileglob: "hooks/enginevm_after_engine_setup/*.yml"
+    register: include_after_engine_setup_results
+  - debug: var=include_after_engine_setup_results
+  - name: Configure LibgfApi support
+    command: engine-config -s LibgfApiSupported=true --cver=4.2
+    environment: "{{ he_cmd_lang }}"
+    register: libgfapi_support_out
+    changed_when: True
+    when: he_enable_libgfapi
+  - debug: var=libgfapi_support_out
+  - name: Restart ovirt-engine service for LibgfApi support
+    systemd:
+      state: restarted
+      name: ovirt-engine
+    register: restart_libgfapi_support_out
+    when: he_enable_libgfapi
+  - debug: var=restart_libgfapi_support_out
+  - name: Mask cloud-init services to speed up future boot
+    systemd:
+      masked: yes
+      name: "{{ item }}"
+    with_items:
+      - cloud-init-local
+      - cloud-init
+  - name: Clean up bootstrap answer file
+    file:
+      state: absent
+      path: /root/heanswers.conf
+  rescue:
+  - name: Fetch logs from the engine VM
+    include_tasks: fetch_engine_logs.yml
+    ignore_errors: yes
+  - name: Get local VM dir path
+    set_fact:
+      he_local_vm_dir={{ hostvars['localhost']['he_local_vm_dir'] }}
+  - name: Clean bootstrap VM
+    include_tasks: clean_localvm_dir.yml
+    delegate_to: localhost
+    connection: local
+  - name: Notify the user about a failure
+    fail:
+      msg:
+        There was a failure deploying the engine on the local engine VM.
+        The system may not be provisioned according to the playbook results,
+        please check the logs for the issue,
+        fix accordingly or re-deploy from scratch.
+...

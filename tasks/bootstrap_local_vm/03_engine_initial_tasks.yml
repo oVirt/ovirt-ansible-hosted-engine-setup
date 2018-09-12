@@ -1,7 +1,5 @@
 ---
-# 03
-- name: Initial tasks
-  tags: he_bootstrap_local_vm_engine_side
+- name: Initial engine tasks
   block:
   - name: Wait for the local VM
     wait_for_connection:
@@ -24,54 +22,17 @@
       path: /etc/ssh/sshd_config
       regexp: '^UseDNS'
       line: "UseDNS yes"
-  - name: Generate an answer file for engine-setup
-    template:
-      src: templates/heanswers.conf.j2
-      dest: /root/heanswers.conf
-      owner: root
-      group: root
-      mode: 0600
+  - name: Add lines to answerfile
+    lineinfile:
+      path: /root/ovirt-engine-answers
+      line: "{{ item }}"
+    with_items:
+      - "OVESETUP_CONFIG/adminPassword=str:{{ he_admin_password }}"
   - name: Include before engine-setup custom tasks files for the engine VM
     include_tasks: "{{ item }}"
     with_fileglob: "hooks/enginevm_before_engine_setup/*.yml"
     register: include_before_engine_setup_results
   - debug: var=include_before_engine_setup_results
-  - name: Execute engine-setup
-    command: /usr/bin/engine-setup --offline --config-append=/root/ovirt-engine-answers --config-append=/root/heanswers.conf
-    environment: "{{ he_cmd_lang }}"
-    register: engine_setup_out
-    changed_when: True
-  - debug: var=engine_setup_out
-  - name: Include after engine-setup custom tasks files for the engine VM
-    include_tasks: "{{ item }}"
-    with_fileglob: "hooks/enginevm_after_engine_setup/*.yml"
-    register: include_after_engine_setup_results
-  - debug: var=include_after_engine_setup_results
-  - name: Configure LibgfApi support
-    command: engine-config -s LibgfApiSupported=true --cver=4.2
-    environment: "{{ he_cmd_lang }}"
-    register: libgfapi_support_out
-    changed_when: True
-    when: he_enable_libgfapi
-  - debug: var=libgfapi_support_out
-  - name: Restart ovirt-engine service for LibgfApi support
-    systemd:
-      state: restarted
-      name: ovirt-engine
-    register: restart_libgfapi_support_out
-    when: he_enable_libgfapi
-  - debug: var=restart_libgfapi_support_out
-  - name: Mask cloud-init services to speed up future boot
-    systemd:
-      masked: yes
-      name: "{{ item }}"
-    with_items:
-      - cloud-init-local
-      - cloud-init
-  - name: Clean up bootstrap answer file
-    file:
-      state: absent
-      path: /root/heanswers.conf
   rescue:
     - name: Fetch logs from the engine VM
       include_tasks: fetch_engine_logs.yml
