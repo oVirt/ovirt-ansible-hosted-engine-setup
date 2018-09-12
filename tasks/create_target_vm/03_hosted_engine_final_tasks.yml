@@ -112,8 +112,6 @@
       src: "{{ item.src }}"
       dest: "{{ item.dest }}"
     with_items:
-# TODO: properly get {{ he_emulated_machine }} from the engine via REST API once
-# properly exposed. See: https://bugzilla.redhat.com/show_bug.cgi?id=1542531
       - { src: templates/vm.conf.j2, dest: "{{ he_local_vm_dir }}/vm.conf" }
       - { src: templates/broker.conf.j2, dest: "{{ he_local_vm_dir }}/broker.conf" }
       - { src: templates/version.j2, dest: "{{ he_local_vm_dir }}/version" }

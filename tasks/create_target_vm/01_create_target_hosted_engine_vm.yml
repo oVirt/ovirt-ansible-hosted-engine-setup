@@ -44,17 +44,52 @@
     set_fact: datacenter_id={{ ovirt_clusters|json_query("[?id=='" + cluster_id + "'].data_center.id")|first }}
   - name: Fetch Datacenter name
     set_fact: datacenter_name={{ ovirt_datacenters|json_query("[?id=='" + datacenter_id + "'].name")|first }}
-    # TODO: properly get it from the engine via REST API once properly exposed
-    # see: https://bugzilla.redhat.com/show_bug.cgi?id=1542531
-  - name: Get Cluster CPU model
-    set_fact: cluster_cpu_model={{ ovirt_clusters|json_query("[?id=='" + cluster_id + "'].cpu.type")
-      |first
-      |trim
-      |replace('Intel ', '')|replace('AMD ', '')|replace('IBM ', '')
-      |replace(' Family', '')
-      |replace('Opteron G', 'Opteron_G')
-      |replace(' ', '-') }}
+  - name: Parse Cluster details
+    set_fact:
+      cluster_cpu="{{ovirt_clusters|selectattr('id', 'match', '^'+cluster_id+'$')|map(attribute='cpu')|list|first}}"
+      cluster_version="{{ovirt_clusters|selectattr('id', 'match', '^'+cluster_id+'$')|map(attribute='version')|list|first}}"
+  # TODO: use a proper ansible module for this once available
+  - name: Get server CPU list via REST API
+    uri:
+      url: https://{{ he_fqdn }}/ovirt-engine/api/options/ServerCPUList?version={{ cluster_version.major }}.{{ cluster_version.minor }}
+      validate_certs: no
+      user: admin@internal
+      password: "{{ he_admin_password }}"
+      method: GET
+      return_content: yes
+      status_code: 200
+      headers:
+        Accept: application/json
+    register: server_cpu_list
+  - debug: var=server_cpu_list
+  # TODO: use a proper ansible module for this once available
+  - name: Get cluster emulated machine list via REST API
+    uri:
+      url: https://{{ he_fqdn }}/ovirt-engine/api/options/ClusterEmulatedMachines?version={{ cluster_version.major }}.{{ cluster_version.minor }}
+      validate_certs: no
+      user: admin@internal
+      password: "{{ he_admin_password }}"
+      method: GET
+      return_content: yes
+      status_code: 200
+      headers:
+        Accept: application/json
+    register: emulated_machine_list
+  - name: Prepare for parsing server CPU list
+    set_fact:
+      server_cpu_dict: {}
+  - name: Parse server CPU list
+    set_fact:
+      server_cpu_dict: "{{ server_cpu_dict | combine({item.split(':')[1]: item.split(':')[3]}) }}"
+    with_items: "{{ server_cpu_list.json['values']['system_option_value'][0]['value'].split('; ')|list }}"
+  - debug: var=server_cpu_dict
+  - name: Convert CPU model name
+    set_fact:
+      cluster_cpu_model: "{{ server_cpu_dict[cluster_cpu.type] }}"
   - debug: var=cluster_cpu_model
+  - name: Parse emulated_machine
+    set_fact:
+      emulated_machine: emulated_machine_list.json['values']['system_option_value'][0]['value'].replace('[','').replace(']','').split(', ')|first
   - name: Get storage domain details
     ovirt_storage_domains_facts:
       pattern: name={{ he_storage_domain_name }} and datacenter={{ datacenter_name }}
