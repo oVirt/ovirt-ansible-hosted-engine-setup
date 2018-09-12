@@ -34,6 +34,25 @@
         he_appliance_ova_path: "{{ he_appliance_ova }}"
       when: he_appliance_ova is not none and he_appliance_ova|length > 0
     - debug: var=he_appliance_ova_path
+    - name: Check available space on local VM directory
+      shell: df -k --output=avail "{{ he_local_vm_dir_path }}" | grep -v Avail
+      environment: "{{ he_cmd_lang }}"
+      changed_when: True
+      register: local_vm_dir_space_out
+    - name: Check appliance size
+      shell: gzip -l "{{ he_appliance_ova_path }}" | grep -v uncompressed | awk '{print $2}'
+      environment: "{{ he_cmd_lang }}"
+      changed_when: True
+      register: appliance_size
+    - name: Ensure we have enough space to extract the appliance
+      assert:
+        that:
+          - "local_vm_dir_space_out.stdout_lines[0]|int * 1024 > appliance_size.stdout_lines[0]|int * 1.1"
+        msg: >
+          {{ he_local_vm_dir_path }} doesn't provide enough free space to extract the
+          engine appliance: {{ local_vm_dir_space_out.stdout_lines[0]|int / 1024 | int }} Mb
+          are available while {{ appliance_size.stdout_lines[0]|int / 1024 / 1024 * 1.1 | int }} Mb
+          are required.
     - name: Extract appliance to local VM directory
       unarchive:
         src: "{{ he_appliance_ova_path }}"
