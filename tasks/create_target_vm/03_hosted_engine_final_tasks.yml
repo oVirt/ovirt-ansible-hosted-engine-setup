@@ -217,17 +217,11 @@
     become_user: vdsm
     become_method: sudo
     changed_when: True
-  - name: Clean /etc/hosts on the host
+  - name: Remove temporary entry in /etc/hosts for the local VM
     lineinfile:
       dest: /etc/hosts
-      line: "{{ local_vm_ip.stdout_lines[0] }} {{ he_fqdn }}"
+      regexp: "# temporary entry added by hosted-engine-setup for the bootstrap VM$"
       state: absent
-  - name: Add an entry in /etc/hosts for the target VM
-    lineinfile:
-      dest: /etc/hosts
-      line: "{{ he_vm_ip_addr }} {{ he_fqdn }}"
-      state: present
-    when: he_vm_etc_hosts and he_vm_ip_addr is not none
   - name: Start ovirt-ha-broker service on the host
     service:
       name: ovirt-ha-broker
