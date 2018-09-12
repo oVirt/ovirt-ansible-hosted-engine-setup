@@ -51,6 +51,15 @@
     with_items: "{{ ovf_store_disks }}"
     when: ovf_store_status is not defined # remove condition when ansible 2.6 is released
   - debug: var=ovf_store_status
+  - name: Wait for OVF_STORE disk content
+    shell: vdsm-client Image prepare storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.id }} volumeID={{ item.image_id  }} | grep path | awk '{ print $2 }' | xargs -I{} sudo -u vdsm dd if={} | tar -tvf - {{ he_vm_details.vm.id }}.ovf
+    environment: "{{ he_cmd_lang }}"
+    changed_when: True
+    register: ovf_store_content
+    retries: 12
+    delay: 10
+    until: ovf_store_content.rc == 0
+    with_items: "{{ ovf_store_disks }}"
   - name: Prepare images
     command: vdsm-client Image prepare storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.disk.id }} volumeID={{ item.disk.image_id  }}
     environment: "{{ he_cmd_lang }}"
