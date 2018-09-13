@@ -8,7 +8,7 @@
       name: "{{ he_fqdn }}"
       groups: engine
       ansible_connection: smart
-      ansible_ssh_extra_args: '-o StrictHostKeyChecking=no -o ProxyCommand="ssh -W %h:%p -q root@{{ he_ansible_host_name }}"'
+      ansible_ssh_extra_args: '-o StrictHostKeyChecking=no {% if he_ansible_host_name != "localhost" %} -o ProxyCommand="ssh -W %h:%p -q root@{{ he_ansible_host_name }}" {% endif %}'
       ansible_ssh_pass: "{{ he_appliance_password }}"
       ansible_user: root
   - name: Initial tasks
