@@ -2,6 +2,12 @@
 # 03
 - name: Hosted-Engine final tasks
   block:
+  # workaround for https://bugzilla.redhat.com/1590943
+  - name: Enable again the serial console device
+    ovirt_vms:
+      id: "{{ he_vm_details.vm.id }}"
+      serial_console: True
+      auth: "{{ ovirt_auth }}"
   - name: Trigger hosted engine OVF update
     ovirt_vms:
       id: "{{ he_vm_details.vm.id }}"
@@ -45,6 +51,15 @@
     with_items: "{{ ovf_store_disks }}"
     when: ovf_store_status is not defined # remove condition when ansible 2.6 is released
   - debug: var=ovf_store_status
+  - name: Wait for OVF_STORE disk content
+    shell: vdsm-client Image prepare storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.id }} volumeID={{ item.image_id  }} | grep path | awk '{ print $2 }' | xargs -I{} sudo -u vdsm dd if={} | tar -tvf - {{ he_vm_details.vm.id }}.ovf
+    environment: "{{ he_cmd_lang }}"
+    changed_when: True
+    register: ovf_store_content
+    retries: 12
+    delay: 10
+    until: ovf_store_content.rc == 0
+    with_items: "{{ ovf_store_disks }}"
   - name: Prepare images
     command: vdsm-client Image prepare storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.disk.id }} volumeID={{ item.disk.image_id  }}
     environment: "{{ he_cmd_lang }}"
@@ -106,8 +121,6 @@
       src: "{{ item.src }}"
       dest: "{{ item.dest }}"
     with_items:
-# TODO: properly get {{ he_emulated_machine }} from the engine via REST API once
-# properly exposed. See: https://bugzilla.redhat.com/show_bug.cgi?id=1542531
       - { src: templates/vm.conf.j2, dest: "{{ he_local_vm_dir }}/vm.conf" }
       - { src: templates/broker.conf.j2, dest: "{{ he_local_vm_dir }}/broker.conf" }
       - { src: templates/version.j2, dest: "{{ he_local_vm_dir }}/version" }
@@ -204,17 +217,11 @@
     become_user: vdsm
     become_method: sudo
     changed_when: True
-  - name: Clean /etc/hosts on the host
+  - name: Remove temporary entry in /etc/hosts for the local VM
     lineinfile:
       dest: /etc/hosts
-      line: "{{ local_vm_ip.stdout_lines[0] }} {{ he_fqdn }}"
+      regexp: "# temporary entry added by hosted-engine-setup for the bootstrap VM$"
       state: absent
-  - name: Add an entry in /etc/hosts for the target VM
-    lineinfile:
-      dest: /etc/hosts
-      line: "{{ he_vm_ip_addr }} {{ he_fqdn }}"
-      state: present
-    when: he_vm_etc_hosts and he_vm_ip_addr is not none
   - name: Start ovirt-ha-broker service on the host
     service:
       name: ovirt-ha-broker

@@ -75,8 +75,8 @@
       msg: >
         localhost is not a valid he_fqdn for the engine VM
     when: he_fqdn in ['localhost', 'localhost.localdomain']
-  - name: Get engine he_fqdn resolution
-    shell: getent ahostsv4 {{ he_fqdn }} | grep {{ he_fqdn }}
+  - name: Get engine FQDN resolution
+    shell: getent ahostsv4 {{ he_fqdn }} | grep STREAM
     environment: "{{ he_cmd_lang }}"
     register: fqdn_resolution_output
     changed_when: True

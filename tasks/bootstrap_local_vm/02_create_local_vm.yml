@@ -34,6 +34,25 @@
         he_appliance_ova_path: "{{ he_appliance_ova }}"
       when: he_appliance_ova is not none and he_appliance_ova|length > 0
     - debug: var=he_appliance_ova_path
+    - name: Check available space on local VM directory
+      shell: df -k --output=avail "{{ he_local_vm_dir_path }}" | grep -v Avail
+      environment: "{{ he_cmd_lang }}"
+      changed_when: True
+      register: local_vm_dir_space_out
+    - name: Check appliance size
+      shell: gzip -l "{{ he_appliance_ova_path }}" | grep -v uncompressed | awk '{print $2}'
+      environment: "{{ he_cmd_lang }}"
+      changed_when: True
+      register: appliance_size
+    - name: Ensure we have enough space to extract the appliance
+      assert:
+        that:
+          - "local_vm_dir_space_out.stdout_lines[0]|int * 1024 > appliance_size.stdout_lines[0]|int * 1.1"
+        msg: >
+          {{ he_local_vm_dir_path }} doesn't provide enough free space to extract the
+          engine appliance: {{ local_vm_dir_space_out.stdout_lines[0]|int / 1024 | int }} Mb
+          are available while {{ appliance_size.stdout_lines[0]|int / 1024 / 1024 * 1.1 | int }} Mb
+          are required.
     - name: Extract appliance to local VM directory
       unarchive:
         src: "{{ he_appliance_ova_path }}"
@@ -77,16 +96,17 @@
       delay: 10
       changed_when: True
     - debug: var=local_vm_ip
-    - name: Remove eventually entries for the local VM from /etc/hosts
+    - name: Remove leftover entries in /etc/hosts for the local VM
       lineinfile:
         dest: /etc/hosts
-        regexp: "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3} .*{{ he_fqdn }}[ .*]*"
+        regexp: "# temporary entry added by hosted-engine-setup for the bootstrap VM$"
         state: absent
     - name: Create an entry in /etc/hosts for the local VM
       lineinfile:
         dest: /etc/hosts
-        line: "{{ local_vm_ip.stdout_lines[0] }} {{ he_fqdn }}"
+        line: "{{ local_vm_ip.stdout_lines[0] }} {{ he_fqdn }} # temporary entry added by hosted-engine-setup for the bootstrap VM"
         insertbefore: BOF
+        backup: yes
     - name: Wait for SSH to restart on the local VM
       local_action:
         module: wait_for
