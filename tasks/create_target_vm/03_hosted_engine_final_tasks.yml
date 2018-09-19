@@ -1,5 +1,4 @@
 ---
-# 03
 - name: Hosted-Engine final tasks
   block:
   # workaround for https://bugzilla.redhat.com/1590943

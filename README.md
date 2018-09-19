@@ -44,7 +44,7 @@ All the playbooks can be found inside the `examples/` folder.
 
 ```yml
 ---
-- name: Hosted-Engine-Setup_Part_01
+- name: Install packages and bootstrap local engine VM
   hosts: localhost
   connection: local
   vars_files:
@@ -59,7 +59,7 @@ All the playbooks can be found inside the `examples/` folder.
     - role: oVirt.repositories
     - role: oVirt.hosted-engine-setup
 
-- name: Hosted-Engine-Setup_Part_02
+- name: Local engine VM installation - Pre tasks
   hosts: engine
   vars_files:
     - passwords.yml
@@ -68,7 +68,7 @@ All the playbooks can be found inside the `examples/` folder.
   roles:
     - role: oVirt.hosted-engine-setup
 
-- name: Hosted-Engine-Setup_Part_03
+- name: Engine Setup on local VM
   hosts: engine
   vars_files:
     - passwords.yml
@@ -86,7 +86,7 @@ All the playbooks can be found inside the `examples/` folder.
   roles:
     - role: oVirt.engine-setup
 
-- name: Hosted-Engine-Setup_Part_04
+- name: Local engine VM installation - Post tasks
   hosts: engine
   vars_files:
     - passwords.yml
@@ -95,7 +95,7 @@ All the playbooks can be found inside the `examples/` folder.
   roles:
     - role: oVirt.hosted-engine-setup
 
-- name: Hosted-Engine-Setup_Part_05
+- name: Configure engine VM on a storage domain
   hosts: localhost
   connection: local
   vars_files:
@@ -107,7 +107,7 @@ All the playbooks can be found inside the `examples/` folder.
   roles:
     - role: oVirt.hosted-engine-setup
 
-- name: Hosted-Engine-Setup_Part_06
+- name: Configure database settings
   hosts: engine
   vars_files:
     - passwords.yml
@@ -116,7 +116,7 @@ All the playbooks can be found inside the `examples/` folder.
   roles:
     - role: oVirt.hosted-engine-setup
 
-- name: Hosted-Engine-Setup_Part_07
+- name: Closeup
   hosts: localhost
   connection: local
   vars_files:

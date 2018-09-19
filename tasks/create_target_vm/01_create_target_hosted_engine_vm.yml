@@ -1,5 +1,4 @@
 ---
-# 01
 - name: Create target Hosted Engine VM
   block:
   - name: Register the engine FQDN as a host
