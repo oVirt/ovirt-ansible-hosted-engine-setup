@@ -1,5 +1,4 @@
 ---
-# 02
 - name: Engine VM configuration tasks
   block:
   - name: Find configuration file for SCL PostgreSQL
