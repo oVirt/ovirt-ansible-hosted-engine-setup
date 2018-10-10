@@ -12,7 +12,7 @@ Group:          Virtualization/Management
 BuildArch:      noarch
 Url:            http://www.ovirt.org
 
-Requires: ansible >= 2.4
+Requires: ansible >= 2.6
 Requires: python-netaddr
 
 %description
