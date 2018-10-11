@@ -14,6 +14,8 @@ Url:            http://www.ovirt.org
 
 Requires: ansible >= 2.6
 Requires: python-netaddr
+Requires: ovirt-ansible-engine-setup >= 1.1.5
+Requires: ovirt-ansible-repositories >= 1.1.2
 
 %description
 This Ansible role installs required packages for oVirt Hosted-Engine deployment.
