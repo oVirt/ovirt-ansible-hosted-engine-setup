@@ -33,7 +33,55 @@ No.
     ```bash
     $ ansible-galaxy install oVirt.engine-setup # case-sensitive
     ```
+# Role variables
 
+## General Variables
+
+| Name                            | Default value         |  Description                                              |
+|---------------------------------|-----------------------|-----------------------------------------------------------|
+| he_bridge_if | eth0 | The network interface ovirt management bridge will be configured on |
+| he_fqdn | engine.example.com | The engine FQDN as it configured on the DNS |
+| he_mem_size_MB | max | The amount of memory used on the engine VM |
+| he_vcpus | max | The amount of CPUs used on the engine VM |
+| he_disk_size_GB | 61 | Disk size of the engine VM |
+| he_vm_mac_addr | null | MAC address of the engine vm network interface. |
+| he_domain_type | null | Storage domain type. available options: *nfs*, *iscsi*, *gluster*, *fc* |
+| he_storage_domain_addr | null | Storage domain IP/DNS address |
+
+## NFS / Gluster Variables
+
+| Name                            | Default value         |  Description                                              |
+|---------------------------------|-----------------------|-----------------------------------------------------------|
+| he_mount_options | '' | NFS mount options
+| he_storage_domain_path | null | shared folder path on NFS server |
+| he_nfs_version | auto | NFS version.  available options: *auto*, *v4*, *v3*
+
+
+## ISCSI Variables
+
+| Name                            | Default value         |  Description                                              |
+|---------------------------------|-----------------------|-----------------------------------------------------------|
+| he_iscsi_username | null | iscsi username |
+| he_iscsi_password | null | iscsi password |
+| he_iscsi_target | null | iscsi target |
+| he_lun_id | null | Lun ID |
+| he_iscsi_portal_port | null | iscsi portal port |
+| he_iscsi_portal_addr | null | iscsi portal address |
+| he_iscsi_tpgt | null | iscsi tpgt |
+| he_discard | false |  Discard the whole disk space when removed. more info [here](https://ovirt.org/develop/release-management/features/storage/discard-after-delete/)
+
+## Static IP configuration Variables
+
+DHCP configuration is used on the engine VM by default. However, if you would like to use static ip instead,
+define the following variables:
+
+| Name                            | Default value         |  Description                                              |
+|---------------------------------|-----------------------|-----------------------------------------------------------|
+| he_vm_ip_addr | null | engine VM ip address |
+| he_vm_ip_prefix | null | engine VM ip prefix |
+| he_dns_addr | null | engine VM DNS server |
+| he_default_gateway | null | engine VM default gateway |
+| he_vm_etc_hosts | false | Add engine VM ip and fqdn to /etc/hosts on the host |
 
 # Example Playbook
 This is a simple example for deploying Hosted-Engine with NFS storage domain.
