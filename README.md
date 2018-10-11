@@ -319,6 +319,11 @@ $ ansible-vault encrypt passwords.yml
 $ ansible-playbook hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --ask-vault-pass
 ```
 
+Demo
+----
+Here a demo showing a deployment on NFS configuring the engine VM with static IP.
+[![asciicast](https://asciinema.org/a/205639.png)](https://asciinema.org/a/205639)
+
 # License
 
 Apache License 2.0
