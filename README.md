@@ -46,13 +46,13 @@ No.
 | he_disk_size_GB | 61 | Disk size of the engine VM |
 | he_vm_mac_addr | null | MAC address of the engine vm network interface. |
 | he_domain_type | null | Storage domain type. available options: *nfs*, *iscsi*, *gluster*, *fc* |
-| he_storage_domain_addr | null | Storage domain IP/DNS address |
 
 ## NFS / Gluster Variables
 
 | Name                            | Default value         |  Description                                              |
 |---------------------------------|-----------------------|-----------------------------------------------------------|
 | he_mount_options | '' | NFS mount options
+| he_storage_domain_addr | null | Storage domain IP/DNS address |
 | he_storage_domain_path | null | shared folder path on NFS server |
 | he_nfs_version | auto | NFS version.  available options: *auto*, *v4*, *v3*
 
