@@ -138,6 +138,7 @@
       state: directory
   - name: Copy configuration files to the right location on host
     copy:
+      remote_src: yes
       src: "{{ item.src }}"
       dest: "{{ item.dest }}"
     with_items:
