@@ -81,6 +81,6 @@
   - name: Remove eventually entries for the local VM from known_hosts file
     local_action:
       module: known_hosts
-        name: "{{ he_fqdn }}"
-        state: absent
+      name: "{{ he_fqdn }}"
+      state: absent
 ...
