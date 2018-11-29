@@ -79,7 +79,8 @@
     when: target_vm_list_all.stdout_lines|length >= 1
     changed_when: True
   - name: Remove eventually entries for the local VM from known_hosts file
-    known_hosts:
-      name: "{{ he_fqdn }}"
-      state: absent
+    local_action:
+      module: known_hosts
+        name: "{{ he_fqdn }}"
+        state: absent
 ...
