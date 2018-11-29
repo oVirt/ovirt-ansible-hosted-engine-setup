@@ -1,7 +1,6 @@
 ---
 - name: Fibre Channel related tasks
   hosts: "{{ he_ansible_host_name }}"
-  connection: local
   tasks:
   - include_tasks: auth_sso.yml
   - name: Get Fibre Channel LUNs

@@ -55,6 +55,7 @@
           are required.
     - name: Extract appliance to local VM directory
       unarchive:
+        remote_src: yes
         src: "{{ he_appliance_ova_path }}"
         dest: "{{ he_local_vm_dir }}"
         extra_opts: ['--sparse']
@@ -108,12 +109,11 @@
         insertbefore: BOF
         backup: yes
     - name: Wait for SSH to restart on the local VM
-      local_action:
-        module: wait_for
-          host='{{ he_fqdn }}'
-          port=22
-          delay=30
-          timeout=300
+      wait_for:
+        host='{{ he_fqdn }}'
+        port=22
+        delay=30
+        timeout=300
     rescue:
       - include_tasks: clean_localvm_dir.yml
       - name: Notify the user about a failure
