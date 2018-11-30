@@ -450,10 +450,16 @@ Logout of [sid: 4, target: iqn.2017-10.com.redhat.stirabos:he, portal: 192.168.1
 $ ansible-vault encrypt passwords.yml
 ```
 
-3. Execute the playbook (for NFS deployment)
+3. Execute the playbook
 
+Local deployment:
 ```sh
 $ ansible-playbook hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --ask-vault-pass
+```
+
+Deployment over a remote host:
+```sh
+ansible-playbook -i host123.localdomain, hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --ask-vault-pass
 ```
 
 Demo
