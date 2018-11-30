@@ -298,7 +298,7 @@ he_admin_password: 123456
 }
 ```
 
-## Example 2: extra vars for iSCSI deployment with static IP, remote host - he_deploymenti_remote.json
+## Example 2: extra vars for iSCSI deployment with static IP, remote host - he_deployment_remote.json
 
 ```json
 {
