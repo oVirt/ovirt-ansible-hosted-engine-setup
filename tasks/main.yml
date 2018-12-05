@@ -1,5 +1,18 @@
 ---
 - block:
+  - name: Check if the hosted engine already deployed
+    command: systemctl status ovirt-ha-agent
+    register: he_deployed
+    ignore_errors: yes
+
+  - name: Fail this role when the ovirt-ha-agent up and running
+    fail:
+      msg: "This environment already deployed, to be able to redeploy please run the command ovirt-hosted-engine-cleanup command on the host {{ he_ansible_host_name }}"
+    when: he_deployed.rc == 0
+
+  when: he_install_packages
+
+- block:
   - name: Install required packages for oVirt Hosted Engine deployment
     include_tasks: install_packages.yml
     when: he_install_packages
