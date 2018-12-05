@@ -39,6 +39,7 @@ he_minimal_mem_size_MB: 4096
 he_minimal_disk_size_GB: 50
 he_mgmt_network: ovirtmgmt
 he_storage_domain_name: hosted_storage
+he_ansible_host_name: localhost
 
 he_host_ip: null
 he_host_name: null

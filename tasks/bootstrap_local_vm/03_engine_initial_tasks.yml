@@ -8,7 +8,7 @@
   - name: Add an entry for this host on /etc/hosts on the local VM
     lineinfile:
       dest: /etc/hosts
-      line: "{{ hostvars['localhost']['he_host_ip'] }} {{ hostvars['localhost']['he_host_name'] }}"
+      line: "{{ hostvars[he_ansible_host_name]['he_host_ip'] }} {{ hostvars[he_ansible_host_name]['he_host_name'] }}"
   - name: Set FQDN
     command: hostnamectl set-hostname {{ he_fqdn }}
     environment: "{{ he_cmd_lang }}"
@@ -16,7 +16,7 @@
   - name: Force the local VM FQDN to temporary resolve on the natted network address
     lineinfile:
       path: /etc/hosts
-      line: "{{ hostvars['localhost']['local_vm_ip']['stdout_lines'][0] }} {{ he_fqdn }} # hosted-engine-setup-{{ hostvars['localhost']['he_local_vm_dir'] }}"
+      line: "{{ hostvars[he_ansible_host_name]['local_vm_ip']['stdout_lines'][0] }} {{ he_fqdn }} # hosted-engine-setup-{{ hostvars[he_ansible_host_name]['he_local_vm_dir'] }}"
   - name: Restore sshd reverse DNS lookups
     lineinfile:
       path: /etc/ssh/sshd_config
@@ -37,15 +37,13 @@
     - name: Fetch logs from the engine VM
       include_tasks: fetch_engine_logs.yml
       ignore_errors: yes
-      delegate_to: localhost
-      connection: local
+      delegate_to: "{{ he_ansible_host_name }}"
     - name: Get local VM dir path
       set_fact:
-        he_local_vm_dir={{ hostvars['localhost']['he_local_vm_dir'] }}
+        he_local_vm_dir={{ hostvars[he_ansible_host_name]['he_local_vm_dir'] }}
     - name: Clean bootstrap VM
       include_tasks: clean_localvm_dir.yml
-      delegate_to: localhost
-      connection: local
+      delegate_to: "{{ he_ansible_host_name }}"
     - name: Notify the user about a failure
       fail:
         msg: >

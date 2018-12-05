@@ -138,6 +138,7 @@
       state: directory
   - name: Copy configuration files to the right location on host
     copy:
+      remote_src: yes
       src: "{{ item.src }}"
       dest: "{{ item.dest }}"
     with_items:
@@ -193,7 +194,7 @@
   - name: Clean /etc/hosts for the Hosted Engine VM for Engine VM FQDN
     lineinfile:
       dest: "{{ he_local_vm_dir }}/hosts"
-      regexp: "# hosted-engine-setup-{{ hostvars['localhost']['he_local_vm_dir'] }}$"
+      regexp: "# hosted-engine-setup-{{ hostvars[he_ansible_host_name]['he_local_vm_dir'] }}$"
       state: absent
   - name: Clean /etc/hosts for the Hosted Engine VM for host address
     lineinfile:

@@ -86,9 +86,10 @@ define the following variables:
 # Example Playbook
 This is a simple example for deploying Hosted-Engine with NFS storage domain.
 
+This role can be used to deploy on localhost (the ansible controller one) or on a remote host (please correctly set he_ansible_host_name).
 All the playbooks can be found inside the `examples/` folder.
 
-## hosted_engine_deploy.yml
+## hosted_engine_deploy_localhost.yml
 
 ```yml
 ---
@@ -176,6 +177,92 @@ All the playbooks can be found inside the `examples/` folder.
     - role: oVirt.hosted-engine-setup
 ```
 
+## hosted_engine_deploy_remotehost.yml
+
+```yml
+---
+- name: Install packages and bootstrap local engine VM
+  hosts: host123.localdomain
+  vars_files:
+    - passwords.yml
+  vars:
+    he_install_packages: true
+    he_pre_checks: true
+    he_initial_clean: true
+    he_bootstrap_local_vm: true
+    ovirt_repositories_ovirt_release_rpm: "{{ ovirt_repo_release_rpm }}"
+  roles:
+    - role: oVirt.repositories
+    - role: oVirt.hosted-engine-setup
+
+- name: Local engine VM installation - Pre tasks
+  hosts: engine
+  vars_files:
+    - passwords.yml
+  vars:
+    he_bootstrap_pre_install_local_engine_vm: true
+  roles:
+    - role: oVirt.hosted-engine-setup
+
+- name: Engine Setup on local VM
+  hosts: engine
+  vars_files:
+    - passwords.yml
+  vars:
+    ovirt_engine_setup_hostname: "{{ he_fqdn.split('.')[0] }}"
+    ovirt_engine_setup_organization: "{{ he_cloud_init_domain_name }}"
+    ovirt_engine_setup_dwh_db_host: "{{ he_fqdn.split('.')[0] }}"
+    ovirt_engine_setup_firewall_manager: null
+    ovirt_engine_setup_answer_file_path: /root/ovirt-engine-answers
+    ovirt_engine_setup_use_remote_answer_file: True
+    ovirt_engine_setup_accept_defaults: True
+    ovirt_engine_setup_update_all_packages: false
+    ovirt_engine_setup_offline: true
+    ovirt_engine_setup_admin_password: "{{ he_admin_password }}"
+  roles:
+    - role: oVirt.engine-setup
+
+- name: Local engine VM installation - Post tasks
+  hosts: engine
+  vars_files:
+    - passwords.yml
+  vars:
+    he_bootstrap_post_install_local_engine_vm: true
+  roles:
+    - role: oVirt.hosted-engine-setup
+
+- name: Configure engine VM on a storage domain
+  hosts: host123.localdomain
+  vars_files:
+    - passwords.yml
+  vars:
+    he_bootstrap_local_vm_add_host: true
+    he_create_storage_domain: true
+    he_create_target_vm: true
+  roles:
+    - role: oVirt.hosted-engine-setup
+
+- name: Configure database settings
+  hosts: engine
+  vars_files:
+    - passwords.yml
+  vars:
+    he_engine_vm_configuration: true
+  roles:
+    - role: oVirt.hosted-engine-setup
+
+- name: Closeup
+  hosts: host123.localdomain
+  vars_files:
+    - passwords.yml
+  vars:
+    he_final_tasks: true
+    he_final_clean: true
+  roles:
+    - role: oVirt.hosted-engine-setup
+```
+
+
 ### __Note__:
 Unlike standard roles that are called once in a playbook, we call this role 5 times. The reason for that is due to the fact that Ansible allows executing a role only for one host. Thus, because we need to execute tasks on both `host` and `engine` hosts we had to call the role more than one time.
 
@@ -211,7 +298,7 @@ he_admin_password: 123456
 }
 ```
 
-## Example 2: extra vars for iSCSI deployment with static IP - he_deployment.json
+## Example 2: extra vars for iSCSI deployment with static IP, remote host - he_deployment_remote.json
 
 ```json
 {
@@ -228,7 +315,9 @@ he_admin_password: 123456
     "he_iscsi_portal_port": "3260",
     "he_iscsi_tpgt": "1",
     "he_iscsi_target": "iqn.2017-10.com.redhat.stirabos:he",
-    "he_lun_id": "36589cfc000000e8a909165bdfb47b3d9"
+    "he_lun_id": "36589cfc000000e8a909165bdfb47b3d9",
+    "he_mem_size_MB": "4096",
+    "he_ansible_host_name": "host123.localdomain"
 }
 ```
 
@@ -361,10 +450,16 @@ Logout of [sid: 4, target: iqn.2017-10.com.redhat.stirabos:he, portal: 192.168.1
 $ ansible-vault encrypt passwords.yml
 ```
 
-3. Execute the playbook (for NFS deployment)
+3. Execute the playbook
 
+Local deployment:
 ```sh
 $ ansible-playbook hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --ask-vault-pass
+```
+
+Deployment over a remote host:
+```sh
+ansible-playbook -i host123.localdomain, hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --ask-vault-pass
 ```
 
 Demo

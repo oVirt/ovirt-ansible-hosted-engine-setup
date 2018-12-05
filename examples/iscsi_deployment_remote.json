@@ -13,5 +13,6 @@
     "he_iscsi_tpgt": "1",
     "he_iscsi_target": "iqn.2017-10.com.redhat.stirabos:he",
     "he_lun_id": "36589cfc000000e8a909165bdfb47b3d9",
-    "ovirt_repo_release_rpm": "http://plain.resources.ovirt.org/pub/yum-repo/ovirt-release42.rpm"
+    "he_mem_size_MB": "4096",
+    "he_ansible_host_name": "host123.localdomain"
 }
