@@ -24,7 +24,7 @@
     register: db_conf_update
   - debug: var=db_conf_update
   - name: Fetch host SPM_ID
-    command: "{{ scl_pg_prefix }} psql -t -d engine -c \"SELECT vds_spm_id FROM vds WHERE vds_name='{{ HOST_NAME }}'\""
+    command: "{{ scl_pg_prefix }} psql -t -d engine -c \"SELECT vds_spm_id FROM vds WHERE vds_name='{{ hostvars[he_ansible_host_name]['he_host_name'] }}'\""
     environment: "{{ he_cmd_lang }}"
     become: true
     become_user: postgres

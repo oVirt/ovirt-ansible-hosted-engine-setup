@@ -99,7 +99,7 @@
       command: undefine
       uri: 'qemu+tls://{{ he_host_name }}/system'
   - name: Set spmId
-    set_fact: spmId="{{ hostvars[FQDN]['host_spm_id'] }}"
+    set_fact: spmId="{{ hostvars[he_fqdn]['host_spm_id'] }}"
   - debug: var=spmId
   - name: Detect ovirt-hosted-engine-ha version
     command: python -c 'from ovirt_hosted_engine_ha.agent import constants as agentconst; print(agentconst.PACKAGE_VERSION)'
@@ -267,7 +267,7 @@
         msg: "Engine VM is not running, please check vdsm logs"
       when: vm_status_virsh.rc != 0
     - name: Get target engine VM IP address
-      shell: getent ahosts {{ FQDN }} | cut -d' ' -f1 | uniq
+      shell: getent ahosts {{ he_fqdn }} | cut -d' ' -f1 | uniq
       environment: "{{ he_cmd_lang }}"
       register: engine_vm_ip
       changed_when: True
