@@ -6,8 +6,7 @@ OVEHOSTED_NETWORK/fqdn=str:{{ he_fqdn }}
 OVEHOSTED_NETWORK/bridgeName=str:{{ he_mgmt_network }}
 OVEHOSTED_NETWORK/firewallManager=str:iptables
 OVEHOSTED_NETWORK/gateway=str:{{ he_gateway }}
-{# TODO: FIX #}
-OVEHOSTED_ENGINE/clusterName=str:Default
+OVEHOSTED_ENGINE/clusterName=str:{{ he_cluster }}
 {# TODO: FIX #}
 OVEHOSTED_STORAGE/storageDatacenterName=str:hosted_datacenter
 OVEHOSTED_STORAGE/domainType=str:{{ he_domain_type }}

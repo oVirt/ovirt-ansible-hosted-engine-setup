@@ -49,6 +49,8 @@ No.
 | he_storage_domain_addr | null | Storage domain IP/DNS address |
 | he_ansible_host_name | localhost | hostname in use on the first HE host (not necessarily the Ansible controller one) |
 | he_restore_from_file | null | a backup file created with engine-backup to be restored on the fly |
+| he_cluster | Default | name of the cluster with hosted-engine hosts |
+| he_data_center | Default | name of the datacenter with hosted-engine hosts |
 
 ## NFS / Gluster Variables
 
