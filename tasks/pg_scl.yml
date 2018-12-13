@@ -1,6 +1,6 @@
 ---
 - name: Find configuration file for SCL PostgreSQL
-  shell: ls -vr1 /etc/ovirt-engine/engine.conf.d/*-scl-postgres-*.conf
+  shell: ls -vr1 /etc/ovirt-engine/engine.conf.d/*-scl-postgres*.conf
   environment: "{{ he_cmd_lang }}"
   register: scl_pg_conf_flist
   changed_when: True
