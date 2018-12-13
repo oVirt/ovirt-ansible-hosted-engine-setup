@@ -17,6 +17,11 @@
     lineinfile:
       path: /etc/hosts
       line: "{{ hostvars[he_ansible_host_name]['local_vm_ip']['stdout_lines'][0] }} {{ he_fqdn }} # hosted-engine-setup-{{ hostvars[he_ansible_host_name]['he_local_vm_dir'] }}"
+  - name: Reconfigure IPv6 default gateway
+    command: ip -6 route add default via "{{ he_ipv6_subnet_prefix + '::1' }}"
+    environment: "{{ he_cmd_lang }}"
+    changed_when: True
+    when: hostvars[he_ansible_host_name]['ipv6_deployment']
   - name: Restore sshd reverse DNS lookups
     lineinfile:
       path: /etc/ssh/sshd_config

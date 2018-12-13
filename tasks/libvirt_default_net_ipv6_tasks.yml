@@ -1,8 +1,4 @@
 ---
-- name: Force to accept RAs
-  shell: echo 2 > /proc/sys/net/ipv6/conf/{{ BRIDGE_IF }}/accept_ra
-  environment: "{{ he_cmd_lang }}"
-  changed_when: True
 - name: Parse libvirt default network configuration
   virt_net:
     command: get_xml
@@ -15,9 +11,15 @@
     xpath: /network/ip
     state: absent
   register: editednet_noipv4
-- name: Edit libvirt default network configuration, 1
+- name: Configure it as an isolated network
   xml:
     xmlstring: "{{ editednet_noipv4.xmlstring }}"
+    xpath: /network/forward
+    state: absent
+  register: editednet_isolated
+- name: Edit libvirt default network configuration, 1
+  xml:
+    xmlstring: "{{ editednet_isolated.xmlstring }}"
     xpath: /network/ip[@family='ipv6']
     attribute: address
     value: "{{ he_ipv6_subnet_prefix + '::1' }}"
