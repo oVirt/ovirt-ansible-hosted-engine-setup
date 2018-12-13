@@ -34,14 +34,6 @@
   - name: Parse host SPM_ID
     set_fact: host_spm_id="{{ host_spm_id_out.stdout_lines|first|trim }}"
   - debug: var=host_spm_id
-  - name: Disable IPv6
-    lineinfile:
-      path: /etc/sysctl.conf
-      line: 'net.ipv6.conf.all.disable_ipv6=1'
-  - name: Reload sysctl
-    command: sysctl -p
-    environment: "{{ he_cmd_lang }}"
-    changed_when: True
   - name: Restore original DisableFenceAtStartupInSec
     shell: "engine-config -s DisableFenceAtStartupInSec=$(cat /root/DisableFenceAtStartupInSec.txt)"
     environment: "{{ he_cmd_lang }}"

@@ -12,6 +12,11 @@
       state: active
     register: virt_net_out
   - debug: var=virt_net_out
+  - name: Check IPv6
+    set_fact:
+      ipv6_deployment: "{{ true if r_host_address != target_address_v4 and r_host_address in target_address_v6_list else false }}"
+  - include_tasks: libvirt_default_net_ipv6_tasks.yml
+    when: ipv6_deployment
     # all of the next is a workaround for a network issue:
     # vdsm installation breaks the routing by defining separate
     # routing table for ovirtmgmt. But we need to enable communication
@@ -19,12 +24,19 @@
   - name: Get libvirt interfaces
     virt_net:
       command: facts
-  - name: Get routing rules
+  - name: Get routing rules, IPv4
     command: ip rule
     environment: "{{ he_cmd_lang }}"
-    register: route_rules
+    register: route_rules_ipv4
     changed_when: True
-  - debug: var=route_rules
+  - debug: var=route_rules_ipv4
+  - name: Get routing rules, IPv6
+    command: ip -6 rule
+    environment: "{{ he_cmd_lang }}"
+    register: route_rules_ipv6
+    changed_when: True
+    when: ipv6_deployment
+  - debug: var=route_rules_ipv6
   - name: Save bridge name
     set_fact:
       virbr_default: "{{ ansible_libvirt_networks['default']['bridge'] }}"
@@ -39,20 +51,34 @@
   - name: Refresh network facts
     setup:
     tags: [ 'skip_ansible_lint' ]
-  - name: Prepare CIDR for {{ virbr_default }}
+  - name: Fetch IPv4 CIDR for {{ virbr_default }}
     set_fact:
-      virbr_cidr: "{{ (hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['address']+'/'+hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['netmask']) |ipv4('host/prefix') }}"
-  - name: Add outbound route rules
-    command: ip rule add from {{ virbr_cidr }} priority 101 table main
+      virbr_cidr_ipv4: "{{ (hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['address']+'/'+hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['netmask']) |ipv4('host/prefix') }}"
+  - name: Add IPv4 outbound route rules
+    command: ip rule add from {{ virbr_cidr_ipv4 }} priority 101 table main
     environment: "{{ he_cmd_lang }}"
     register: result
-    when: "\"101:\tfrom \"+virbr_cidr+\" lookup main\" not in route_rules.stdout"
+    when: not ipv6_deployment and "\"101:\tfrom \"+virbr_cidr_ipv4+\" lookup main\" not in route_rules_ipv4.stdout"
     changed_when: True
   - debug: var=result
-  - name: Add inbound route rules
-    command: ip rule add from all to {{ virbr_cidr }} priority 100 table main
+  - name: Add IPv4 inbound route rules
+    command: ip rule add from all to {{ virbr_cidr_ipv4 }} priority 100 table main
     environment: "{{ he_cmd_lang }}"
     register: result
     changed_when: True
-    when: "\"100:\tfrom all to \"+virbr_cidr+\" lookup main\" not in route_rules.stdout"
+    when: not ipv6_deployment and "\"100:\tfrom all to \"+virbr_cidr_ipv4+\" lookup main\" not in route_rules_ipv4.stdout"
+  - debug: var=result
+  - name: Add IPv6 outbound route rules
+    command: ip -6 rule add from {{ virbr_cidr_ipv6 }} priority 101 table main
+    environment: "{{ he_cmd_lang }}"
+    register: result
+    when: ipv6_deployment and "\"101:\tfrom \"+virbr_cidr_ipv6+\" lookup main\" not in route_rules_ipv6.stdout"
+    changed_when: True
+  - debug: var=result
+  - name: Add IPv6 inbound route rules
+    command: ip -6 rule add from all to {{ virbr_cidr_ipv6 }} priority 100 table main
+    environment: "{{ he_cmd_lang }}"
+    register: result
+    changed_when: True
+    when: ipv6_deployment and "\"100:\tfrom all to \"+virbr_cidr_ipv6+\" lookup main\" not in route_rules_ipv6.stdout"
   - debug: var=result

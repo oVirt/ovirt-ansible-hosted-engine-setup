@@ -161,14 +161,22 @@
       group: root
       mode: 0644
     when: he_vm_ip_addr is none
-  - name: Generate static network configuration for the engine VM
+  - name: Generate static network configuration for the engine VM, IPv4
     template:
       src: templates/ifcfg-eth0-static.j2
       dest: "{{ he_local_vm_dir }}/ifcfg-eth0"
       owner: root
       group: root
       mode: 0644
-    when: he_vm_ip_addr is not none
+    when: he_vm_ip_addr is not none and he_vm_ip_addr | ipv4
+  - name: Generate static network configuration for the engine VM, IPv6
+    template:
+      src: templates/ifcfg-eth0-static-ipv6.j2
+      dest: "{{ he_local_vm_dir }}/ifcfg-eth0"
+      owner: root
+      group: root
+      mode: 0644
+    when: he_vm_ip_addr is not none and he_vm_ip_addr | ipv6
   - name: Inject network configuration with guestfish
     command: guestfish -a {{ local_vm_disk_path }} --rw -i copy-in "{{ he_local_vm_dir }}/ifcfg-eth0" /etc/sysconfig/network-scripts {{ ":" }} selinux-relabel /etc/selinux/targeted/contexts/files/file_contexts /etc/sysconfig/network-scripts/ifcfg-eth0 force{{ ":" }}true
     environment:
@@ -258,10 +266,10 @@
       fail:
         msg: "Engine VM is not running, please check vdsm logs"
       when: vm_status_virsh.rc != 0
-    - name: Get target engine VM IPv4 address
-      shell: getent ahostsv4 {{ he_fqdn }} | cut -d' ' -f1 | uniq
+    - name: Get target engine VM IP address
+      shell: getent ahosts {{ FQDN }} | cut -d' ' -f1 | uniq
       environment: "{{ he_cmd_lang }}"
-      register: engine_vm_ipv4
+      register: engine_vm_ip
       changed_when: True
     - name: Get VDSM's target engine VM stats
       command: vdsm-client VM getStats vmID={{ he_vm_details.vm.id }}
@@ -270,24 +278,24 @@
       changed_when: true
     - name: Convert stats to JSON format
       set_fact: json_stats={{ engine_vdsm_stats.stdout|from_json }}
-    - name: Get target engine VM IPv4 address from VDSM stats
+    - name: Get target engine VM IP address from VDSM stats
       set_fact: engine_vm_ip_vdsm={{ json_stats[0].guestIPs }}
     - debug: var=engine_vm_ip_vdsm
     - name: Fail if Engine IP is different from engine's he_fqdn resolved IP
       fail:
-        msg: "Engine VM IP address is {{ engine_vm_ip_vdsm }} while the engine's he_fqdn {{ he_fqdn }} resolves to {{ engine_vm_ipv4.stdout_lines[0] }}. If you are using DHCP, check your DHCP reservation configuration"
-      when: engine_vm_ip_vdsm != engine_vm_ipv4.stdout_lines[0]
-  - name: Get target engine VM IPv4 address
-    shell: getent ahostsv4 {{ he_fqdn }} | cut -d' ' -f1 | uniq
+        msg: "Engine VM IP address is {{ engine_vm_ip_vdsm }} while the engine's he_fqdn {{ he_fqdn }} resolves to {{ engine_vm_ip.stdout_lines[0] }}. If you are using DHCP, check your DHCP reservation configuration"
+      when: engine_vm_ip_vdsm != engine_vm_ip.stdout_lines[0]
+  - name: Get target engine VM address
+    shell: getent ahosts {{ he_fqdn }} | cut -d' ' -f1 | uniq
     environment: "{{ he_cmd_lang }}"
-    register: engine_vm_ipv4
-    when: engine_vm_ipv4 is not defined
+    register: engine_vm_ip
+    when: engine_vm_ip is not defined
     changed_when: True
   # Workaround for ovn-central being configured with the address of the bootstrap VM.
   # Keep this aligned with:
   # https://github.com/oVirt/ovirt-engine/blob/master/packaging/playbooks/roles/ovirt-provider-ovn-driver/tasks/main.yml
   - name: Reconfigure OVN central address
-    command: vdsm-tool ovn-config {{ engine_vm_ipv4.stdout_lines[0] }} {{ he_mgmt_network }}
+    command: vdsm-tool ovn-config {{ engine_vm_ip.stdout_lines[0] }} {{ he_mgmt_network }}
     environment: "{{ he_cmd_lang }}"
     changed_when: True
   - include_tasks: auth_sso.yml
