@@ -1,0 +1,54 @@
+---
+- name: Copy the backup file to the engine VM for restore
+  copy:
+    src: "{{ he_restore_from_file }}"
+    dest: /root/engine_backup
+    owner: root
+    group: root
+    mode: 0600
+- name: Run engine-backup
+  shell: engine-backup --mode=restore --log=/var/log/ovirt-engine/setup/restore-backup-$(date -u +%Y%m%d%H%M%S).log --file=/root/engine_backup --provision-all-databases --restore-permissions
+  environment: "{{ he_cmd_lang }}"
+  register: engine_restore_out
+  changed_when: True
+- debug: var=engine_restore_out
+- name: Remove backup file
+  file:
+    state: absent
+    path: /root/engine_backup
+- include_tasks: pg_scl.yml
+- name: Remove previous hosted-engine VM
+  command: "{{ scl_pg_prefix }} psql -d engine -c \"SELECT deletevm(vm_guid) FROM (SELECT vm_guid FROM vms WHERE origin=6) t\""
+  environment: "{{ he_cmd_lang }}"
+  become: true
+  become_user: postgres
+  become_method: sudo
+  changed_when: True
+  register: db_remove_old_enginevm
+- name: Remove dynamic data for VMs on the host used to redeploy
+  command: "{{ scl_pg_prefix }} psql -d engine -c \"DELETE FROM vm_dynamic WHERE run_on_vds IN (SELECT vds_id FROM vds WHERE hw_uuid='{{ hostvars['localhost']['dmidecode_out']['stdout_lines']|first }}') \""
+  environment: "{{ he_cmd_lang }}"
+  become: true
+  become_user: postgres
+  become_method: sudo
+  changed_when: True
+  register: db_remove_host_vms
+- debug: var=db_remove_host_vms
+- name: Remove host used to redeploy
+  command: "{{ scl_pg_prefix }} psql -d engine -c \"SELECT deletevds(vds_id) FROM (SELECT vds_id FROM vds WHERE hw_uuid='{{ hostvars['localhost']['dmidecode_out']['stdout_lines']|first }}') t\""
+  environment: "{{ he_cmd_lang }}"
+  become: true
+  become_user: postgres
+  become_method: sudo
+  changed_when: True
+  register: db_remove_he_host
+- debug: var=db_remove_he_host
+- name: Remove previuos HE storage domain to avoid name conflicts
+  command: "{{ scl_pg_prefix }} psql -d engine -c \"UPDATE storage_domain_static SET storage_name='{{ STORAGE_DOMAIN_NAME }}_old_{{ ansible_date_time.iso8601_basic_short }}' WHERE storage_name='{{ STORAGE_DOMAIN_NAME }}'\""
+  environment: "{{ he_cmd_lang }}"
+  become: true
+  become_user: postgres
+  become_method: sudo
+  changed_when: True
+  register: db_rename_he_sd
+- debug: var=db_rename_he_sd

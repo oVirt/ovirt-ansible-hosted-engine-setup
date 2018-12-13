@@ -11,6 +11,11 @@
       ansible_user: root
   - name: Initial tasks
     block:
+    - name: Get system UUID
+      command: dmidecode -s system-uuid
+      environment: "{{ he_cmd_lang }}"
+      changed_when: True
+      register: dmidecode_out
     - name: Create directory for local VM
       tempfile:
         state: directory

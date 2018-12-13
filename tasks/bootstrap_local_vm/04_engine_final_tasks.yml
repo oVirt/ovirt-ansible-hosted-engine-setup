@@ -6,6 +6,12 @@
     with_fileglob: "hooks/enginevm_after_engine_setup/*.yml"
     register: include_after_engine_setup_results
   - debug: var=include_after_engine_setup_results
+  # After a restart the engine has a 5 minute grace time,
+  # other actions like electing a new SPM host or reconstructing
+  # the master storage domain could require more time
+  - name: Wait for the engine to reach a stable condition
+    wait_for: timeout=600
+    when: he_restore_from_file is defined and he_restore_from_file
   - name: Configure LibgfApi support
     command: engine-config -s LibgfApiSupported=true --cver=4.2
     environment: "{{ he_cmd_lang }}"

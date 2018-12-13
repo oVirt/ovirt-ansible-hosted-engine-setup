@@ -98,14 +98,8 @@
       name: "{{ he_vm_name }}Local"
       command: undefine
       uri: 'qemu+tls://{{ he_host_name }}/system'
-  - name: Detect spmId
-    command: vdsm-client StoragePool getSpmStatus storagepoolID={{ datacenter_id }}
-    environment: "{{ he_cmd_lang }}"
-    register: get_spm_id_out
-    changed_when: True
-  - debug: var=get_spm_id_out
-  - name: Parse spmId
-    set_fact: spmId="{{ get_spm_id_out.stdout|from_json|json_query('spmId') }}"
+  - name: Set spmId
+    set_fact: spmId="{{ hostvars[FQDN]['host_spm_id'] }}"
   - debug: var=spmId
   - name: Detect ovirt-hosted-engine-ha version
     command: python -c 'from ovirt_hosted_engine_ha.agent import constants as agentconst; print(agentconst.PACKAGE_VERSION)'

@@ -33,6 +33,10 @@
     with_fileglob: "hooks/enginevm_before_engine_setup/*.yml"
     register: include_before_engine_setup_results
   - debug: var=include_before_engine_setup_results
+  - name: Restore a backup
+    block:
+    - include_tasks: restore_backup.yml
+    when: he_restore_from_file is defined and he_restore_from_file
   rescue:
     - name: Fetch logs from the engine VM
       include_tasks: fetch_engine_logs.yml
