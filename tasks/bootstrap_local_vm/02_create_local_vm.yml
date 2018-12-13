@@ -11,11 +11,11 @@
       ansible_user: root
   - name: Initial tasks
     block:
-    - name: Get system UUID
-      command: dmidecode -s system-uuid
+    - name: Get host unique id
+      shell: if [ -e /etc/vdsm/vdsm.id ]; then cat /etc/vdsm/vdsm.id; else dmidecode -s system-uuid; fi;
       environment: "{{ he_cmd_lang }}"
       changed_when: True
-      register: dmidecode_out
+      register: unique_id_out
     - name: Create directory for local VM
       tempfile:
         state: directory

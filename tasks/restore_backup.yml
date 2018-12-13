@@ -26,7 +26,7 @@
   changed_when: True
   register: db_remove_old_enginevm
 - name: Remove dynamic data for VMs on the host used to redeploy
-  command: "{{ scl_pg_prefix }} psql -d engine -c \"DELETE FROM vm_dynamic WHERE run_on_vds IN (SELECT vds_id FROM vds WHERE hw_uuid='{{ hostvars['localhost']['dmidecode_out']['stdout_lines']|first }}') \""
+  command: "{{ scl_pg_prefix }} psql -d engine -c \"DELETE FROM vm_dynamic WHERE run_on_vds IN (SELECT vds_id FROM vds WHERE upper(vds_unique_id)=upper('{{ hostvars[he_ansible_host_name]['unique_id_out']['stdout_lines']|first }}')) \""
   environment: "{{ he_cmd_lang }}"
   become: true
   become_user: postgres
@@ -35,7 +35,7 @@
   register: db_remove_host_vms
 - debug: var=db_remove_host_vms
 - name: Remove host used to redeploy
-  command: "{{ scl_pg_prefix }} psql -d engine -c \"SELECT deletevds(vds_id) FROM (SELECT vds_id FROM vds WHERE hw_uuid='{{ hostvars['localhost']['dmidecode_out']['stdout_lines']|first }}') t\""
+  command: "{{ scl_pg_prefix }} psql -d engine -c \"SELECT deletevds(vds_id) FROM (SELECT vds_id FROM vds WHERE upper(vds_unique_id)=upper('{{ hostvars[he_ansible_host_name]['unique_id_out']['stdout_lines']|first }}')) t\""
   environment: "{{ he_cmd_lang }}"
   become: true
   become_user: postgres
@@ -43,7 +43,7 @@
   changed_when: True
   register: db_remove_he_host
 - debug: var=db_remove_he_host
-- name: Remove previous HE storage domain to avoid name conflicts
+- name: Rename previous HE storage domain to avoid name conflicts
   command: "{{ scl_pg_prefix }} psql -d engine -c \"UPDATE storage_domain_static SET storage_name='{{ STORAGE_DOMAIN_NAME }}_old_{{ ansible_date_time.iso8601_basic_short }}' WHERE storage_name='{{ STORAGE_DOMAIN_NAME }}'\""
   environment: "{{ he_cmd_lang }}"
   become: true
