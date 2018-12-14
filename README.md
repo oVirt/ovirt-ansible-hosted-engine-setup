@@ -12,6 +12,7 @@ This pre-release should not to be used in production, and it is not feature comp
 
  * Ansible version 2.6 or higher
  * Python SDK version 4.2 or higher
+ * Python netaddr library on the ansible controller node
 
 # Dependencies
 
