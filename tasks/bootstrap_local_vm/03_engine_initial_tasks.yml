@@ -17,6 +17,11 @@
     lineinfile:
       path: /etc/hosts
       line: "{{ hostvars[he_ansible_host_name]['local_vm_ip']['stdout_lines'][0] }} {{ he_fqdn }} # hosted-engine-setup-{{ hostvars[he_ansible_host_name]['he_local_vm_dir'] }}"
+  - name: Reconfigure IPv6 default gateway
+    command: ip -6 route add default via "{{ he_ipv6_subnet_prefix + '::1' }}"
+    environment: "{{ he_cmd_lang }}"
+    changed_when: True
+    when: hostvars[he_ansible_host_name]['ipv6_deployment']
   - name: Restore sshd reverse DNS lookups
     lineinfile:
       path: /etc/ssh/sshd_config
@@ -33,6 +38,10 @@
     with_fileglob: "hooks/enginevm_before_engine_setup/*.yml"
     register: include_before_engine_setup_results
   - debug: var=include_before_engine_setup_results
+  - name: Restore a backup
+    block:
+    - include_tasks: restore_backup.yml
+    when: he_restore_from_file is defined and he_restore_from_file
   rescue:
     - name: Fetch logs from the engine VM
       include_tasks: fetch_engine_logs.yml

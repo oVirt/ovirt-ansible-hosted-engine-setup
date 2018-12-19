@@ -27,7 +27,8 @@
         ) and (
           hostvars[inventory_hostname]['ansible_' + item]['type'] != 'bridge'
         ) and (
-          hostvars[inventory_hostname]['ansible_' + item]['ipv4'] is defined
+          hostvars[inventory_hostname]['ansible_' + item]['ipv4'] is defined or
+          hostvars[inventory_hostname]['ansible_' + item]['ipv6'] is defined
         ) and (
           (
             hostvars[inventory_hostname]['ansible_' + item]['type'] != 'bonding'

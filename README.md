@@ -2,12 +2,6 @@
 
 Ansible role for deploying oVirt Hosted-Engine
 
-## PLEASE NOTE
-
-This package is still in development. The oVirt Project makes no guarantees as to its suitability or usefulness.
-
-This pre-release should not to be used in production, and it is not feature complete.
-
 # Requirements
 
  * Ansible version 2.6 or higher
@@ -49,6 +43,9 @@ No.
 | he_domain_type | null | Storage domain type. available options: *nfs*, *iscsi*, *gluster*, *fc* |
 | he_storage_domain_addr | null | Storage domain IP/DNS address |
 | he_ansible_host_name | localhost | hostname in use on the first HE host (not necessarily the Ansible controller one) |
+| he_restore_from_file | null | a backup file created with engine-backup to be restored on the fly |
+| he_cluster | Default | name of the cluster with hosted-engine hosts |
+| he_data_center | Default | name of the datacenter with hosted-engine hosts |
 
 ## NFS / Gluster Variables
 

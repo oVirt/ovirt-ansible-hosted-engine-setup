@@ -11,6 +11,11 @@
       ansible_user: root
   - name: Initial tasks
     block:
+    - name: Get host unique id
+      shell: if [ -e /etc/vdsm/vdsm.id ]; then cat /etc/vdsm/vdsm.id; else dmidecode -s system-uuid; fi;
+      environment: "{{ he_cmd_lang }}"
+      changed_when: True
+      register: unique_id_out
     - name: Create directory for local VM
       tempfile:
         state: directory
@@ -78,8 +83,9 @@
       with_items:
         - { src: templates/user-data.j2, dest: "{{ he_local_vm_dir }}/user-data" }
         - { src: templates/meta-data.j2, dest: "{{ he_local_vm_dir }}/meta-data" }
+        - { src: templates/network-config-dhcp6.j2, dest: "{{ he_local_vm_dir }}/network-config" }
     - name: Create ISO disk
-      command: mkisofs -output {{ he_local_vm_dir }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8 {{ he_local_vm_dir }}/meta-data {{ he_local_vm_dir }}/user-data
+      command: mkisofs -output {{ he_local_vm_dir }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8 {{ he_local_vm_dir }}/meta-data {{ he_local_vm_dir }}/user-data {{ he_local_vm_dir + '/network-config' if ipv6_deployment else None}}
       environment: "{{ he_cmd_lang }}"
       changed_when: True
     - name: Create local VM

@@ -23,6 +23,20 @@
       key: https://{{ he_fqdn }}/ovirt-engine/services/pki-resource?resource=engine-certificate&format=OPENSSH-PUBKEY
       validate_certs: False
   - include_tasks: auth_sso.yml
+  - name: Ensure that the target datacenter is present
+    ovirt_datacenter:
+      state: present
+      name: "{{ he_data_center }}"
+      wait: yes
+      local: false
+      auth: "{{ ovirt_auth }}"
+  - name: Ensure that the target cluster is present in the target datacenter
+    ovirt_cluster:
+      state: present
+      name: "{{ he_cluster }}"
+      data_center: "{{ he_data_center }}"
+      wait: yes
+      auth: "{{ ovirt_auth }}"
   - name: Enable GlusterFS at cluster level
     ovirt_cluster:
       data_center: "{{ he_data_center }}"
@@ -44,8 +58,7 @@
       dest: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
   - name: Add host
     ovirt_hosts:
-      # TODO: add to the first cluster of the datacenter
-      # where we set the vlan id
+      cluster: "{{ he_cluster }}"
       name: "{{ he_host_name }}"
       state: present
       public_key: true
