@@ -20,7 +20,6 @@ he_setup_fc_getdevices:                     false
 he_setup_iscsi_discover:                    false
 he_setup_iscsi_getdevices:                  false
 
-
 # Default vars
 # Do not change these variables
 # Changes in this section are NOT supported

@@ -1,19 +1,5 @@
 ---
 - include_tasks: auth_sso.yml
-# - name: iSCSI discover
-#  ovirt_hosts:
-#    name: "{{ he_host_name }}"
-#    state: iscsidiscover
-#    iscsi:
-#      username: "{{ he_iscsi_discover_username }}"
-#      password: "{{ he_iscsi_discover_password }}"
-#      address: "{{ he_iscsi_portal_addr }}"
-#      port: "{{ he_iscsi_portal_port }}"
-#    auth: "{{ ovirt_auth }}"
-#  register: otopi_iscsi_targets
-# - debug: var=otopi_iscsi_targets
-# TODO: switch back to ovirt_hosts when it will be able to handle
-# discovered_targets
 - name: Prepare iSCSI parameters
   set_fact:
     iscsid:
