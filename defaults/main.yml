@@ -13,6 +13,13 @@ he_engine_vm_configuration:                 false
 he_final_tasks:                             false
 he_final_clean:                             false
 
+# Sub-Stages for interactive setup execution
+he_pre_checks_network:                      false
+he_pre_checks_validate_hostnames:           false
+he_setup_fc_getdevices:                     false
+he_setup_iscsi_discover:                    false
+he_setup_iscsi_getdevices:                  false
+
 # Default vars
 # Do not change these variables
 # Changes in this section are NOT supported
