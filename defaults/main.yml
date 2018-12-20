@@ -3,6 +3,7 @@
 he_install_packages:                        false
 he_initial_clean:                           false
 he_pre_checks:                              false
+he_pre_checks_network:                      false
 he_bootstrap_local_vm:                      false
 he_bootstrap_pre_install_local_engine_vm:   false
 he_bootstrap_post_install_local_engine_vm:  false

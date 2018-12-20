@@ -13,6 +13,10 @@
     with_fileglob: "pre_checks/*.yml"
     when: he_pre_checks
 
+  - name: System configuration validations
+    include_tasks: "pre_checks/001_validate_network_interfaces.yml"
+    when: he_pre_checks_network
+
   - name: 01_02 bootstrap local vm tasks
     block:
     - name: 01 Bootstrap local VM
