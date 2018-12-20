@@ -1,5 +1,5 @@
 ---
-- name: Define he_host_name
+- name: Define he_host_name if not defined
   block:
   - name: Get full hostname
     command: hostname -f
@@ -9,6 +9,7 @@
     set_fact:
       he_host_name: "{{ host_full_name.stdout_lines[0] }}"
     register: he_host_name
+  when: he_host_name is none
 - debug: var=he_host_name
 
 - name: Validate host hostname
@@ -91,7 +92,8 @@
           only there.
       when: hostname_res_count_output.stdout_lines|length > 1
     when: he_bridge_if is defined and he_mgmt_network is defined
-  when: he_host_name is defined
+  when: he_host_name is defined and he_host_name is not none
+
 - name: Validate engine he_fqdn
   block:
   - name: Avoid localhost
@@ -131,4 +133,4 @@
     with_items:
       - "http://{{ he_fqdn }}/"
       - "https://{{ he_fqdn }}/"
-  when: he_fqdn is defined
+  when: he_fqdn is defined and he_fqdn is not none
