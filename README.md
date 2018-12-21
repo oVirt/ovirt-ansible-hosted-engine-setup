@@ -35,7 +35,7 @@ No.
 | Name                            | Default value         |  Description                                              |
 |---------------------------------|-----------------------|-----------------------------------------------------------|
 | he_bridge_if | eth0 | The network interface ovirt management bridge will be configured on |
-| he_fqdn | engine.example.com | The engine FQDN as it configured on the DNS |
+| he_fqdn | null | The engine FQDN as it configured on the DNS |
 | he_mem_size_MB | max | The amount of memory used on the engine VM |
 | he_vcpus | max | The amount of CPUs used on the engine VM |
 | he_disk_size_GB | 61 | Disk size of the engine VM |

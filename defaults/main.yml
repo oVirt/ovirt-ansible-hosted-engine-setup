@@ -62,7 +62,7 @@ he_source_email: root@localhost
 ## Mandatory variables:
 
 he_bridge_if: eth0
-he_fqdn: engine.example.com
+he_fqdn: null
 he_mem_size_MB: max
 he_vcpus: max
 he_disk_size_GB: 61
