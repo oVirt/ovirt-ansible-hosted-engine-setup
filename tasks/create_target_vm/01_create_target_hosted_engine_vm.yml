@@ -17,7 +17,7 @@
     changed_when: True
   - debug: var=local_vm_ip
   - name: Fetch host facts
-    ovirt_hosts_facts:
+    ovirt_host_facts:
       pattern: name={{ he_host_name }} status=up
       auth: "{{ ovirt_auth }}"
     register: host_result
@@ -90,7 +90,7 @@
     set_fact:
       emulated_machine: emulated_machine_list.json['values']['system_option_value'][0]['value'].replace('[','').replace(']','').split(', ')|first
   - name: Get storage domain details
-    ovirt_storage_domains_facts:
+    ovirt_storage_domain_facts:
       pattern: name={{ he_storage_domain_name }} and datacenter={{ datacenter_name }}
       auth: "{{ ovirt_auth }}"
     register: storage_domain_details
@@ -121,7 +121,7 @@
       he_metadata_disk_details: "{{ add_disks.results[3] }}"
   - debug: var=add_disks
   - name: Add VM
-    ovirt_vms:
+    ovirt_vm:
       state: stopped
       cluster: "{{ cluster_name }}"
       name: "{{ he_vm_name }}"

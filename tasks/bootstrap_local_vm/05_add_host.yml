@@ -67,7 +67,7 @@
     async: 1
     poll: 0
   - name: Wait for the host to be up
-    ovirt_hosts_facts:
+    ovirt_host_facts:
       pattern: name={{ he_host_name }}
       auth: "{{ ovirt_auth }}"
     register: host_result_up_check

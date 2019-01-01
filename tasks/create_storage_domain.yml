@@ -11,7 +11,7 @@
     when: not local_vm_dir_stat.stat.exists
   - include_tasks: auth_sso.yml
   - name: Fetch host facts
-    ovirt_hosts_facts:
+    ovirt_host_facts:
       pattern: name={{ he_host_name }}
       auth: "{{ ovirt_auth }}"
     register: host_result
@@ -36,7 +36,7 @@
   - name: Fetch Datacenter name
     set_fact: datacenter_name={{ ovirt_datacenters|json_query("[?id=='" + datacenter_id + "'].name")|first }}
   - name: Add NFS storage domain
-    ovirt_storage_domains:
+    ovirt_storage_domain:
       state: unattached
       name: "{{ he_storage_domain_name }}"
       host: "{{ he_host_name }}"
@@ -51,7 +51,7 @@
     when: he_domain_type == "nfs"
     register: otopi_storage_domain_details_nfs
   - name: Add glusterfs storage domain
-    ovirt_storage_domains:
+    ovirt_storage_domain:
       state: unattached
       name: "{{ he_storage_domain_name }}"
       host: "{{ he_host_name }}"
@@ -69,7 +69,7 @@
     when: he_domain_type == "glusterfs"
     register: otopi_storage_domain_details_gluster
   - name: Add iSCSI storage domain
-    ovirt_storage_domains:
+    ovirt_storage_domain:
       state: unattached
       name: "{{ he_storage_domain_name }}"
       host: "{{ he_host_name }}"
@@ -92,7 +92,7 @@
     when: he_domain_type == "iscsi"
     register: otopi_storage_domain_details_iscsi
   - name: Add Fibre Channel storage domain
-    ovirt_storage_domains:
+    ovirt_storage_domain:
       state: unattached
       name: "{{ he_storage_domain_name }}"
       host: "{{ he_host_name }}"
@@ -105,7 +105,7 @@
     register: otopi_storage_domain_details_fc
     when: he_domain_type == "fc"
   - name: Get storage domain details
-    ovirt_storage_domains_facts:
+    ovirt_storage_domain_facts:
       pattern: name={{ he_storage_domain_name }}
       auth: "{{ ovirt_auth }}"
     register: storage_domain_details
@@ -134,7 +134,7 @@
     set_fact: required_size="{{ disk_size_xml.matches[0].Disk['{http://schemas.dmtf.org/ovf/envelope/1/}size']|int * 1024 * 1024 * 1024 + storage_domain_details.ansible_facts.ovirt_storage_domains[0].critical_space_action_blocker|int * 1024 * 1024 * 1024 + 5 * 1024 * 1024 * 1024}}" # +5G: 2xOVF_STORE, lockspace, metadata, configuration
   - debug: var=required_size
   - name: Remove unsuitable storage domain
-    ovirt_storage_domains:
+    ovirt_storage_domain:
       host: "{{ he_host_name }}"
       data_center: "{{ datacenter_name }}"
       name: "{{ he_storage_domain_name }}"
@@ -151,7 +151,7 @@
             If you wish to use the current target storage domain by extending it, make sure it contains nothing before adding it."
     when: storage_domain_details.ansible_facts.ovirt_storage_domains[0].available|int < required_size|int
   - name: Activate storage domain
-    ovirt_storage_domains:
+    ovirt_storage_domain:
       host: "{{ he_host_name }}"
       data_center: "{{ datacenter_name }}"
       name: "{{ he_storage_domain_name }}"
