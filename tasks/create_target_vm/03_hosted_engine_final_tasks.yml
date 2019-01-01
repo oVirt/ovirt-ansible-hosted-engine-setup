@@ -3,17 +3,17 @@
   block:
   # workaround for https://bugzilla.redhat.com/1590943
   - name: Enable again the serial console device
-    ovirt_vms:
+    ovirt_vm:
       id: "{{ he_vm_details.vm.id }}"
       serial_console: True
       auth: "{{ ovirt_auth }}"
   - name: Trigger hosted engine OVF update
-    ovirt_vms:
+    ovirt_vm:
       id: "{{ he_vm_details.vm.id }}"
       description: "Hosted engine VM"
       auth: "{{ ovirt_auth }}"
   - name: Wait until OVF update finishes
-    ovirt_storage_domains_facts:
+    ovirt_storage_domain_facts:
       auth: "{{ ovirt_auth }}"
       fetch_nested: True
       nested_attributes:
@@ -303,7 +303,7 @@
   # the engine fails deleting a VM if its status in the engine DB
   # is not up to date.
   - name: Check for the local bootstrap VM
-    ovirt_vms_facts:
+    ovirt_vm_facts:
       pattern: id="{{ external_local_vm_uuid.stdout_lines|first }}"
       auth: "{{ ovirt_auth }}"
     register: local_vm_f
@@ -311,14 +311,14 @@
     block:
       - name: Make the engine aware that the external VM is stopped
         ignore_errors: yes
-        ovirt_vms:
+        ovirt_vm:
           state: stopped
           id: "{{ external_local_vm_uuid.stdout_lines|first }}"
           auth: "{{ ovirt_auth }}"
         register: vmstop_result
       - debug: var=vmstop_result
       - name: Wait for the local bootstrap VM to be down at engine eyes
-        ovirt_vms_facts:
+        ovirt_vm_facts:
           pattern: id="{{ external_local_vm_uuid.stdout_lines|first }}"
           auth: "{{ ovirt_auth }}"
         register: local_vm_status
@@ -327,7 +327,7 @@
         delay: 5
       - debug: var=local_vm_status
       - name: Remove bootstrap external VM from the engine
-        ovirt_vms:
+        ovirt_vm:
           state: absent
           id: "{{ external_local_vm_uuid.stdout_lines|first }}"
           auth: "{{ ovirt_auth }}"
