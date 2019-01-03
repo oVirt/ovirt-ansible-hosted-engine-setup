@@ -19,13 +19,20 @@
     changed_when: True
     when: he_enable_libgfapi
   - debug: var=libgfapi_support_out
-  - name: Restart ovirt-engine service for LibgfApi support
+  - name: Save original OvfUpdateIntervalInMinutes
+    shell: "engine-config -g OvfUpdateIntervalInMinutes | cut -d' ' -f2 > /root/OvfUpdateIntervalInMinutes.txt"
+    environment: "{{ he_cmd_lang }}"
+    changed_when: True
+  - name: Set OVF update interval to 1 minute
+    command: engine-config -s OvfUpdateIntervalInMinutes=1
+    environment: "{{ he_cmd_lang }}"
+    changed_when: True
+  - name: Restart ovirt-engine service for changed OVF Update configuration and LibgfApi support
     systemd:
       state: restarted
       name: ovirt-engine
-    register: restart_libgfapi_support_out
-    when: he_enable_libgfapi
-  - debug: var=restart_libgfapi_support_out
+    register: restart_out
+  - debug: var=restart_out
   - name: Mask cloud-init services to speed up future boot
     systemd:
       masked: yes
