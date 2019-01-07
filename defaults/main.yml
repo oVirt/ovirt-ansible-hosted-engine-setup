@@ -101,6 +101,9 @@ he_dns_addr: null # up to 3 DNS servers IPs can be added
 he_vm_etc_hosts: false # user can add lines to /etc/hosts on the engine VM
 he_default_gateway: null
 
+# ovirt-hosted-engine-setup variables
+he_just_collect_network_interfaces: false
+
 # *** Do Not Use On Production Environment ***
 # ********** Used for testing ONLY ***********
 he_requirements_check_enabled: True
