@@ -45,7 +45,7 @@
       state: absent
     when: he_restore_from_file is defined and he_restore_from_file
   - name: Restore original OvfUpdateIntervalInMinutes
-    command: "engine-config -s OvfUpdateIntervalInMinutes=$(cat /root/OvfUpdateIntervalInMinutes.txt)"
+    shell: "engine-config -s OvfUpdateIntervalInMinutes=$(cat /root/OvfUpdateIntervalInMinutes.txt)"
     environment: "{{ he_cmd_lang }}"
     changed_when: True
   - name: Remove OvfUpdateIntervalInMinutes temporary file
