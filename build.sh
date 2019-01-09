@@ -39,6 +39,10 @@ install() {
   mkdir -p $PKG_DOC_DIR
 
   cp -pR defaults/ $PKG_DATA_DIR
+  cp -pR examples/ $PKG_DATA_DIR
+  cp -pR handlers/ $PKG_DATA_DIR
+  cp -pR hooks/ $PKG_DATA_DIR
+  cp -pR meta/ $PKG_DATA_DIR
   cp -pR tasks/ $PKG_DATA_DIR
   cp -pR templates/ $PKG_DATA_DIR
   cp -pR test_plugins/ $PKG_DATA_DIR
