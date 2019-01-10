@@ -4,7 +4,7 @@ VERSION="1.0.5"
 MILESTONE=master
 RPM_RELEASE="0.1.$MILESTONE.$(date -u +%Y%m%d%H%M%S)"
 
-ROLE_NAME="oVirt.hosted-engine-setup"
+ROLE_NAME="ovirt.hosted-engine-setup"
 PACKAGE_NAME="ovirt-ansible-hosted-engine-setup"
 PREFIX=/usr/local
 DATAROOT_DIR=$PREFIX/share
@@ -12,6 +12,8 @@ ROLES_DATAROOT_DIR=$DATAROOT_DIR/ansible/roles
 DOC_DIR=$DATAROOT_DIR/doc
 PKG_DATA_DIR=${PKG_DATA_DIR:-$ROLES_DATAROOT_DIR/$PACKAGE_NAME}
 PKG_DOC_DIR=${PKG_DOC_DIR:-$DOC_DIR/$PACKAGE_NAME}
+ROLENAME_LEGACY="${ROLENAME_LEGACY:-$ROLES_DATAROOT_DIR/ovirt-hosted-engine-setup}"
+ROLENAME_LEGACY_UPPERCASE="${ROLENAME_LEGACY_UPPERCASE:-$ROLES_DATAROOT_DIR/oVirt.hosted-engine-setup}"
 
 RPM_VERSION=$VERSION
 PACKAGE_VERSION=$VERSION
@@ -37,6 +39,12 @@ install() {
   echo "Installing data..."
   mkdir -p $PKG_DATA_DIR
   mkdir -p $PKG_DOC_DIR
+
+  # Create a symlink, so legacy role name does work:
+  ln -f -s $PKG_DATA_DIR_ORIG $ROLENAME_LEGACY
+
+  # Create a symlink, so legacy role name does work with upper case:
+  ln -f -s $PKG_DATA_DIR_ORIG $ROLENAME_LEGACY_UPPERCASE
 
   cp -pR defaults/ $PKG_DATA_DIR
   cp -pR examples/ $PKG_DATA_DIR
