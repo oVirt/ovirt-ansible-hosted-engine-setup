@@ -1,5 +1,7 @@
-%global rolename hosted-engine-setup
-%global roleprefix oVirt.
+%global rolename hosted_engine_setup
+%global roleprefix ovirt.
+%global legacy_roleprefix oVirt.
+%global legacy_rolename hosted-engine-setup
 %global ansible_roles_dir ansible/roles
 
 Name: @PACKAGE_NAME@
@@ -20,6 +22,22 @@ Requires: ovirt-ansible-repositories >= 1.1.2
 %description
 This Ansible role installs required packages for oVirt Hosted-Engine deployment.
 
+%pretrans -p <lua>
+-- Remove the legacy directory before installing the symlink. This is known issue in RPM:
+-- https://fedoraproject.org/wiki/Packaging:Directory_Replacement
+rolename_legacy = "%{buildroot}%{_datadir}/%{ansible_roles_dir}/%{roleprefix}%{legacy_rolename}"
+rolename_legacy_uppercase="%{buildroot}%{_datadir}/%{ansible_roles_dir}/%{legacy_roleprefix}%{legacy_rolename}"
+
+st1 = posix.stat(rolename_legacy)
+if st1 and st1.type == "directory" then
+  os.execute('rm -rf "'..rolename_legacy..'"')
+end
+
+st2 = posix.stat(rolename_legacy_uppercase)
+if st2 and st2.type == "directory" then
+  os.execute('rm -rf "'..rolename_legacy_uppercase..'"')
+end
+
 %prep
 %setup -c -q
 
@@ -29,10 +47,14 @@ This Ansible role installs required packages for oVirt Hosted-Engine deployment.
 export PKG_DATA_DIR_ORIG=%{_datadir}/%{ansible_roles_dir}/%{roleprefix}%{rolename}
 export PKG_DATA_DIR=%{buildroot}$PKG_DATA_DIR_ORIG
 export PKG_DOC_DIR=%{buildroot}%{_pkgdocdir}
+export ROLENAME_LEGACY=%{buildroot}%{_datadir}/%{ansible_roles_dir}/%{roleprefix}%{legacy_rolename}
+export ROLENAME_LEGACY_UPPERCASE=%{buildroot}%{_datadir}/%{ansible_roles_dir}/%{legacy_roleprefix}%{legacy_rolename}
 sh build.sh install
 
 %files
 %{_datadir}/%{ansible_roles_dir}/%{roleprefix}%{rolename}
+%{_datadir}/%{ansible_roles_dir}/%{legacy_roleprefix}%{legacy_rolename}
+%{_datadir}/%{ansible_roles_dir}/%{roleprefix}%{legacy_rolename}
 
 %doc README.md
 %doc examples/
