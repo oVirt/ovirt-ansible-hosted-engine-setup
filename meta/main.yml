@@ -1,6 +1,7 @@
 ---
 galaxy_info:
-  author: Ido Rosenzwig
+  role_name: hosted_engine_setup
+  author: Ido Rosenzwig, Simone Tiraboschi
   description: Role to deploy oVirt Hosted-Engine
   company: Red Hat, Inc.
 

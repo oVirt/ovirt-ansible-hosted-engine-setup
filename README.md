@@ -22,11 +22,11 @@ No.
 * Install additional oVirt ansible roles:
 
     ```bash
-    $ ansible-galaxy install oVirt.repositories # case-sensitive
+    $ ansible-galaxy install ovirt.repositories # case-sensitive
     ```
 
     ```bash
-    $ ansible-galaxy install oVirt.engine-setup # case-sensitive
+    $ ansible-galaxy install ovirt.engine-setup # case-sensitive
     ```
 # Role variables
 
@@ -106,8 +106,8 @@ All the playbooks can be found inside the `examples/` folder.
     he_bootstrap_local_vm: true
     ovirt_repositories_ovirt_release_rpm: "{{ ovirt_repo_release_rpm }}"
   roles:
-    - role: oVirt.repositories
-    - role: oVirt.hosted-engine-setup
+    - role: ovirt.repositories
+    - role: ovirt.hosted_engine_setup
 
 - name: Local engine VM installation - Pre tasks
   hosts: engine
@@ -116,7 +116,7 @@ All the playbooks can be found inside the `examples/` folder.
   vars:
     he_bootstrap_pre_install_local_engine_vm: true
   roles:
-    - role: oVirt.hosted-engine-setup
+    - role: ovirt.hosted_engine_setup
 
 - name: Engine Setup on local VM
   hosts: engine
@@ -134,7 +134,7 @@ All the playbooks can be found inside the `examples/` folder.
     ovirt_engine_setup_offline: true
     ovirt_engine_setup_admin_password: "{{ he_admin_password }}"
   roles:
-    - role: oVirt.engine-setup
+    - role: ovirt.engine-setup
 
 - name: Local engine VM installation - Post tasks
   hosts: engine
@@ -143,7 +143,7 @@ All the playbooks can be found inside the `examples/` folder.
   vars:
     he_bootstrap_post_install_local_engine_vm: true
   roles:
-    - role: oVirt.hosted-engine-setup
+    - role: ovirt.hosted_engine_setup
 
 - name: Configure engine VM on a storage domain
   hosts: localhost
@@ -155,7 +155,7 @@ All the playbooks can be found inside the `examples/` folder.
     he_create_storage_domain: true
     he_create_target_vm: true
   roles:
-    - role: oVirt.hosted-engine-setup
+    - role: ovirt.hosted_engine_setup
 
 - name: Configure database settings
   hosts: engine
@@ -164,7 +164,7 @@ All the playbooks can be found inside the `examples/` folder.
   vars:
     he_engine_vm_configuration: true
   roles:
-    - role: oVirt.hosted-engine-setup
+    - role: ovirt.hosted_engine_setup
 
 - name: Closeup
   hosts: localhost
@@ -175,7 +175,7 @@ All the playbooks can be found inside the `examples/` folder.
     he_final_tasks: true
     he_final_clean: true
   roles:
-    - role: oVirt.hosted-engine-setup
+    - role: ovirt.hosted_engine_setup
 ```
 
 ## hosted_engine_deploy_remotehost.yml
@@ -193,8 +193,8 @@ All the playbooks can be found inside the `examples/` folder.
     he_bootstrap_local_vm: true
     ovirt_repositories_ovirt_release_rpm: "{{ ovirt_repo_release_rpm }}"
   roles:
-    - role: oVirt.repositories
-    - role: oVirt.hosted-engine-setup
+    - role: ovirt.repositories
+    - role: ovirt.hosted_engine_setup
 
 - name: Local engine VM installation - Pre tasks
   hosts: engine
@@ -203,7 +203,7 @@ All the playbooks can be found inside the `examples/` folder.
   vars:
     he_bootstrap_pre_install_local_engine_vm: true
   roles:
-    - role: oVirt.hosted-engine-setup
+    - role: ovirt.hosted_engine_setup
 
 - name: Engine Setup on local VM
   hosts: engine
@@ -230,7 +230,7 @@ All the playbooks can be found inside the `examples/` folder.
   vars:
     he_bootstrap_post_install_local_engine_vm: true
   roles:
-    - role: oVirt.hosted-engine-setup
+    - role: ovirt.hosted_engine_setup
 
 - name: Configure engine VM on a storage domain
   hosts: host123.localdomain
@@ -241,7 +241,7 @@ All the playbooks can be found inside the `examples/` folder.
     he_create_storage_domain: true
     he_create_target_vm: true
   roles:
-    - role: oVirt.hosted-engine-setup
+    - role: ovirt.hosted_engine_setup
 
 - name: Configure database settings
   hosts: engine
@@ -250,7 +250,7 @@ All the playbooks can be found inside the `examples/` folder.
   vars:
     he_engine_vm_configuration: true
   roles:
-    - role: oVirt.hosted-engine-setup
+    - role: ovirt.hosted_engine_setup
 
 - name: Closeup
   hosts: host123.localdomain
@@ -260,7 +260,7 @@ All the playbooks can be found inside the `examples/` folder.
     he_final_tasks: true
     he_final_clean: true
   roles:
-    - role: oVirt.hosted-engine-setup
+    - role: ovirt.hosted_engine_setup
 ```
 
 
