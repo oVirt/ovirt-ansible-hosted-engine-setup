@@ -46,6 +46,8 @@ No.
 | he_restore_from_file | null | a backup file created with engine-backup to be restored on the fly |
 | he_cluster | Default | name of the cluster with hosted-engine hosts |
 | he_data_center | Default | name of the datacenter with hosted-engine hosts |
+| he_host_name | $(hostname -f) | name used by the engine for the first host |
+| he_host_address | $(hostname -f) | address used by the engine for the first host |
 
 ## NFS / Gluster Variables
 
