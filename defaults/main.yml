@@ -51,6 +51,7 @@ he_ipv6_subnet_prefix: fd00:1234:5678:900
 
 he_host_ip: null
 he_host_name: null
+he_host_address: null
 he_cloud_init_host_name: null
 he_cloud_init_domain_name: null
 

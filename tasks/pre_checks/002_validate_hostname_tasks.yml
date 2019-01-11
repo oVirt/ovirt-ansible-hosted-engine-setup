@@ -1,16 +1,20 @@
 ---
+- name: Get full hostname
+  command: hostname -f
+  changed_when: true
+  register: host_full_name
 - name: Define he_host_name if not defined
-  block:
-  - name: Get full hostname
-    command: hostname -f
-    changed_when: true
-    register: host_full_name
-  - name: Set he_host_name
-    set_fact:
-      he_host_name: "{{ host_full_name.stdout_lines[0] }}"
-    register: he_host_name
+  set_fact:
+    he_host_name: "{{ host_full_name.stdout_lines[0] }}"
+  register: he_host_name
   when: he_host_name is none
 - debug: var=he_host_name
+- name: Define he_host_address if not defined
+  set_fact:
+    he_host_address: "{{ host_full_name.stdout_lines[0] }}"
+  register: he_host_address
+  when: he_host_address is none
+- debug: var=he_host_address
 
 - name: Validate host hostname
   block:
@@ -18,9 +22,9 @@
     fail:
       msg: >
         localhost is not a valid address
-    when: he_host_name in ['localhost', 'localhost.localdomain']
+    when: he_host_address in ['localhost', 'localhost.localdomain']
   - name: Get host address resolution
-    shell: getent ahosts {{ he_host_name }} | grep {{ he_host_name }}
+    shell: getent ahosts {{ he_host_address }} | grep {{ he_host_address }}
     register: hostname_resolution_output
     changed_when: True
     ignore_errors: yes
@@ -76,7 +80,7 @@
           on the selected interface
       when: r_host_address != target_address_v4 and r_host_address not in target_address_v6_list
     - name: Check for alias
-      shell: getent ahosts {{ he_host_name }} | cut -d' ' -f1 | uniq
+      shell: getent ahosts {{ he_host_address }} | cut -d' ' -f1 | uniq
       register: hostname_res_count_output
       changed_when: True
       ignore_errors: yes
@@ -84,7 +88,7 @@
     - name: Ensure the resolved address resolves only on the selected interface
       fail:
         msg: >
-          hostname '{{ he_host_name }}' doesn't uniquely match the interface
+          hostname '{{ he_host_address }}' doesn't uniquely match the interface
           '{{ he_bridge_if }}' selected for the management bridge;
           it matches also interface with IP {{ hostname_res_count_output.stdout_lines | difference([r_host_address,]) }}.
           Please make sure that the hostname got from
@@ -92,7 +96,7 @@
           only there.
       when: hostname_res_count_output.stdout_lines|length > 1
     when: he_bridge_if is defined and he_mgmt_network is defined
-  when: he_host_name is defined and he_host_name is not none
+  when: he_host_address is defined and he_host_address is not none
 - name: Validate engine he_fqdn
   block:
   - name: Avoid localhost

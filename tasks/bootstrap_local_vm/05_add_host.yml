@@ -62,7 +62,7 @@
       name: "{{ he_host_name }}"
       state: present
       public_key: true
-      address: "{{ he_host_name }}"
+      address: "{{ he_host_address }}"
       auth: "{{ ovirt_auth }}"
     async: 1
     poll: 0

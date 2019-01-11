@@ -83,7 +83,7 @@
     virt:
       name: "{{ he_vm_name }}Local"
       state: shutdown
-      uri: 'qemu+tls://{{ he_host_name }}/system'
+      uri: 'qemu+tls://{{ he_host_address }}/system'
   - name: Wait for local VM shutdown
     command: virsh -r domstate "{{ he_vm_name }}Local"
     environment: "{{ he_cmd_lang }}"
@@ -97,7 +97,7 @@
     virt:
       name: "{{ he_vm_name }}Local"
       command: undefine
-      uri: 'qemu+tls://{{ he_host_name }}/system'
+      uri: 'qemu+tls://{{ he_host_address }}/system'
   - name: Set spmId
     set_fact: spmId="{{ hostvars[he_fqdn]['host_spm_id'] }}"
   - debug: var=spmId
@@ -201,7 +201,7 @@
   - name: Clean /etc/hosts for the Hosted Engine VM for host address
     lineinfile:
       dest: "{{ he_local_vm_dir }}/hosts"
-      line: "{{ he_host_ip }} {{ he_host_name }}"
+      line: "{{ he_host_ip }} {{ he_host_address }}"
       state: absent
     when: not he_vm_etc_hosts
   - name: Copy /etc/hosts back to the Hosted Engine VM
