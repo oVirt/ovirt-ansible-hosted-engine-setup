@@ -8,7 +8,7 @@
   - name: Add an entry for this host on /etc/hosts on the local VM
     lineinfile:
       dest: /etc/hosts
-      line: "{{ hostvars[he_ansible_host_name]['he_host_ip'] }} {{ hostvars[he_ansible_host_name]['he_host_name'] }}"
+      line: "{{ hostvars[he_ansible_host_name]['he_host_ip'] }} {{ hostvars[he_ansible_host_name]['he_host_address'] }}"
   - name: Set FQDN
     command: hostnamectl set-hostname {{ he_fqdn }}
     environment: "{{ he_cmd_lang }}"
