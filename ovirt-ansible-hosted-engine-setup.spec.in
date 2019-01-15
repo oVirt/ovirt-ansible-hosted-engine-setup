@@ -25,8 +25,8 @@ This Ansible role installs required packages for oVirt Hosted-Engine deployment.
 %pretrans -p <lua>
 -- Remove the legacy directory before installing the symlink. This is known issue in RPM:
 -- https://fedoraproject.org/wiki/Packaging:Directory_Replacement
-rolename_legacy = "%{buildroot}%{_datadir}/%{ansible_roles_dir}/%{roleprefix}%{legacy_rolename}"
-rolename_legacy_uppercase="%{buildroot}%{_datadir}/%{ansible_roles_dir}/%{legacy_roleprefix}%{legacy_rolename}"
+rolename_legacy = "%{_datadir}/%{ansible_roles_dir}/%{roleprefix}%{legacy_rolename}"
+rolename_legacy_uppercase="%{_datadir}/%{ansible_roles_dir}/%{legacy_roleprefix}%{legacy_rolename}"
 
 st1 = posix.stat(rolename_legacy)
 if st1 and st1.type == "directory" then
