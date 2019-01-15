@@ -57,7 +57,7 @@
       src: templates/70-hosted-engine-setup.conf.j2
       dest: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
   - name: Add host
-    ovirt_hosts:
+    ovirt_host:
       cluster: "{{ he_cluster }}"
       name: "{{ he_host_name }}"
       state: present
