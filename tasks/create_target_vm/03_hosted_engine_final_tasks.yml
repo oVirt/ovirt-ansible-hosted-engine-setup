@@ -28,18 +28,7 @@
     set_fact:
       ovf_store_disks: "{{ ovirt_storage_domains[0].disks | selectattr('name', 'match', '^OVF_STORE$') | list }}"
   - debug: var=ovf_store_disks
-    # Remove the task below when ansible 2.6 is released
-  - name: Check OVF_STORE volume status (ansible 2.5)
-    command: vdsm-client Volume getInfo storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.id|first }} volumeID={{ item.image_id  }}
-    environment: "{{ he_cmd_lang }}"
-    changed_when: True
-    register: ovf_store_status
-    retries: 12
-    delay: 10
-    until: ovf_store_status.rc == 0 and ovf_store_status.stdout|from_json|json_query('status') == 'OK' and ovf_store_status.stdout|from_json|json_query('description')|from_json|json_query('Updated')==true
-    with_items: "{{ ovf_store_disks }}"
-    when: ovirt_storage_domains[0].disks[0].id|first|length > 1
-  - name: Check OVF_STORE volume status (ansible 2.6)
+  - name: Check OVF_STORE volume status
     command: vdsm-client Volume getInfo storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.id }} volumeID={{ item.image_id  }}
     environment: "{{ he_cmd_lang }}"
     changed_when: True
@@ -48,7 +37,6 @@
     delay: 10
     until: ovf_store_status.rc == 0 and ovf_store_status.stdout|from_json|json_query('status') == 'OK' and ovf_store_status.stdout|from_json|json_query('description')|from_json|json_query('Updated')==true
     with_items: "{{ ovf_store_disks }}"
-    when: ovf_store_status is not defined # remove condition when ansible 2.6 is released
   - debug: var=ovf_store_status
   - name: Wait for OVF_STORE disk content
     shell: vdsm-client Image prepare storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.id }} volumeID={{ item.image_id  }} | grep path | awk '{ print $2 }' | xargs -I{} sudo -u vdsm dd if={} | tar -tvf - {{ he_vm_details.vm.id }}.ovf
