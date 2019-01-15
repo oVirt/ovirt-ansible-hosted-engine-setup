@@ -4,7 +4,10 @@
   - include_tasks: pg_scl.yml
   - debug: var=scl_conf
   - name: Update target VM details at DB level
-    command: "{{ scl_pg_prefix }} psql -d engine -c \"UPDATE vm_static SET {{ item.field }}={{ item.value }} WHERE vm_guid='{{ hostvars[he_ansible_host_name]['he_vm_details']['vm']['id'] }}'\""
+    command: >-
+      {{ scl_pg_prefix }} psql -d engine -c
+      "UPDATE vm_static SET {{ item.field }}={{ item.value }} WHERE
+      vm_guid='{{ hostvars[he_ansible_host_name]['he_vm_details']['vm']['id'] }}'"
     environment: "{{ he_cmd_lang }}"
     become: true
     become_user: postgres
@@ -15,7 +18,11 @@
       - { field: 'origin', value: 6 }
   - debug: var=db_vm_update
   - name: Insert Hosted Engine configuration disk uuid into Engine database
-    command: "{{ scl_pg_prefix }} psql -d engine -c \"UPDATE vdc_options SET option_value='{{ hostvars[he_ansible_host_name]['he_conf_disk_details']['disk']['id'] }}' WHERE option_name='HostedEngineConfigurationImageGuid' AND version='general'\""
+    command: >-
+      {{ scl_pg_prefix }} psql -d engine -c
+      "UPDATE vdc_options SET option_value=
+      '{{ hostvars[he_ansible_host_name]['he_conf_disk_details']['disk']['id'] }}'
+      WHERE option_name='HostedEngineConfigurationImageGuid' AND version='general'"
     environment: "{{ he_cmd_lang }}"
     become: true
     become_user: postgres
@@ -24,7 +31,9 @@
     register: db_conf_update
   - debug: var=db_conf_update
   - name: Fetch host SPM_ID
-    command: "{{ scl_pg_prefix }} psql -t -d engine -c \"SELECT vds_spm_id FROM vds WHERE vds_name='{{ hostvars[he_ansible_host_name]['he_host_name'] }}'\""
+    command: >-
+      {{ scl_pg_prefix }} psql -t -d engine -c
+      "SELECT vds_spm_id FROM vds WHERE vds_name='{{ hostvars[he_ansible_host_name]['he_host_name'] }}'"
     environment: "{{ he_cmd_lang }}"
     become: true
     become_user: postgres

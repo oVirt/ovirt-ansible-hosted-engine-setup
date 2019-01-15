@@ -8,7 +8,8 @@
   - name: Add an entry for this host on /etc/hosts on the local VM
     lineinfile:
       dest: /etc/hosts
-      line: "{{ hostvars[he_ansible_host_name]['he_host_ip'] }} {{ hostvars[he_ansible_host_name]['he_host_address'] }}"
+      line: >-
+        {{ hostvars[he_ansible_host_name]['he_host_ip'] }} {{ hostvars[he_ansible_host_name]['he_host_address'] }}
   - name: Set FQDN
     command: hostnamectl set-hostname {{ he_fqdn }}
     environment: "{{ he_cmd_lang }}"
@@ -16,7 +17,9 @@
   - name: Force the local VM FQDN to temporary resolve on the natted network address
     lineinfile:
       path: /etc/hosts
-      line: "{{ hostvars[he_ansible_host_name]['local_vm_ip']['stdout_lines'][0] }} {{ he_fqdn }} # hosted-engine-setup-{{ hostvars[he_ansible_host_name]['he_local_vm_dir'] }}"
+      line:
+        "{{ hostvars[he_ansible_host_name]['local_vm_ip']['stdout_lines'][0] }} {{ he_fqdn }} # hosted-engine-setup-{{ \
+        hostvars[he_ansible_host_name]['he_local_vm_dir'] }}"
   - name: Reconfigure IPv6 default gateway
     command: ip -6 route add default via "{{ he_ipv6_subnet_prefix + '::1' }}"
     environment: "{{ he_cmd_lang }}"

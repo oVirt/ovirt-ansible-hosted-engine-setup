@@ -25,12 +25,15 @@
 - name: Fail if available memory is less then the minimal requirement
   fail:
     msg: "Available memory ( {{ max_mem }}MB ) is less then the minimal requirement ({{ he_minimal_mem_size_MB }}MB)"
-  when: he_requirements_check_enabled and he_memory_requirements_check_enabled and max_mem|int < he_minimal_mem_size_MB|int
+  when: >-
+    he_requirements_check_enabled and he_memory_requirements_check_enabled and max_mem|int < he_minimal_mem_size_MB|int
 
 - name: Fail if user chose less memory then the minimal requirement
   fail:
     msg: "Memory size must be at least {{ he_minimal_mem_size_MB }}MB, while you selected only {{ he_mem_size_MB }}MB"
-  when: he_requirements_check_enabled and he_memory_requirements_check_enabled and he_minimal_mem_size_MB|int > he_mem_size_MB|int
+  when: >-
+    he_requirements_check_enabled and
+    he_memory_requirements_check_enabled and he_minimal_mem_size_MB|int > he_mem_size_MB|int
 
 - name: Fail if user chose more memory then the available memory
   fail:

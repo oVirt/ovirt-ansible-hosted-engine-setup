@@ -71,7 +71,13 @@
       pattern: name={{ he_host_name }}
       auth: "{{ ovirt_auth }}"
     register: host_result_up_check
-    until: host_result_up_check is succeeded and host_result_up_check.ansible_facts.ovirt_hosts|length >= 1 and (host_result_up_check.ansible_facts.ovirt_hosts[0].status == 'up' or host_result_up_check.ansible_facts.ovirt_hosts[0].status == 'non_operational')
+    until: >-
+      host_result_up_check is succeeded and
+      host_result_up_check.ansible_facts.ovirt_hosts|length >= 1 and
+      (
+      host_result_up_check.ansible_facts.ovirt_hosts[0].status == 'up' or
+      host_result_up_check.ansible_facts.ovirt_hosts[0].status == 'non_operational'
+      )
     retries: 120
     delay: 5
   - debug: var=host_result_up_check
@@ -81,7 +87,10 @@
         The host has been set in non_operational status,
         please check engine logs,
         fix accordingly and re-deploy.
-    when: host_result_up_check is succeeded and host_result_up_check.ansible_facts.ovirt_hosts|length >= 1 and host_result_up_check.ansible_facts.ovirt_hosts[0].status == 'non_operational'
+    when: >-
+      host_result_up_check is succeeded and
+      host_result_up_check.ansible_facts.ovirt_hosts|length >= 1 and
+      host_result_up_check.ansible_facts.ovirt_hosts[0].status == 'non_operational'
   - name: Remove host-deploy configuration file
     file:
       state: absent

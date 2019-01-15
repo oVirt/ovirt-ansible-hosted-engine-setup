@@ -15,7 +15,10 @@
       pattern: name={{ he_host_name }}
       auth: "{{ ovirt_auth }}"
     register: host_result
-    until: host_result and 'ansible_facts' in host_result and 'ovirt_hosts' in host_result.ansible_facts and host_result.ansible_facts.ovirt_hosts|length >= 1 and 'up' in host_result.ansible_facts.ovirt_hosts[0].status
+    until: >-
+      host_result and 'ansible_facts' in host_result and
+      'ovirt_hosts' in host_result.ansible_facts and host_result.ansible_facts.ovirt_hosts|length >= 1 and
+      'up' in host_result.ansible_facts.ovirt_hosts[0].status
     retries: 50
     delay: 10
   - debug: var=host_result
@@ -131,7 +134,11 @@
       attribute: size
     register: disk_size_xml
   - name: Get required size
-    set_fact: required_size="{{ disk_size_xml.matches[0].Disk['{http://schemas.dmtf.org/ovf/envelope/1/}size']|int * 1024 * 1024 * 1024 + storage_domain_details.ansible_facts.ovirt_storage_domains[0].critical_space_action_blocker|int * 1024 * 1024 * 1024 + 5 * 1024 * 1024 * 1024}}" # +5G: 2xOVF_STORE, lockspace, metadata, configuration
+    set_fact:
+      required_size: >-
+        {{ disk_size_xml.matches[0].Disk['{http://schemas.dmtf.org/ovf/envelope/1/}size']|int * 1024 * 1024 * 1024 +
+        storage_domain_details.ansible_facts.ovirt_storage_domains[0].critical_space_action_blocker|int *
+        1024 * 1024 * 1024 + 5 * 1024 * 1024 * 1024 }} # +5G: 2xOVF_STORE, lockspace, metadata, configuration
   - debug: var=required_size
   - name: Remove unsuitable storage domain
     ovirt_storage_domain:
@@ -147,8 +154,12 @@
   - debug: var=remove_storage_domain_details
   - name: Check storage domain free space
     fail:
-      msg: "Error: the target storage domain contains only {{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].available|int / 1024 / 1024 / 1024 }}GiB of available space while a minimum of {{ required_size|int / 1024 / 1024 / 1024 }}GiB is required
-            If you wish to use the current target storage domain by extending it, make sure it contains nothing before adding it."
+      msg: >-
+        Error: the target storage domain contains only
+        {{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].available|int / 1024 / 1024 / 1024 }}GiB of
+        available space while a minimum of {{ required_size|int / 1024 / 1024 / 1024 }}GiB is required
+        If you wish to use the current target storage domain by extending it, make sure it contains nothing
+        before adding it.
     when: storage_domain_details.ansible_facts.ovirt_storage_domains[0].available|int < required_size|int
   - name: Activate storage domain
     ovirt_storage_domain:

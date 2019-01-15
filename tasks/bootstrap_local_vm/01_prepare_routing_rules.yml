@@ -14,7 +14,8 @@
   - debug: var=virt_net_out
   - name: Check IPv6
     set_fact:
-      ipv6_deployment: "{{ true if r_host_address != target_address_v4 and r_host_address in target_address_v6_list else false }}"
+      ipv6_deployment: >-
+        {{ true if r_host_address != target_address_v4 and r_host_address in target_address_v6_list else false }}
   - include_tasks: libvirt_default_net_ipv6_tasks.yml
     when: ipv6_deployment
     # all of the next is a workaround for a network issue:
@@ -53,12 +54,17 @@
     tags: [ 'skip_ansible_lint' ]
   - name: Fetch IPv4 CIDR for {{ virbr_default }}
     set_fact:
-      virbr_cidr_ipv4: "{{ (hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['address']+'/'+hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['netmask']) |ipv4('host/prefix') }}"
+      virbr_cidr_ipv4: >-
+        {{ (hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['address']+'/'
+        +hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['netmask']) |ipv4('host/prefix') }}
     when: not ipv6_deployment
   - debug: var=virbr_cidr_ipv4
   - name: Fetch IPv6 CIDR for {{ virbr_default }}
     set_fact:
-      virbr_cidr_ipv6: "{{ (hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv6'][0]['address']+'/'+hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv6'][0]['prefix']) |ipv6('host/prefix') if 'ipv6' in hostvars[inventory_hostname]['ansible_'+virbr_default] else None }}"
+      virbr_cidr_ipv6: >-
+        {{ (hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv6'][0]['address']+'/'+
+        hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv6'][0]['prefix']) |
+        ipv6('host/prefix') if 'ipv6' in hostvars[inventory_hostname]['ansible_'+virbr_default] else None }}
     when: ipv6_deployment
   - debug: var=virbr_cidr_ipv6
   - name: Add IPv4 outbound route rules
@@ -73,7 +79,8 @@
     environment: "{{ he_cmd_lang }}"
     register: result
     changed_when: True
-    when: not ipv6_deployment and "\"100:\tfrom all to \"+virbr_cidr_ipv4+\" lookup main\" not in route_rules_ipv4.stdout"
+    when: >-
+      not ipv6_deployment and "\"100:\tfrom all to \"+virbr_cidr_ipv4+\" lookup main\" not in route_rules_ipv4.stdout"
   - debug: var=result
   - name: Add IPv6 outbound route rules
     command: ip -6 rule add from {{ virbr_cidr_ipv6 }} priority 101 table main

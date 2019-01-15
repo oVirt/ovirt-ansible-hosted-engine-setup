@@ -6,7 +6,9 @@
       name: "{{ he_fqdn }}"
       groups: engine
       ansible_connection: smart
-      ansible_ssh_extra_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {% if he_ansible_host_name != "localhost" %} -o ProxyCommand="ssh -W %h:%p -q root@{{ he_ansible_host_name }}" {% endif %}'
+      ansible_ssh_extra_args: >-
+        -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {% if he_ansible_host_name != "localhost" %}
+        -o ProxyCommand="ssh -W %h:%p -q root@{{ he_ansible_host_name }}" {% endif %}
       ansible_ssh_pass: "{{ he_appliance_password }}"
       ansible_user: root
   - include_tasks: auth_sso.yml
@@ -45,12 +47,16 @@
     set_fact: datacenter_name={{ ovirt_datacenters|json_query("[?id=='" + datacenter_id + "'].name")|first }}
   - name: Parse Cluster details
     set_fact:
-      cluster_cpu="{{ovirt_clusters|selectattr('id', 'match', '^'+cluster_id+'$')|map(attribute='cpu')|list|first}}"
-      cluster_version="{{ovirt_clusters|selectattr('id', 'match', '^'+cluster_id+'$')|map(attribute='version')|list|first}}"
+      cluster_cpu: >-
+        {{ ovirt_clusters|selectattr('id', 'match', '^'+cluster_id+'$')|map(attribute='cpu')|list|first }}
+      cluster_version: >-
+        {{ ovirt_clusters|selectattr('id', 'match', '^'+cluster_id+'$')|map(attribute='version')|list|first }}
   # TODO: use a proper ansible module for this once available
   - name: Get server CPU list via REST API
     uri:
-      url: https://{{ he_fqdn }}/ovirt-engine/api/options/ServerCPUList?version={{ cluster_version.major }}.{{ cluster_version.minor }}
+      url:
+        "https://{{ he_fqdn }}/ovirt-engine/api/options/ServerCPUList?version=\
+        {{ cluster_version.major }}.{{ cluster_version.minor }}"
       validate_certs: no
       user: admin@internal
       password: "{{ he_admin_password }}"
@@ -64,7 +70,9 @@
   # TODO: use a proper ansible module for this once available
   - name: Get cluster emulated machine list via REST API
     uri:
-      url: https://{{ he_fqdn }}/ovirt-engine/api/options/ClusterEmulatedMachines?version={{ cluster_version.major }}.{{ cluster_version.minor }}
+      url:
+        "https://{{ he_fqdn }}/ovirt-engine/api/options/ClusterEmulatedMachines?version=\
+        {{ cluster_version.major }}.{{ cluster_version.minor }}"
       validate_certs: no
       user: admin@internal
       password: "{{ he_admin_password }}"
@@ -88,7 +96,9 @@
   - debug: var=cluster_cpu_model
   - name: Parse emulated_machine
     set_fact:
-      emulated_machine: emulated_machine_list.json['values']['system_option_value'][0]['value'].replace('[','').replace(']','').split(', ')|first
+      emulated_machine:
+        emulated_machine_list.json['values']['system_option_value'][0]['value'].replace(
+        '[','').replace(']','').split(', ')|first
   - name: Get storage domain details
     ovirt_storage_domain_facts:
       pattern: name={{ he_storage_domain_name }} and datacenter={{ datacenter_name }}
@@ -108,10 +118,34 @@
       timeout: 600
       auth: "{{ ovirt_auth }}"
     with_items:
-      - { name: 'he_virtio_disk', description: 'Hosted-Engine disk', size: "{{ he_disk_size_GB }}GiB", format: 'raw', sparse: "{{ False if he_domain_type == 'fc' or he_domain_type == 'iscsi' else True }}" }
-      - { name: 'he_sanlock', description: 'Hosted-Engine sanlock disk', size: '1GiB', format: 'raw', sparse: False }
-      - { name: 'HostedEngineConfigurationImage', description: 'Hosted-Engine configuration disk', size: '1GiB', format: 'raw', sparse: False }
-      - { name: 'he_metadata', description: 'Hosted-Engine metadata disk', size: '1GiB', format: 'raw', sparse: False }
+      - {
+          name: 'he_virtio_disk',
+          description: 'Hosted-Engine disk',
+          size: "{{ he_disk_size_GB }}GiB",
+          format: 'raw',
+          sparse: "{{ False if he_domain_type == 'fc' or he_domain_type == 'iscsi' else True }}"
+        }
+      - {
+          name: 'he_sanlock',
+          description: 'Hosted-Engine sanlock disk',
+          size: '1GiB',
+          format: 'raw',
+          sparse: False
+        }
+      - {
+          name: 'HostedEngineConfigurationImage',
+          description: 'Hosted-Engine configuration disk',
+          size: '1GiB',
+          format: 'raw',
+          sparse: False
+        }
+      - {
+          name: 'he_metadata',
+          description: 'Hosted-Engine metadata disk',
+          size: '1GiB',
+          format: 'raw',
+          sparse: False
+        }
     register: add_disks
   - name: Register disk details
     set_fact:
