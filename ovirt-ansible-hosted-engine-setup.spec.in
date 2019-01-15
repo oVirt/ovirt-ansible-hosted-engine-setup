@@ -25,17 +25,33 @@ This Ansible role installs required packages for oVirt Hosted-Engine deployment.
 %pretrans -p <lua>
 -- Remove the legacy directory before installing the symlink. This is known issue in RPM:
 -- https://fedoraproject.org/wiki/Packaging:Directory_Replacement
-rolename_legacy = "%{buildroot}%{_datadir}/%{ansible_roles_dir}/%{roleprefix}%{legacy_rolename}"
-rolename_legacy_uppercase="%{buildroot}%{_datadir}/%{ansible_roles_dir}/%{legacy_roleprefix}%{legacy_rolename}"
+rolename_legacy_uppercase="%{_datadir}/%{ansible_roles_dir}/%{legacy_roleprefix}%{legacy_rolename}"
+rolename_legacy="%{_datadir}/%{ansible_roles_dir}/%{roleprefix}%{legacy_rolename}"
 
-st1 = posix.stat(rolename_legacy)
+st1 = posix.stat(rolename_legacy_uppercase)
 if st1 and st1.type == "directory" then
-  os.execute('rm -rf "'..rolename_legacy..'"')
+  status = os.rename(rolename_legacy_uppercase, rolename_legacy_uppercase .. ".rpmmoved")
+  if not status then
+    suffix = 0
+    while not status do
+      suffix = suffix + 1
+      status = os.rename(rolename_legacy_uppercase .. ".rpmmoved", rolename_legacy_uppercase .. ".rpmmoved." .. suffix)
+    end
+    os.rename(rolename_legacy_uppercase, rolename_legacy_uppercase .. ".rpmmoved")
+  end
 end
 
-st2 = posix.stat(rolename_legacy_uppercase)
+st2 = posix.stat(rolename_legacy)
 if st2 and st2.type == "directory" then
-  os.execute('rm -rf "'..rolename_legacy_uppercase..'"')
+  status = os.rename(rolename_legacy, rolename_legacy .. ".rpmmoved")
+  if not status then
+    suffix = 0
+    while not status do
+      suffix = suffix + 1
+      status = os.rename(rolename_legacy .. ".rpmmoved", rolename_legacy .. ".rpmmoved." .. suffix)
+    end
+    os.rename(rolename_legacy, rolename_legacy .. ".rpmmoved")
+  end
 end
 
 %prep
@@ -55,6 +71,9 @@ sh build.sh install
 %{_datadir}/%{ansible_roles_dir}/%{roleprefix}%{rolename}
 %{_datadir}/%{ansible_roles_dir}/%{legacy_roleprefix}%{legacy_rolename}
 %{_datadir}/%{ansible_roles_dir}/%{roleprefix}%{legacy_rolename}
+
+%ghost %{_datadir}/%{ansible_roles_dir}/%{legacy_roleprefix}%{legacy_rolename}.rpmmoved
+%ghost %{_datadir}/%{ansible_roles_dir}/%{roleprefix}%{legacy_rolename}.rpmmoved
 
 %doc README.md
 %doc examples/
