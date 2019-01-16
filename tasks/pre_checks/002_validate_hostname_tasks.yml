@@ -62,11 +62,13 @@
     - name: Get target address from selected interface (IPv6)
       set_fact:
         target_address_v6_list: "{{
-          hostvars[inventory_hostname]['ansible_' + he_mgmt_network.replace('-','_')]['ipv6'] | map(attribute='address') | list
+          hostvars[inventory_hostname]['ansible_' + he_mgmt_network.replace('-','_')]['ipv6'] |
+          map(attribute='address') | list
             if 'ansible_' + he_mgmt_network.replace('-','_') in hostvars[inventory_hostname] and
               'ipv6' in hostvars[inventory_hostname]['ansible_' + he_mgmt_network.replace('-','_')]
           else
-          hostvars[inventory_hostname]['ansible_' + he_bridge_if.replace('-','_')]['ipv6'] | map(attribute='address') | list
+          hostvars[inventory_hostname]['ansible_' + he_bridge_if.replace('-','_')]['ipv6'] |
+          map(attribute='address') | list
             if 'ansible_' + he_bridge_if.replace('-','_') in hostvars[inventory_hostname] and
               'ipv6' in hostvars[inventory_hostname]['ansible_' + he_bridge_if.replace('-','_')]
           else
@@ -90,7 +92,8 @@
         msg: >
           hostname '{{ he_host_address }}' doesn't uniquely match the interface
           '{{ he_bridge_if }}' selected for the management bridge;
-          it matches also interface with IP {{ hostname_res_count_output.stdout_lines | difference([r_host_address,]) }}.
+          it matches also interface with IP {{ hostname_res_count_output.stdout_lines |
+          difference([r_host_address,]) }}.
           Please make sure that the hostname got from
           the interface for the management network resolves
           only there.

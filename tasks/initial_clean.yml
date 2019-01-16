@@ -8,7 +8,10 @@
       state: stopped
       enabled: yes
   - name: Drop vdsm config statements
-    command: sed -i '/## beginning of configuration section by vdsm-4.[0-9]\+.[0-9]\+/,/## end of configuration section by vdsm-4.[0-9]\+.[0-9]\+/d' {{ item }}
+    command: >-
+      sed -i
+      '/## beginning of configuration section by
+      vdsm-4.[0-9]\+.[0-9]\+/,/## end of configuration section by vdsm-4.[0-9]\+.[0-9]\+/d' {{ item }}
     environment: "{{ he_cmd_lang }}"
     with_items:
       - /etc/libvirt/libvirtd.conf
@@ -22,16 +25,29 @@
       src: "{{ item.src }}"
       dest: "{{ item.dest }}"
     with_items:
-      - { src: /usr/share/abrt/conf.d/abrt-action-save-package-data.conf, dest: /etc/abrt/abrt-action-save-package-data.conf }
-      - { src: /usr/share/abrt/conf.d/abrt.conf, dest: /etc/abrt/abrt.conf }
-      - { src: /usr/share/abrt/conf.d/plugins/CCpp.conf, dest: /etc/abrt/plugins/CCpp.conf }
-      - { src: /usr/share/abrt/conf.d/plugins/vmcore.conf, dest: /etc/abrt/plugins/vmcore.conf }
+      - {
+          src: /usr/share/abrt/conf.d/abrt-action-save-package-data.conf,
+          dest: /etc/abrt/abrt-action-save-package-data.conf
+        }
+      - {
+          src: /usr/share/abrt/conf.d/abrt.conf,
+          dest: /etc/abrt/abrt.conf
+        }
+      - {
+          src: /usr/share/abrt/conf.d/plugins/CCpp.conf,
+          dest: /etc/abrt/plugins/CCpp.conf
+        }
+      - {
+          src: /usr/share/abrt/conf.d/plugins/vmcore.conf,
+          dest: /etc/abrt/plugins/vmcore.conf
+        }
   - name: Restart abrtd service
     service:
       name: abrtd
       state: restarted
   - name: Drop libvirt sasl2 configuration by vdsm
-    command: sed -i '/## start vdsm-4.[0-9]\+.[0-9]\+ configuration/,/## end vdsm configuration/d' /etc/sasl2/libvirt.conf
+    command: >-
+      sed -i '/## start vdsm-4.[0-9]\+.[0-9]\+ configuration/,/## end vdsm configuration/d' /etc/sasl2/libvirt.conf
     environment: "{{ he_cmd_lang }}"
     tags: [ 'skip_ansible_lint' ]
   - name: Stop and disable services
@@ -79,8 +95,8 @@
     when: target_vm_list_all.stdout_lines|length >= 1
     changed_when: True
   - name: Remove eventually entries for the local VM from known_hosts file
-    local_action:
-      module: known_hosts
+    known_hosts:
       name: "{{ he_fqdn }}"
       state: absent
+    delegate_to: localhost
 ...

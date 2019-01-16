@@ -7,7 +7,8 @@
   - debug: var=mac_address
   - name: Set he_vm_mac_addr
     set_fact:
-      he_vm_mac_addr: "{{ mac_address.stdout if he_vm_mac_addr is not defined or he_vm_mac_addr is none else he_vm_mac_addr }}"
+      he_vm_mac_addr: >-
+        {{ mac_address.stdout if he_vm_mac_addr is not defined or he_vm_mac_addr is none else he_vm_mac_addr }}
     register: he_vm_mac_addr
 - debug: var=he_vm_mac_addr
 
