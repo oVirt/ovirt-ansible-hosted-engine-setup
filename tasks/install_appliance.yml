@@ -3,6 +3,10 @@
   yum:
     name: ovirt-engine-appliance
     state: present
+  register: task_result
+  until: task_result is success
+  retries: 10
+  delay: 2
 - name: Parse appliance configuration for path
   shell: grep path /etc/ovirt-hosted-engine/10-appliance.conf | cut -f2 -d'='
   environment: "{{ he_cmd_lang }}"

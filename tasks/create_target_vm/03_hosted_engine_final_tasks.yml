@@ -29,17 +29,26 @@
       ovf_store_disks: "{{ ovirt_storage_domains[0].disks | selectattr('name', 'match', '^OVF_STORE$') | list }}"
   - debug: var=ovf_store_disks
   - name: Check OVF_STORE volume status
-    command: vdsm-client Volume getInfo storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.id }} volumeID={{ item.image_id  }}
+    command: >-
+      vdsm-client Volume getInfo storagepoolID={{ datacenter_id }}
+      storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }}
+      imageID={{ item.id }} volumeID={{ item.image_id  }}
     environment: "{{ he_cmd_lang }}"
     changed_when: True
     register: ovf_store_status
     retries: 12
     delay: 10
-    until: ovf_store_status.rc == 0 and ovf_store_status.stdout|from_json|json_query('status') == 'OK' and ovf_store_status.stdout|from_json|json_query('description')|from_json|json_query('Updated')==true
+    until: >-
+      ovf_store_status.rc == 0 and ovf_store_status.stdout|from_json|json_query('status') == 'OK' and
+      ovf_store_status.stdout|from_json|json_query('description')|from_json|json_query('Updated')
     with_items: "{{ ovf_store_disks }}"
   - debug: var=ovf_store_status
   - name: Wait for OVF_STORE disk content
-    shell: vdsm-client Image prepare storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.id }} volumeID={{ item.image_id  }} | grep path | awk '{ print $2 }' | xargs -I{} sudo -u vdsm dd if={} | tar -tvf - {{ he_vm_details.vm.id }}.ovf
+    shell: >-
+      vdsm-client Image prepare storagepoolID={{ datacenter_id }}
+      storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.id }}
+      volumeID={{ item.image_id  }} | grep path | awk '{ print $2 }' |
+      xargs -I{} sudo -u vdsm dd if={} | tar -tvf - {{ he_vm_details.vm.id }}.ovf
     environment: "{{ he_cmd_lang }}"
     changed_when: True
     register: ovf_store_content
@@ -48,7 +57,10 @@
     until: ovf_store_content.rc == 0
     with_items: "{{ ovf_store_disks }}"
   - name: Prepare images
-    command: vdsm-client Image prepare storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.disk.id }} volumeID={{ item.disk.image_id  }}
+    command: >-
+      vdsm-client Image prepare storagepoolID={{ datacenter_id }}
+      storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }}
+      imageID={{ item.disk.id }} volumeID={{ item.disk.image_id  }}
     environment: "{{ he_cmd_lang }}"
     with_items:
       - "{{ he_virtio_disk_details }}"
@@ -59,11 +71,20 @@
     changed_when: True
   - debug: var=prepareimage_results
   - name: Fetch Hosted Engine configuration disk path
-    set_fact: he_conf_disk_path={{ (prepareimage_results.results|json_query("[?item.id=='" + he_conf_disk_details.id + "'].stdout")|first|from_json).path }}
+    set_fact:
+      he_conf_disk_path: >-
+        {{ (prepareimage_results.results|json_query("[?item.id=='" +
+        he_conf_disk_details.id + "'].stdout")|first|from_json).path }}
   - name: Fetch Hosted Engine virtio disk path
-    set_fact: he_virtio_disk_path={{ (prepareimage_results.results|json_query("[?item.id=='" + he_virtio_disk_details.id + "'].stdout")|first|from_json).path }}
+    set_fact:
+      he_virtio_disk_path: >-
+        {{ (prepareimage_results.results|json_query("[?item.id=='" +
+        he_virtio_disk_details.id + "'].stdout")|first|from_json).path }}
   - name: Fetch Hosted Engine virtio metadata path
-    set_fact: he_metadata_disk_path={{ (prepareimage_results.results|json_query("[?item.id=='" + he_metadata_disk_details.id + "'].stdout")|first|from_json).path }}
+    set_fact:
+      he_metadata_disk_path: >-
+        {{ (prepareimage_results.results|json_query("[?item.id=='" +
+        he_metadata_disk_details.id + "'].stdout")|first|from_json).path }}
   - debug: var=he_conf_disk_path
   - debug: var=he_virtio_disk_path
   - debug: var=he_metadata_disk_path
@@ -90,7 +111,8 @@
     set_fact: spmId="{{ hostvars[he_fqdn]['host_spm_id'] }}"
   - debug: var=spmId
   - name: Detect ovirt-hosted-engine-ha version
-    command: python -c 'from ovirt_hosted_engine_ha.agent import constants as agentconst; print(agentconst.PACKAGE_VERSION)'
+    command: >-
+      python -c 'from ovirt_hosted_engine_ha.agent import constants as agentconst; print(agentconst.PACKAGE_VERSION)'
     environment: "{{ he_cmd_lang }}"
     register: ha_version_out
     changed_when: True
@@ -108,7 +130,9 @@
       - { src: templates/fhanswers.conf.j2, dest: "{{ he_local_vm_dir }}/fhanswers.conf" }
       - { src: templates/hosted-engine.conf.j2, dest: "{{ he_local_vm_dir }}/hosted-engine.conf" }
   - name: Create configuration archive
-    command: tar --record-size=20480 -cvf {{ he_conf_disk_details.disk.image_id }} vm.conf broker.conf version fhanswers.conf hosted-engine.conf
+    command: >-
+      tar --record-size=20480 -cvf {{ he_conf_disk_details.disk.image_id }}
+      vm.conf broker.conf version fhanswers.conf hosted-engine.conf
     environment: "{{ he_cmd_lang }}"
     args:
       chdir: "{{ he_local_vm_dir }}"
@@ -127,7 +151,9 @@
       - { src: "{{ he_local_vm_dir }}/vm.conf", dest: /var/run/ovirt-hosted-engine-ha }
       - { src: "{{ he_local_vm_dir }}/hosted-engine.conf", dest: /etc/ovirt-hosted-engine/ }
   - name: Copy configuration archive to storage
-    command: dd bs=20480 count=1 oflag=direct if="{{ he_local_vm_dir }}/{{ he_conf_disk_details.disk.image_id }}" of="{{ he_conf_disk_path }}"
+    command: >-
+      dd bs=20480 count=1 oflag=direct if="{{ he_local_vm_dir }}/{{ he_conf_disk_details.disk.image_id }}"
+      of="{{ he_conf_disk_path }}"
     environment: "{{ he_cmd_lang }}"
     become: true
     become_user: vdsm
@@ -166,7 +192,10 @@
       mode: 0644
     when: he_vm_ip_addr is not none and he_vm_ip_addr | ipv6
   - name: Inject network configuration with guestfish
-    command: guestfish -a {{ local_vm_disk_path }} --rw -i copy-in "{{ he_local_vm_dir }}/ifcfg-eth0" /etc/sysconfig/network-scripts {{ ":" }} selinux-relabel /etc/selinux/targeted/contexts/files/file_contexts /etc/sysconfig/network-scripts/ifcfg-eth0 force{{ ":" }}true
+    command: >-
+      guestfish -a {{ local_vm_disk_path }} --rw -i copy-in "{{ he_local_vm_dir }}/ifcfg-eth0"
+      /etc/sysconfig/network-scripts {{ ":" }} selinux-relabel /etc/selinux/targeted/contexts/files/file_contexts
+      /etc/sysconfig/network-scripts/ifcfg-eth0 force{{ ":" }}true
     environment:
       LIBGUESTFS_BACKEND: direct
       LANG: en_US.UTF-8
@@ -237,7 +266,9 @@
       command: hosted-engine --vm-status --json
       environment: "{{ he_cmd_lang }}"
       register: health_result
-      until: health_result.rc == 0 and 'health' in health_result.stdout and health_result.stdout|from_json|json_query('*."engine-status"."health"')|first=="good"
+      until: >-
+        health_result.rc == 0 and 'health' in health_result.stdout and
+        health_result.stdout|from_json|json_query('*."engine-status"."health"')|first=="good"
       retries: 120
       delay: 5
       changed_when: True
@@ -271,7 +302,9 @@
     - debug: var=engine_vm_ip_vdsm
     - name: Fail if Engine IP is different from engine's he_fqdn resolved IP
       fail:
-        msg: "Engine VM IP address is {{ engine_vm_ip_vdsm }} while the engine's he_fqdn {{ he_fqdn }} resolves to {{ engine_vm_ip.stdout_lines[0] }}. If you are using DHCP, check your DHCP reservation configuration"
+        msg: >-
+          Engine VM IP address is {{ engine_vm_ip_vdsm }} while the engine's he_fqdn {{ he_fqdn }} resolves to
+          {{ engine_vm_ip.stdout_lines[0] }}. If you are using DHCP, check your DHCP reservation configuration
       when: engine_vm_ip_vdsm != engine_vm_ip.stdout_lines[0]
   - name: Get target engine VM address
     shell: getent ahosts {{ he_fqdn }} | cut -d' ' -f1 | uniq

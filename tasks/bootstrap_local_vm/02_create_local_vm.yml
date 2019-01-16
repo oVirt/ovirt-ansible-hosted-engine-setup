@@ -6,7 +6,9 @@
       name: "{{ he_fqdn }}"
       groups: engine
       ansible_connection: smart
-      ansible_ssh_extra_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {% if he_ansible_host_name != "localhost" %} -o ProxyCommand="ssh -W %h:%p -q root@{{ he_ansible_host_name }}" {% endif %}'
+      ansible_ssh_extra_args: >-
+        -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {% if he_ansible_host_name != "localhost" %}
+        -o ProxyCommand="ssh -W %h:%p -q root@{{ he_ansible_host_name }}" {% endif %}
       ansible_ssh_pass: "{{ he_appliance_password }}"
       ansible_user: root
   - name: Initial tasks
@@ -85,11 +87,19 @@
         - { src: templates/meta-data.j2, dest: "{{ he_local_vm_dir }}/meta-data" }
         - { src: templates/network-config-dhcp6.j2, dest: "{{ he_local_vm_dir }}/network-config" }
     - name: Create ISO disk
-      command: mkisofs -output {{ he_local_vm_dir }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8 {{ he_local_vm_dir }}/meta-data {{ he_local_vm_dir }}/user-data {{ he_local_vm_dir + '/network-config' if ipv6_deployment else None}}
+      command: >-
+        mkisofs -output {{ he_local_vm_dir }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8
+        {{ he_local_vm_dir }}/meta-data {{ he_local_vm_dir }}/user-data
+        {{ he_local_vm_dir + '/network-config' if ipv6_deployment else None }}
       environment: "{{ he_cmd_lang }}"
       changed_when: True
     - name: Create local VM
-      command: virt-install -n {{ he_vm_name }}Local --os-variant rhel7 --virt-type kvm --memory {{ he_mem_size_MB }} --vcpus {{ he_vcpus }}  --network network=default,mac={{ he_vm_mac_addr }},model=virtio --disk {{ local_vm_disk_path }} --import --disk path={{ he_local_vm_dir }}/seed.iso,device=cdrom --noautoconsole --rng /dev/random --graphics vnc --video vga --sound none --controller usb,model=none --memballoon none --boot hd,menu=off --clock kvmclock_present=yes
+      command: >-
+        virt-install -n {{ he_vm_name }}Local --os-variant rhel7 --virt-type kvm --memory {{ he_mem_size_MB }}
+        --vcpus {{ he_vcpus }}  --network network=default,mac={{ he_vm_mac_addr }},model=virtio
+        --disk {{ local_vm_disk_path }} --import --disk path={{ he_local_vm_dir }}/seed.iso,device=cdrom
+        --noautoconsole --rng /dev/random --graphics vnc --video vga --sound none --controller usb,model=none
+        --memballoon none --boot hd,menu=off --clock kvmclock_present=yes
       environment: "{{ he_cmd_lang }}"
       register: create_local_vm
       changed_when: True
@@ -111,7 +121,9 @@
     - name: Create an entry in /etc/hosts for the local VM
       lineinfile:
         dest: /etc/hosts
-        line: "{{ local_vm_ip.stdout_lines[0] }} {{ he_fqdn }} # temporary entry added by hosted-engine-setup for the bootstrap VM"
+        line:
+          "{{ local_vm_ip.stdout_lines[0] }} \
+          {{ he_fqdn }} # temporary entry added by hosted-engine-setup for the bootstrap VM"
         insertbefore: BOF
         backup: yes
     - name: Wait for SSH to restart on the local VM

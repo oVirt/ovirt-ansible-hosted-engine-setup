@@ -54,8 +54,9 @@
   - name: Filter bonds with bad naming
     set_fact:
       net_iface="{{ bond_item }}"
-    when:
-      not 'skipped' in bond_item and ((bond_item['ansible_facts']['type']  == 'ether') or ( (bond_item['ansible_facts']['type'] == 'bonding') and (bond_item['ansible_facts']['bond_valid_name'] != '')))
+    when: >-
+      not 'skipped' in bond_item and ((bond_item['ansible_facts']['type']  == 'ether') or
+      ( (bond_item['ansible_facts']['type'] == 'bonding') and bond_item['ansible_facts']['bond_valid_name'] ))
     with_items:
       - "{{ valid_network_interfaces['results'] }}"
     loop_control:
@@ -64,11 +65,14 @@
   - debug: var=bb_filtered_list
   - name: Generate output list
     set_fact:
-       otopi_host_net: "{{ [bridge_interface] if bridge_interface is defined else bb_filtered_list.results | reject('skipped') | map(attribute='bond_item.iface_item') | list }}"
+      otopi_host_net: >-
+        {{ [bridge_interface] if bridge_interface is defined else bb_filtered_list.results |
+        reject('skipped') | map(attribute='bond_item.iface_item') | list }}
     register: otopi_host_net
   - debug: var=otopi_host_net
   - name: Validate selected bridge interface if management bridge does not exists
     fail:
       msg: The selected network interface is not valid
-    when: he_bridge_if not in otopi_host_net and bridge_interface is not defined and not he_just_collect_network_interfaces
+    when:
+      he_bridge_if not in otopi_host_net and bridge_interface is not defined and not he_just_collect_network_interfaces
 ...
