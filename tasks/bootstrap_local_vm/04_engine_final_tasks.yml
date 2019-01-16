@@ -40,10 +40,6 @@
     with_items:
       - cloud-init-local
       - cloud-init
-  - name: Clean up bootstrap answer file
-    file:
-      state: absent
-      path: /root/heanswers.conf
   rescue:
   - name: Fetch logs from the engine VM
     import_tasks: fetch_engine_logs.yml
