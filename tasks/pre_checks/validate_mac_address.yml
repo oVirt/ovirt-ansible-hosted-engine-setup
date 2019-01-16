@@ -1,3 +1,4 @@
+---
 - name: Define Engine VM MAC address
   block:
   - name: Generate unicast MAC address

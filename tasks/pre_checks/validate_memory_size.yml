@@ -1,3 +1,4 @@
+---
 - name: Get available memory amount
   block:
   - name: Get free memory

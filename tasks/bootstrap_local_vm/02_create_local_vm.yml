@@ -13,125 +13,125 @@
       ansible_user: root
   - name: Initial tasks
     block:
-    - name: Get host unique id
-      shell: if [ -e /etc/vdsm/vdsm.id ]; then cat /etc/vdsm/vdsm.id; else dmidecode -s system-uuid; fi;
-      environment: "{{ he_cmd_lang }}"
-      changed_when: True
-      register: unique_id_out
-    - name: Create directory for local VM
-      tempfile:
-        state: directory
-        path: "{{ he_local_vm_dir_path }}"
-        prefix: "{{ he_local_vm_dir_prefix }}"
-      register: otopi_localvm_dir
-    - name: Set local vm dir path
-      set_fact:
-        he_local_vm_dir: "{{ otopi_localvm_dir.path }}"
-    - name: Fix local VM directory permission
-      file:
-        state: directory
-        path: "{{ he_local_vm_dir }}"
-        owner: vdsm
-        group: kvm
-        mode: 0775
-    - include_tasks: install_appliance.yml
-      when: he_appliance_ova is none or he_appliance_ova|length == 0
-    - name: Register appliance PATH
-      set_fact:
-        he_appliance_ova_path: "{{ he_appliance_ova }}"
-      when: he_appliance_ova is not none and he_appliance_ova|length > 0
-    - debug: var=he_appliance_ova_path
-    - name: Check available space on local VM directory
-      shell: df -k --output=avail "{{ he_local_vm_dir_path }}" | grep -v Avail
-      environment: "{{ he_cmd_lang }}"
-      changed_when: True
-      register: local_vm_dir_space_out
-    - name: Check appliance size
-      shell: gzip -l "{{ he_appliance_ova_path }}" | grep -v uncompressed | awk '{print $2}'
-      environment: "{{ he_cmd_lang }}"
-      changed_when: True
-      register: appliance_size
-    - name: Ensure we have enough space to extract the appliance
-      assert:
-        that:
-          - "local_vm_dir_space_out.stdout_lines[0]|int * 1024 > appliance_size.stdout_lines[0]|int * 1.1"
-        msg: >
-          {{ he_local_vm_dir_path }} doesn't provide enough free space to extract the
-          engine appliance: {{ local_vm_dir_space_out.stdout_lines[0]|int / 1024 | int }} Mb
-          are available while {{ appliance_size.stdout_lines[0]|int / 1024 / 1024 * 1.1 | int }} Mb
-          are required.
-    - name: Extract appliance to local VM directory
-      unarchive:
-        remote_src: yes
-        src: "{{ he_appliance_ova_path }}"
-        dest: "{{ he_local_vm_dir }}"
-        extra_opts: ['--sparse']
-    - include_tasks: get_local_vm_disk_path.yml
-    - name: Get appliance disk size
-      command: qemu-img info --output=json {{ local_vm_disk_path }}
-      environment: "{{ he_cmd_lang }}"
-      changed_when: True
-      register: qemu_img_out
-    - debug: var=qemu_img_out
-    - name: Parse qemu-img output
-      set_fact:
-        virtual_size={{ qemu_img_out.stdout|from_json|json_query('"virtual-size"') }}
-      register: otopi_appliance_disk_size
-    - debug: var=virtual_size
-    - name: Create cloud init user-data and meta-data files
-      template:
-        src: "{{ item.src }}"
-        dest: "{{ item.dest }}"
-      with_items:
-        - { src: templates/user-data.j2, dest: "{{ he_local_vm_dir }}/user-data" }
-        - { src: templates/meta-data.j2, dest: "{{ he_local_vm_dir }}/meta-data" }
-        - { src: templates/network-config-dhcp6.j2, dest: "{{ he_local_vm_dir }}/network-config" }
-    - name: Create ISO disk
-      command: >-
-        mkisofs -output {{ he_local_vm_dir }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8
-        {{ he_local_vm_dir }}/meta-data {{ he_local_vm_dir }}/user-data
-        {{ he_local_vm_dir + '/network-config' if ipv6_deployment else None }}
-      environment: "{{ he_cmd_lang }}"
-      changed_when: True
-    - name: Create local VM
-      command: >-
-        virt-install -n {{ he_vm_name }}Local --os-variant rhel7 --virt-type kvm --memory {{ he_mem_size_MB }}
-        --vcpus {{ he_vcpus }}  --network network=default,mac={{ he_vm_mac_addr }},model=virtio
-        --disk {{ local_vm_disk_path }} --import --disk path={{ he_local_vm_dir }}/seed.iso,device=cdrom
-        --noautoconsole --rng /dev/random --graphics vnc --video vga --sound none --controller usb,model=none
-        --memballoon none --boot hd,menu=off --clock kvmclock_present=yes
-      environment: "{{ he_cmd_lang }}"
-      register: create_local_vm
-      changed_when: True
-    - debug: var=create_local_vm
-    - name: Get local VM IP
-      shell: virsh -r net-dhcp-leases default | grep -i {{ he_vm_mac_addr }} | awk '{ print $5 }' | cut -f1 -d'/'
-      environment: "{{ he_cmd_lang }}"
-      register: local_vm_ip
-      until: local_vm_ip.stdout_lines|length >= 1
-      retries: 50
-      delay: 10
-      changed_when: True
-    - debug: var=local_vm_ip
-    - name: Remove leftover entries in /etc/hosts for the local VM
-      lineinfile:
-        dest: /etc/hosts
-        regexp: "# temporary entry added by hosted-engine-setup for the bootstrap VM$"
-        state: absent
-    - name: Create an entry in /etc/hosts for the local VM
-      lineinfile:
-        dest: /etc/hosts
-        line:
-          "{{ local_vm_ip.stdout_lines[0] }} \
-          {{ he_fqdn }} # temporary entry added by hosted-engine-setup for the bootstrap VM"
-        insertbefore: BOF
-        backup: yes
-    - name: Wait for SSH to restart on the local VM
-      wait_for:
-        host='{{ he_fqdn }}'
-        port=22
-        delay=30
-        timeout=300
+      - name: Get host unique id
+        shell: if [ -e /etc/vdsm/vdsm.id ]; then cat /etc/vdsm/vdsm.id; else dmidecode -s system-uuid; fi;
+        environment: "{{ he_cmd_lang }}"
+        changed_when: true
+        register: unique_id_out
+      - name: Create directory for local VM
+        tempfile:
+          state: directory
+          path: "{{ he_local_vm_dir_path }}"
+          prefix: "{{ he_local_vm_dir_prefix }}"
+        register: otopi_localvm_dir
+      - name: Set local vm dir path
+        set_fact:
+          he_local_vm_dir: "{{ otopi_localvm_dir.path }}"
+      - name: Fix local VM directory permission
+        file:
+          state: directory
+          path: "{{ he_local_vm_dir }}"
+          owner: vdsm
+          group: kvm
+          mode: 0775
+      - include_tasks: install_appliance.yml
+        when: he_appliance_ova is none or he_appliance_ova|length == 0
+      - name: Register appliance PATH
+        set_fact:
+          he_appliance_ova_path: "{{ he_appliance_ova }}"
+        when: he_appliance_ova is not none and he_appliance_ova|length > 0
+      - debug: var=he_appliance_ova_path
+      - name: Check available space on local VM directory
+        shell: df -k --output=avail "{{ he_local_vm_dir_path }}" | grep -v Avail
+        environment: "{{ he_cmd_lang }}"
+        changed_when: true
+        register: local_vm_dir_space_out
+      - name: Check appliance size
+        shell: gzip -l "{{ he_appliance_ova_path }}" | grep -v uncompressed | awk '{print $2}'
+        environment: "{{ he_cmd_lang }}"
+        changed_when: true
+        register: appliance_size
+      - name: Ensure we have enough space to extract the appliance
+        assert:
+          that:
+            - "local_vm_dir_space_out.stdout_lines[0]|int * 1024 > appliance_size.stdout_lines[0]|int * 1.1"
+          msg: >
+            {{ he_local_vm_dir_path }} doesn't provide enough free space to extract the
+            engine appliance: {{ local_vm_dir_space_out.stdout_lines[0]|int / 1024 | int }} Mb
+            are available while {{ appliance_size.stdout_lines[0]|int / 1024 / 1024 * 1.1 | int }} Mb
+            are required.
+      - name: Extract appliance to local VM directory
+        unarchive:
+          remote_src: true
+          src: "{{ he_appliance_ova_path }}"
+          dest: "{{ he_local_vm_dir }}"
+          extra_opts: ['--sparse']
+      - include_tasks: get_local_vm_disk_path.yml
+      - name: Get appliance disk size
+        command: qemu-img info --output=json {{ local_vm_disk_path }}
+        environment: "{{ he_cmd_lang }}"
+        changed_when: true
+        register: qemu_img_out
+      - debug: var=qemu_img_out
+      - name: Parse qemu-img output
+        set_fact:
+          virtual_size={{ qemu_img_out.stdout|from_json|json_query('"virtual-size"') }}
+        register: otopi_appliance_disk_size
+      - debug: var=virtual_size
+      - name: Create cloud init user-data and meta-data files
+        template:
+          src: "{{ item.src }}"
+          dest: "{{ item.dest }}"
+        with_items:
+          - {src: templates/user-data.j2, dest: "{{ he_local_vm_dir }}/user-data"}
+          - {src: templates/meta-data.j2, dest: "{{ he_local_vm_dir }}/meta-data"}
+          - {src: templates/network-config-dhcp6.j2, dest: "{{ he_local_vm_dir }}/network-config"}
+      - name: Create ISO disk
+        command: >-
+          mkisofs -output {{ he_local_vm_dir }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8
+          {{ he_local_vm_dir }}/meta-data {{ he_local_vm_dir }}/user-data
+          {{ he_local_vm_dir + '/network-config' if ipv6_deployment else None }}
+        environment: "{{ he_cmd_lang }}"
+        changed_when: true
+      - name: Create local VM
+        command: >-
+          virt-install -n {{ he_vm_name }}Local --os-variant rhel7 --virt-type kvm --memory {{ he_mem_size_MB }}
+          --vcpus {{ he_vcpus }}  --network network=default,mac={{ he_vm_mac_addr }},model=virtio
+          --disk {{ local_vm_disk_path }} --import --disk path={{ he_local_vm_dir }}/seed.iso,device=cdrom
+          --noautoconsole --rng /dev/random --graphics vnc --video vga --sound none --controller usb,model=none
+          --memballoon none --boot hd,menu=off --clock kvmclock_present=yes
+        environment: "{{ he_cmd_lang }}"
+        register: create_local_vm
+        changed_when: true
+      - debug: var=create_local_vm
+      - name: Get local VM IP
+        shell: virsh -r net-dhcp-leases default | grep -i {{ he_vm_mac_addr }} | awk '{ print $5 }' | cut -f1 -d'/'
+        environment: "{{ he_cmd_lang }}"
+        register: local_vm_ip
+        until: local_vm_ip.stdout_lines|length >= 1
+        retries: 50
+        delay: 10
+        changed_when: true
+      - debug: var=local_vm_ip
+      - name: Remove leftover entries in /etc/hosts for the local VM
+        lineinfile:
+          dest: /etc/hosts
+          regexp: "# temporary entry added by hosted-engine-setup for the bootstrap VM$"
+          state: absent
+      - name: Create an entry in /etc/hosts for the local VM
+        lineinfile:
+          dest: /etc/hosts
+          line:
+            "{{ local_vm_ip.stdout_lines[0] }} \
+            {{ he_fqdn }} # temporary entry added by hosted-engine-setup for the bootstrap VM"
+          insertbefore: BOF
+          backup: true
+      - name: Wait for SSH to restart on the local VM
+        wait_for:
+          host='{{ he_fqdn }}'
+          port=22
+          delay=30
+          timeout=300
     rescue:
       - include_tasks: clean_localvm_dir.yml
       - name: Notify the user about a failure

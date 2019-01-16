@@ -5,7 +5,7 @@
     service:
       name: libvirtd
       state: started
-      enabled: yes
+      enabled: true
   - name: Activate default libvirt network
     virt_net:
       name: default
@@ -29,13 +29,13 @@
     command: ip rule
     environment: "{{ he_cmd_lang }}"
     register: route_rules_ipv4
-    changed_when: True
+    changed_when: true
   - debug: var=route_rules_ipv4
   - name: Get routing rules, IPv6
     command: ip -6 rule
     environment: "{{ he_cmd_lang }}"
     register: route_rules_ipv6
-    changed_when: True
+    changed_when: true
     when: ipv6_deployment
   - debug: var=route_rules_ipv6
   - name: Save bridge name
@@ -44,14 +44,14 @@
   - name: Wait for the bridge to appear on the host
     command: ip link show {{ virbr_default }}
     environment: "{{ he_cmd_lang }}"
-    changed_when: True
+    changed_when: true
     register: ip_link_show_bridge
     until: ip_link_show_bridge.rc == 0
     retries: 30
     delay: 3
   - name: Refresh network facts
     setup:
-    tags: [ 'skip_ansible_lint' ]
+    tags: ['skip_ansible_lint']
   - name: Fetch IPv4 CIDR for {{ virbr_default }}
     set_fact:
       virbr_cidr_ipv4: >-
@@ -72,13 +72,13 @@
     environment: "{{ he_cmd_lang }}"
     register: result
     when: not ipv6_deployment and "\"101:\tfrom \"+virbr_cidr_ipv4+\" lookup main\" not in route_rules_ipv4.stdout"
-    changed_when: True
+    changed_when: true
   - debug: var=result
   - name: Add IPv4 inbound route rules
     command: ip rule add from all to {{ virbr_cidr_ipv4 }} priority 100 table main
     environment: "{{ he_cmd_lang }}"
     register: result
-    changed_when: True
+    changed_when: true
     when: >-
       not ipv6_deployment and "\"100:\tfrom all to \"+virbr_cidr_ipv4+\" lookup main\" not in route_rules_ipv4.stdout"
   - debug: var=result
@@ -87,12 +87,12 @@
     environment: "{{ he_cmd_lang }}"
     register: result
     when: ipv6_deployment and "\"101:\tfrom \"+virbr_cidr_ipv6+\" lookup main\" not in route_rules_ipv6.stdout"
-    changed_when: True
+    changed_when: true
   - debug: var=result
   - name: Add IPv6 inbound route rules
     command: ip -6 rule add from all to {{ virbr_cidr_ipv6 }} priority 100 table main
     environment: "{{ he_cmd_lang }}"
     register: result
-    changed_when: True
+    changed_when: true
     when: ipv6_deployment and "\"100:\tfrom all to \"+virbr_cidr_ipv6+\" lookup main\" not in route_rules_ipv6.stdout"
   - debug: var=result

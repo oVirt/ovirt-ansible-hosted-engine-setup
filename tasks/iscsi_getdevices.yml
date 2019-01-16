@@ -12,7 +12,7 @@
       port: "{{ item.1 }}"
       target: "{{ he_iscsi_target }}"
     auth: "{{ ovirt_auth }}"
-  ignore_errors: yes
+  ignore_errors: true
   # TODO: avoid the with_together loop once
   # https://github.com/ansible/ansible/issues/32640 got properly fixed
   with_together:

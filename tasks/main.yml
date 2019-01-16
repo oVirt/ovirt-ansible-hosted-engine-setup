@@ -15,11 +15,11 @@
 
   - name: 01_02 bootstrap local vm tasks
     block:
-    - name: 01 Bootstrap local VM
-      include_tasks: bootstrap_local_vm/01_prepare_routing_rules.yml
+      - name: 01 Bootstrap local VM
+        include_tasks: bootstrap_local_vm/01_prepare_routing_rules.yml
 
-    - name: 02 Bootstrap local VM
-      include_tasks: bootstrap_local_vm/02_create_local_vm.yml
+      - name: 02 Bootstrap local VM
+        include_tasks: bootstrap_local_vm/02_create_local_vm.yml
     when: he_bootstrap_local_vm
 
   - name: 03 Bootstrap local VM
@@ -56,22 +56,22 @@
 
 - name: Sub-Stages for interactive setup execution
   block:
-  - name: Validate network interface
-    include_tasks: "pre_checks/001_validate_network_interfaces.yml"
-    when: he_pre_checks_network
+    - name: Validate network interface
+      include_tasks: "pre_checks/001_validate_network_interfaces.yml"
+      when: he_pre_checks_network
 
-  - name: Validate hostnames
-    include_tasks: "pre_checks/002_validate_hostname_tasks.yml"
-    when: he_pre_checks_validate_hostnames
+    - name: Validate hostnames
+      include_tasks: "pre_checks/002_validate_hostname_tasks.yml"
+      when: he_pre_checks_validate_hostnames
 
-  - name: Get FC devices
-    include_tasks: "fc_getdevices.yml"
-    when: he_setup_fc_getdevices
+    - name: Get FC devices
+      include_tasks: "fc_getdevices.yml"
+      when: he_setup_fc_getdevices
 
-  - name: iSCSI discover
-    include_tasks: "iscsi_discover.yml"
-    when: he_setup_iscsi_discover
+    - name: iSCSI discover
+      include_tasks: "iscsi_discover.yml"
+      when: he_setup_iscsi_discover
 
-  - name: Get iSCSI devices
-    include_tasks: "iscsi_getdevices.yml"
-    when: he_setup_iscsi_getdevices
+    - name: Get iSCSI devices
+      include_tasks: "iscsi_getdevices.yml"
+      when: he_setup_iscsi_getdevices

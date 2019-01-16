@@ -3,6 +3,6 @@
   block:
   - name: Fetch logs from the engine VM
     include_tasks: fetch_engine_logs.yml
-    ignore_errors: yes
+    ignore_errors: true
   - include_tasks: clean_localvm_dir.yml
 ...
