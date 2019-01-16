@@ -55,4 +55,11 @@
   - name: Clean bootstrap VM
     import_tasks: clean_localvm_dir.yml
     delegate_to: "{{ he_ansible_host_name }}"
+  - name: Notify the user about a failure
+    fail:
+      msg:
+        There was a failure deploying the engine on the local engine VM.
+        The system may not be provisioned according to the playbook results,
+        please check the logs for the issue,
+        fix accordingly or re-deploy from scratch.
 ...
