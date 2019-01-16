@@ -1,24 +1,24 @@
 ---
 # Stages
-he_install_packages:                        false
-he_initial_clean:                           false
-he_pre_checks:                              false
-he_bootstrap_local_vm:                      false
-he_bootstrap_pre_install_local_engine_vm:   false
-he_bootstrap_post_install_local_engine_vm:  false
-he_bootstrap_local_vm_add_host:             false
-he_create_storage_domain:                   false
-he_create_target_vm:                        false
-he_engine_vm_configuration:                 false
-he_final_tasks:                             false
-he_final_clean:                             false
+he_install_packages: false
+he_initial_clean: false
+he_pre_checks: false
+he_bootstrap_local_vm: false
+he_bootstrap_pre_install_local_engine_vm: false
+he_bootstrap_post_install_local_engine_vm: false
+he_bootstrap_local_vm_add_host: false
+he_create_storage_domain: false
+he_create_target_vm: false
+he_engine_vm_configuration: false
+he_final_tasks: false
+he_final_clean: false
 
 # Sub-Stages for interactive setup execution
-he_pre_checks_network:                      false
-he_pre_checks_validate_hostnames:           false
-he_setup_fc_getdevices:                     false
-he_setup_iscsi_discover:                    false
-he_setup_iscsi_getdevices:                  false
+he_pre_checks_network: false
+he_pre_checks_validate_hostnames: false
+he_setup_fc_getdevices: false
+he_setup_iscsi_discover: false
+he_setup_iscsi_getdevices: false
 
 # Default vars
 # Do not change these variables
@@ -73,14 +73,14 @@ he_enable_hc_gluster_service: false
 he_vm_mac_addr: null
 
 ## Storage domain vars:
-he_domain_type: null # can be: nfs | iscsi | gluster | fc
+he_domain_type: null  # can be: nfs | iscsi | gluster | fc
 he_storage_domain_addr: null
 
 ## NFS vars:
 ## Defaults are null, user should specify if NFS is chosen
 he_mount_options: ''
 he_storage_domain_path: null
-he_nfs_version: auto # can be: auto, v4 or v3
+he_nfs_version: auto  # can be: auto, v4 or v3
 
 ## ISCSI vars:
 ## Defaults are null, user should specify if ISCSI is chosen
@@ -98,8 +98,8 @@ he_discard: false
 # Define if using STATIC ip configuration
 he_vm_ip_addr: null
 he_vm_ip_prefix: null
-he_dns_addr: null # up to 3 DNS servers IPs can be added
-he_vm_etc_hosts: false # user can add lines to /etc/hosts on the engine VM
+he_dns_addr: null  # up to 3 DNS servers IPs can be added
+he_vm_etc_hosts: false  # user can add lines to /etc/hosts on the engine VM
 he_default_gateway: null
 
 # ovirt-hosted-engine-setup variables
@@ -107,5 +107,5 @@ he_just_collect_network_interfaces: false
 
 # *** Do Not Use On Production Environment ***
 # ********** Used for testing ONLY ***********
-he_requirements_check_enabled: True
-he_memory_requirements_check_enabled: True
+he_requirements_check_enabled: true
+he_memory_requirements_check_enabled: true

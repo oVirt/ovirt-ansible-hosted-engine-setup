@@ -1,3 +1,4 @@
+---
 - name: Define he_maxvcpus
   block:
   - name: get max cpus

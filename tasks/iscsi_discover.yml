@@ -20,12 +20,12 @@
 - name: iSCSI discover with REST API
   uri:
     url: https://{{ he_fqdn }}/ovirt-engine/api/hosts/{{ host_result.ansible_facts.ovirt_hosts[0].id }}/iscsidiscover
-    validate_certs: no
+    validate_certs: false
     user: admin@internal
     password: "{{ he_admin_password }}"
     method: POST
     body: "{{ iscsid | to_json }}"
-    return_content: yes
+    return_content: true
     body_format: json
     status_code: 200
     headers:

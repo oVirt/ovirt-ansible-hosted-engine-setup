@@ -44,7 +44,7 @@
       name: "{{ he_storage_domain_name }}"
       host: "{{ he_host_name }}"
       data_center: "{{ datacenter_name }}"
-      wait: True
+      wait: true
       nfs:
         address: "{{ he_storage_domain_addr }}"
         path: "{{ he_storage_domain_path }}"
@@ -59,7 +59,7 @@
       name: "{{ he_storage_domain_name }}"
       host: "{{ he_host_name }}"
       data_center: "{{ datacenter_name }}"
-      wait: True
+      wait: true
       glusterfs:
         address: "{{ he_storage_domain_addr }}"
         path: "{{ he_storage_domain_path }}"
@@ -77,7 +77,7 @@
       name: "{{ he_storage_domain_name }}"
       host: "{{ he_host_name }}"
       data_center: "{{ datacenter_name }}"
-      wait: True
+      wait: true
       discard_after_delete: "{{ he_discard }}"
       # we are sending a single iSCSI path but, not sure if intended or if
       # it's bug, the engine is implicitly creating the storage domain
@@ -100,7 +100,7 @@
       name: "{{ he_storage_domain_name }}"
       host: "{{ he_host_name }}"
       data_center: "{{ datacenter_name }}"
-      wait: True
+      wait: true
       discard_after_delete: "{{ he_discard }}"
       fcp:
         lun_id: "{{ he_lun_id }}"

@@ -11,13 +11,13 @@
   shell: grep path /etc/ovirt-hosted-engine/10-appliance.conf | cut -f2 -d'='
   environment: "{{ he_cmd_lang }}"
   register: he_appliance_ova_out
-  changed_when: True
+  changed_when: true
 - debug: var=he_appliance_ova_out
 - name: Parse appliance configuration for sha1sum
   shell: grep sha1sum /etc/ovirt-hosted-engine/10-appliance.conf | cut -f2 -d'='
   environment: "{{ he_cmd_lang }}"
   register: he_appliance_ova_sha1
-  changed_when: True
+  changed_when: true
 - debug: var=he_appliance_ova_sha1
 - name: Get OVA path
   set_fact:

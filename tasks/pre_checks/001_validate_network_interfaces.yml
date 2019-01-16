@@ -13,7 +13,7 @@
   - debug: var=bridge_interface
   - name: Get all active network interfaces
     vars:
-      acceptable_bond_modes: ['active-backup','balance-xor','broadcast','802.3ad']
+      acceptable_bond_modes: ['active-backup', 'balance-xor', 'broadcast', '802.3ad']
     set_fact:
       otopi_net_host="{{ iface_item }}"
       type="{{ hostvars[inventory_hostname]['ansible_' + iface_item]['type'] }}"

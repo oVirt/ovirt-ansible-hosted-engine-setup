@@ -12,10 +12,10 @@
     become: true
     become_user: postgres
     become_method: sudo
-    changed_when: True
+    changed_when: true
     register: db_vm_update
     with_items:
-      - { field: 'origin', value: 6 }
+      - {field: 'origin', value: 6}
   - debug: var=db_vm_update
   - name: Insert Hosted Engine configuration disk uuid into Engine database
     command: >-
@@ -27,7 +27,7 @@
     become: true
     become_user: postgres
     become_method: sudo
-    changed_when: True
+    changed_when: true
     register: db_conf_update
   - debug: var=db_conf_update
   - name: Fetch host SPM_ID
@@ -38,7 +38,7 @@
     become: true
     become_user: postgres
     become_method: sudo
-    changed_when: True
+    changed_when: true
     register: host_spm_id_out
   - name: Parse host SPM_ID
     set_fact: host_spm_id="{{ host_spm_id_out.stdout_lines|first|trim }}"
@@ -46,7 +46,7 @@
   - name: Restore original DisableFenceAtStartupInSec
     shell: "engine-config -s DisableFenceAtStartupInSec=$(cat /root/DisableFenceAtStartupInSec.txt)"
     environment: "{{ he_cmd_lang }}"
-    changed_when: True
+    changed_when: true
     when: he_restore_from_file is defined and he_restore_from_file
   - name: Remove DisableFenceAtStartupInSec temporary file
     file:
@@ -56,9 +56,9 @@
   - name: Restore original OvfUpdateIntervalInMinutes
     shell: "engine-config -s OvfUpdateIntervalInMinutes=$(cat /root/OvfUpdateIntervalInMinutes.txt)"
     environment: "{{ he_cmd_lang }}"
-    changed_when: True
+    changed_when: true
   - name: Remove OvfUpdateIntervalInMinutes temporary file
     file:
       path: /root/OvfUpdateIntervalInMinutes.txt
       state: absent
-    changed_when: True
+    changed_when: true

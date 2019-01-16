@@ -5,7 +5,7 @@
   - name: Enable again the serial console device
     ovirt_vm:
       id: "{{ he_vm_details.vm.id }}"
-      serial_console: True
+      serial_console: true
       auth: "{{ ovirt_auth }}"
   - name: Trigger hosted engine OVF update
     ovirt_vm:
@@ -15,7 +15,7 @@
   - name: Wait until OVF update finishes
     ovirt_storage_domain_facts:
       auth: "{{ ovirt_auth }}"
-      fetch_nested: True
+      fetch_nested: true
       nested_attributes:
         - name
         - image_id
@@ -34,7 +34,7 @@
       storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }}
       imageID={{ item.id }} volumeID={{ item.image_id  }}
     environment: "{{ he_cmd_lang }}"
-    changed_when: True
+    changed_when: true
     register: ovf_store_status
     retries: 12
     delay: 10
@@ -50,7 +50,7 @@
       volumeID={{ item.image_id  }} | grep path | awk '{ print $2 }' |
       xargs -I{} sudo -u vdsm dd if={} | tar -tvf - {{ he_vm_details.vm.id }}.ovf
     environment: "{{ he_cmd_lang }}"
-    changed_when: True
+    changed_when: true
     register: ovf_store_content
     retries: 12
     delay: 10
@@ -68,7 +68,7 @@
       - "{{ he_metadata_disk_details }}"
       - "{{ he_sanlock_disk_details }}"
     register: prepareimage_results
-    changed_when: True
+    changed_when: true
   - debug: var=prepareimage_results
   - name: Fetch Hosted Engine configuration disk path
     set_fact:
@@ -96,7 +96,7 @@
   - name: Wait for local VM shutdown
     command: virsh -r domstate "{{ he_vm_name }}Local"
     environment: "{{ he_cmd_lang }}"
-    changed_when: True
+    changed_when: true
     register: dominfo_out
     until: dominfo_out.rc == 0 and 'shut off' in dominfo_out.stdout
     retries: 120
@@ -115,7 +115,7 @@
       python -c 'from ovirt_hosted_engine_ha.agent import constants as agentconst; print(agentconst.PACKAGE_VERSION)'
     environment: "{{ he_cmd_lang }}"
     register: ha_version_out
-    changed_when: True
+    changed_when: true
   - name: Set ha_version
     set_fact: ha_version="{{ ha_version_out.stdout_lines|first }}"
   - debug: var=ha_version
@@ -124,11 +124,11 @@
       src: "{{ item.src }}"
       dest: "{{ item.dest }}"
     with_items:
-      - { src: templates/vm.conf.j2, dest: "{{ he_local_vm_dir }}/vm.conf" }
-      - { src: templates/broker.conf.j2, dest: "{{ he_local_vm_dir }}/broker.conf" }
-      - { src: templates/version.j2, dest: "{{ he_local_vm_dir }}/version" }
-      - { src: templates/fhanswers.conf.j2, dest: "{{ he_local_vm_dir }}/fhanswers.conf" }
-      - { src: templates/hosted-engine.conf.j2, dest: "{{ he_local_vm_dir }}/hosted-engine.conf" }
+      - {src: templates/vm.conf.j2, dest: "{{ he_local_vm_dir }}/vm.conf"}
+      - {src: templates/broker.conf.j2, dest: "{{ he_local_vm_dir }}/broker.conf"}
+      - {src: templates/version.j2, dest: "{{ he_local_vm_dir }}/version"}
+      - {src: templates/fhanswers.conf.j2, dest: "{{ he_local_vm_dir }}/fhanswers.conf"}
+      - {src: templates/hosted-engine.conf.j2, dest: "{{ he_local_vm_dir }}/hosted-engine.conf"}
   - name: Create configuration archive
     command: >-
       tar --record-size=20480 -cvf {{ he_conf_disk_details.disk.image_id }}
@@ -136,20 +136,20 @@
     environment: "{{ he_cmd_lang }}"
     args:
       chdir: "{{ he_local_vm_dir }}"
-    changed_when: True
-    tags: [ 'skip_ansible_lint' ]
+    changed_when: true
+    tags: ['skip_ansible_lint']
   - name: Create ovirt-hosted-engine-ha run directory
     file:
       path: /var/run/ovirt-hosted-engine-ha
       state: directory
   - name: Copy configuration files to the right location on host
     copy:
-      remote_src: yes
+      remote_src: true
       src: "{{ item.src }}"
       dest: "{{ item.dest }}"
     with_items:
-      - { src: "{{ he_local_vm_dir }}/vm.conf", dest: /var/run/ovirt-hosted-engine-ha }
-      - { src: "{{ he_local_vm_dir }}/hosted-engine.conf", dest: /etc/ovirt-hosted-engine/ }
+      - {src: "{{ he_local_vm_dir }}/vm.conf", dest: /var/run/ovirt-hosted-engine-ha}
+      - {src: "{{ he_local_vm_dir }}/hosted-engine.conf", dest: /etc/ovirt-hosted-engine/}
   - name: Copy configuration archive to storage
     command: >-
       dd bs=20480 count=1 oflag=direct if="{{ he_local_vm_dir }}/{{ he_conf_disk_details.disk.image_id }}"
@@ -158,14 +158,14 @@
     become: true
     become_user: vdsm
     become_method: sudo
-    changed_when: True
+    changed_when: true
   - name: Initialize metadata volume
     command: dd bs=1M count=1024 oflag=direct if=/dev/zero of="{{ he_metadata_disk_path }}"
     environment: "{{ he_cmd_lang }}"
     become: true
     become_user: vdsm
     become_method: sudo
-    changed_when: True
+    changed_when: true
   - include_tasks: get_local_vm_disk_path.yml
   - name: Generate DHCP network configuration for the engine VM
     template:
@@ -201,7 +201,7 @@
       LANG: en_US.UTF-8
       LC_MESSAGES: en_US.UTF-8
       LC_ALL: en_US.UTF-8
-    changed_when: True
+    changed_when: true
   - name: Extract /etc/hosts from the Hosted Engine VM
     command: virt-copy-out -a {{ local_vm_disk_path }} /etc/hosts "{{ he_local_vm_dir }}"
     environment:
@@ -209,7 +209,7 @@
       LANG: en_US.UTF-8
       LC_MESSAGES: en_US.UTF-8
       LC_ALL: en_US.UTF-8
-    changed_when: True
+    changed_when: true
   - name: Clean /etc/hosts for the Hosted Engine VM for Engine VM FQDN
     lineinfile:
       dest: "{{ he_local_vm_dir }}/hosts"
@@ -228,14 +228,14 @@
       LANG: en_US.UTF-8
       LC_MESSAGES: en_US.UTF-8
       LC_ALL: en_US.UTF-8
-    changed_when: True
+    changed_when: true
   - name: Copy local VM disk to shared storage
     command: qemu-img convert -n -O raw {{ local_vm_disk_path }} {{ he_virtio_disk_path }}
     environment: "{{ he_cmd_lang }}"
     become: true
     become_user: vdsm
     become_method: sudo
-    changed_when: True
+    changed_when: true
   - name: Remove temporary entry in /etc/hosts for the local VM
     lineinfile:
       dest: /etc/hosts
@@ -253,7 +253,7 @@
     until: result.rc == 0
     retries: 5
     delay: 10
-    changed_when: True
+    changed_when: true
   - debug: var=result
   - name: Start ovirt-ha-agent service on the host
     service:
@@ -262,63 +262,63 @@
       enabled: true
   - name: Wait for the engine to come up on the target VM
     block:
-    - name: Check engine VM health
-      command: hosted-engine --vm-status --json
-      environment: "{{ he_cmd_lang }}"
-      register: health_result
-      until: >-
-        health_result.rc == 0 and 'health' in health_result.stdout and
-        health_result.stdout|from_json|json_query('*."engine-status"."health"')|first=="good"
-      retries: 120
-      delay: 5
-      changed_when: True
-    - debug: var=health_result
+      - name: Check engine VM health
+        command: hosted-engine --vm-status --json
+        environment: "{{ he_cmd_lang }}"
+        register: health_result
+        until: >-
+          health_result.rc == 0 and 'health' in health_result.stdout and
+          health_result.stdout|from_json|json_query('*."engine-status"."health"')|first=="good"
+        retries: 120
+        delay: 5
+        changed_when: true
+      - debug: var=health_result
     rescue:
-    - name: Check VM status at virt level
-      shell: virsh -r list | grep HostedEngine | grep running
-      environment: "{{ he_cmd_lang }}"
-      ignore_errors: true
-      changed_when: true
-      register: vm_status_virsh
-    - debug: var=vm_status_virsh
-    - name: Fail if engine VM is not running
-      fail:
-        msg: "Engine VM is not running, please check vdsm logs"
-      when: vm_status_virsh.rc != 0
-    - name: Get target engine VM IP address
-      shell: getent ahosts {{ he_fqdn }} | cut -d' ' -f1 | uniq
-      environment: "{{ he_cmd_lang }}"
-      register: engine_vm_ip
-      changed_when: True
-    - name: Get VDSM's target engine VM stats
-      command: vdsm-client VM getStats vmID={{ he_vm_details.vm.id }}
-      environment: "{{ he_cmd_lang }}"
-      register: engine_vdsm_stats
-      changed_when: true
-    - name: Convert stats to JSON format
-      set_fact: json_stats={{ engine_vdsm_stats.stdout|from_json }}
-    - name: Get target engine VM IP address from VDSM stats
-      set_fact: engine_vm_ip_vdsm={{ json_stats[0].guestIPs }}
-    - debug: var=engine_vm_ip_vdsm
-    - name: Fail if Engine IP is different from engine's he_fqdn resolved IP
-      fail:
-        msg: >-
-          Engine VM IP address is {{ engine_vm_ip_vdsm }} while the engine's he_fqdn {{ he_fqdn }} resolves to
-          {{ engine_vm_ip.stdout_lines[0] }}. If you are using DHCP, check your DHCP reservation configuration
-      when: engine_vm_ip_vdsm != engine_vm_ip.stdout_lines[0]
+      - name: Check VM status at virt level
+        shell: virsh -r list | grep HostedEngine | grep running
+        environment: "{{ he_cmd_lang }}"
+        ignore_errors: true
+        changed_when: true
+        register: vm_status_virsh
+      - debug: var=vm_status_virsh
+      - name: Fail if engine VM is not running
+        fail:
+          msg: "Engine VM is not running, please check vdsm logs"
+        when: vm_status_virsh.rc != 0
+      - name: Get target engine VM IP address
+        shell: getent ahosts {{ he_fqdn }} | cut -d' ' -f1 | uniq
+        environment: "{{ he_cmd_lang }}"
+        register: engine_vm_ip
+        changed_when: true
+      - name: Get VDSM's target engine VM stats
+        command: vdsm-client VM getStats vmID={{ he_vm_details.vm.id }}
+        environment: "{{ he_cmd_lang }}"
+        register: engine_vdsm_stats
+        changed_when: true
+      - name: Convert stats to JSON format
+        set_fact: json_stats={{ engine_vdsm_stats.stdout|from_json }}
+      - name: Get target engine VM IP address from VDSM stats
+        set_fact: engine_vm_ip_vdsm={{ json_stats[0].guestIPs }}
+      - debug: var=engine_vm_ip_vdsm
+      - name: Fail if Engine IP is different from engine's he_fqdn resolved IP
+        fail:
+          msg: >-
+            Engine VM IP address is {{ engine_vm_ip_vdsm }} while the engine's he_fqdn {{ he_fqdn }} resolves to
+            {{ engine_vm_ip.stdout_lines[0] }}. If you are using DHCP, check your DHCP reservation configuration
+        when: engine_vm_ip_vdsm != engine_vm_ip.stdout_lines[0]
   - name: Get target engine VM address
     shell: getent ahosts {{ he_fqdn }} | cut -d' ' -f1 | uniq
     environment: "{{ he_cmd_lang }}"
     register: engine_vm_ip
     when: engine_vm_ip is not defined
-    changed_when: True
+    changed_when: true
   # Workaround for ovn-central being configured with the address of the bootstrap VM.
   # Keep this aligned with:
   # https://github.com/oVirt/ovirt-engine/blob/master/packaging/playbooks/roles/ovirt-provider-ovn-driver/tasks/main.yml
   - name: Reconfigure OVN central address
     command: vdsm-tool ovn-config {{ engine_vm_ip.stdout_lines[0] }} {{ he_mgmt_network }}
     environment: "{{ he_cmd_lang }}"
-    changed_when: True
+    changed_when: true
   - include_tasks: auth_sso.yml
   # Workaround for https://bugzilla.redhat.com/1540107
   # the engine fails deleting a VM if its status in the engine DB
@@ -331,7 +331,7 @@
   - name: Remove the bootstrap local VM
     block:
       - name: Make the engine aware that the external VM is stopped
-        ignore_errors: yes
+        ignore_errors: true
         ovirt_vm:
           state: stopped
           id: "{{ external_local_vm_uuid.stdout_lines|first }}"
