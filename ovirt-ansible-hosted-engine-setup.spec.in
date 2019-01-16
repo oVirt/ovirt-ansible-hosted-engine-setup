@@ -14,7 +14,7 @@ Group:          Virtualization/Management
 BuildArch:      noarch
 Url:            http://www.ovirt.org
 
-Requires: ansible >= 2.6
+Requires: ansible >= 2.7
 Requires: python-netaddr
 Requires: ovirt-ansible-engine-setup >= 1.1.5
 Requires: ovirt-ansible-repositories >= 1.1.2

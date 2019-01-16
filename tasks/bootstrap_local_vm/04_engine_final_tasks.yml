@@ -46,13 +46,14 @@
       path: /root/heanswers.conf
   rescue:
   - name: Fetch logs from the engine VM
-    include_tasks: fetch_engine_logs.yml
+    import_tasks: fetch_engine_logs.yml
     ignore_errors: yes
+    delegate_to: "{{ he_ansible_host_name }}"
   - name: Get local VM dir path
     set_fact:
       he_local_vm_dir={{ hostvars[he_ansible_host_name]['he_local_vm_dir'] }}
   - name: Clean bootstrap VM
-    include_tasks: clean_localvm_dir.yml
+    import_tasks: clean_localvm_dir.yml
     delegate_to: "{{ he_ansible_host_name }}"
   - name: Notify the user about a failure
     fail:

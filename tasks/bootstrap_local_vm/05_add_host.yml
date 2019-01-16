@@ -46,7 +46,7 @@
       gluster: true
     when: he_enable_hc_gluster_service is defined and he_enable_hc_gluster_service
   - name: Set VLAN ID at datacenter level
-    ovirt_networks:
+    ovirt_network:
       data_center: "{{ he_data_center }}"
       name: "{{ he_mgmt_network }}"
       vlan_tag: "{{ vlan_id_out.stdout }}"
@@ -57,7 +57,7 @@
       src: templates/70-hosted-engine-setup.conf.j2
       dest: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
   - name: Add host
-    ovirt_hosts:
+    ovirt_host:
       cluster: "{{ he_cluster }}"
       name: "{{ he_host_name }}"
       state: present
