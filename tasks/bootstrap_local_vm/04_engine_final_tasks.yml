@@ -45,11 +45,14 @@
       state: absent
       path: /root/heanswers.conf
   rescue:
-  - name: Notify the user about a failure
-    fail:
-      msg:
-        There was a failure deploying the engine on the local engine VM.
-        The system may not be provisioned according to the playbook results,
-        please check the logs for the issue,
-        fix accordingly or re-deploy from scratch.
+  - name: Fetch logs from the engine VM
+    import_tasks: fetch_engine_logs.yml
+    ignore_errors: yes
+    delegate_to: "{{ he_ansible_host_name }}"
+  - name: Get local VM dir path
+    set_fact:
+      he_local_vm_dir={{ hostvars[he_ansible_host_name]['he_local_vm_dir'] }}
+  - name: Clean bootstrap VM
+    import_tasks: clean_localvm_dir.yml
+    delegate_to: "{{ he_ansible_host_name }}"
 ...
