@@ -16,7 +16,7 @@
     shell: virsh -r net-dhcp-leases default | grep -i {{ he_vm_mac_addr }} | awk '{ print $5 }' | cut -f1 -d'/'
     environment: "{{ he_cmd_lang }}"
     register: local_vm_ip
-    changed_when: True
+    changed_when: true
   - debug: var=local_vm_ip
   - name: Fetch host facts
     ovirt_host_facts:
@@ -57,11 +57,11 @@
       url:
         "https://{{ he_fqdn }}/ovirt-engine/api/options/ServerCPUList?version=\
         {{ cluster_version.major }}.{{ cluster_version.minor }}"
-      validate_certs: no
+      validate_certs: false
       user: admin@internal
       password: "{{ he_admin_password }}"
       method: GET
-      return_content: yes
+      return_content: true
       status_code: 200
       headers:
         Accept: application/json
@@ -73,11 +73,11 @@
       url:
         "https://{{ he_fqdn }}/ovirt-engine/api/options/ClusterEmulatedMachines?version=\
         {{ cluster_version.major }}.{{ cluster_version.minor }}"
-      validate_certs: no
+      validate_certs: false
       user: admin@internal
       password: "{{ he_admin_password }}"
       method: GET
-      return_content: yes
+      return_content: true
       status_code: 200
       headers:
         Accept: application/json
@@ -114,38 +114,38 @@
       description: "{{ item.description }}"
       interface: virtio
       storage_domain: "{{ he_storage_domain_name }}"
-      wait: True
+      wait: true
       timeout: 600
       auth: "{{ ovirt_auth }}"
     with_items:
       - {
-          name: 'he_virtio_disk',
-          description: 'Hosted-Engine disk',
-          size: "{{ he_disk_size_GB }}GiB",
-          format: 'raw',
-          sparse: "{{ False if he_domain_type == 'fc' or he_domain_type == 'iscsi' else True }}"
-        }
+        name: 'he_virtio_disk',
+        description: 'Hosted-Engine disk',
+        size: "{{ he_disk_size_GB }}GiB",
+        format: 'raw',
+        sparse: "{{ false if he_domain_type == 'fc' or he_domain_type == 'iscsi' else true }}"
+      }
       - {
-          name: 'he_sanlock',
-          description: 'Hosted-Engine sanlock disk',
-          size: '1GiB',
-          format: 'raw',
-          sparse: False
-        }
+        name: 'he_sanlock',
+        description: 'Hosted-Engine sanlock disk',
+        size: '1GiB',
+        format: 'raw',
+        sparse: false
+      }
       - {
-          name: 'HostedEngineConfigurationImage',
-          description: 'Hosted-Engine configuration disk',
-          size: '1GiB',
-          format: 'raw',
-          sparse: False
-        }
+        name: 'HostedEngineConfigurationImage',
+        description: 'Hosted-Engine configuration disk',
+        size: '1GiB',
+        format: 'raw',
+        sparse: false
+      }
       - {
-          name: 'he_metadata',
-          description: 'Hosted-Engine metadata disk',
-          size: '1GiB',
-          format: 'raw',
-          sparse: False
-        }
+        name: 'he_metadata',
+        description: 'Hosted-Engine metadata disk',
+        size: '1GiB',
+        format: 'raw',
+        sparse: false
+      }
     register: add_disks
   - name: Register disk details
     set_fact:
@@ -164,24 +164,24 @@
       cpu_cores: "{{ he_vcpus }}"
       cpu_sockets: 1
       graphical_console:
-        headless_mode: False
+        headless_mode: false
         protocol:
-        - vnc
-        - spice
-      serial_console: True
+          - vnc
+          - spice
+      serial_console: true
       operating_system: rhel_7x64
       type: server
       high_availability_priority: 1
-      delete_protected: True
-#      timezone: "{{ he_time_zone }}" # TODO: fix with the right parameter syntax
+      delete_protected: true
+      # timezone: "{{ he_time_zone }}" # TODO: fix with the right parameter syntax
       storage_domain: "{{ he_storage_domain_name }}"
       disks:
-      - name: he_virtio_disk
+        - name: he_virtio_disk
       nics:
-      - name: vnet0
-        profile_name: "{{ he_mgmt_network }}"
-        interface: virtio
-        mac_address: "{{ he_vm_mac_addr }}"
+        - name: vnet0
+          profile_name: "{{ he_mgmt_network }}"
+          interface: virtio
+          mac_address: "{{ he_vm_mac_addr }}"
       auth: "{{ ovirt_auth }}"
     register: he_vm_details
   - debug: var=he_vm_details
@@ -189,5 +189,5 @@
     shell: virsh -r domuuid {{ he_vm_name }}Local | head -1
     environment: "{{ he_cmd_lang }}"
     register: external_local_vm_uuid
-    changed_when: True
+    changed_when: true
   - debug: var=external_local_vm_uuid

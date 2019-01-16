@@ -1,3 +1,4 @@
+---
 - name: Define he_host_ip
   block:
   - name: Define host ip if management bridge is not defined
@@ -9,7 +10,7 @@
     shell: ip addr | grep {{ he_mgmt_network }} | grep 'inet ' | cut -d' ' -f6 | cut -d'/' -f1
     changed_when: true
     register: host_ip_bridge
-    when: host_ip_no_bridge.stdout == ''
+    when: not host_ip_no_bridge.stdout
   - debug: var=host_ip_bridge
   - name: Set he_host_ip
     set_fact:
@@ -20,4 +21,4 @@
 - name: Fail if host's ip is empty
   fail:
     msg: Host has no IP address
-  when: he_host_ip == ''
+  when: not he_host_ip

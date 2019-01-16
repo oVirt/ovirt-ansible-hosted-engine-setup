@@ -20,8 +20,8 @@
     LANG: en_US.UTF-8
     LC_MESSAGES: en_US.UTF-8
     LC_ALL: en_US.UTF-8
-  ignore_errors: yes
-  changed_when: True
+  ignore_errors: true
+  changed_when: true
   with_items:
     - /var/log/ovirt-engine
     - /var/log/messages
