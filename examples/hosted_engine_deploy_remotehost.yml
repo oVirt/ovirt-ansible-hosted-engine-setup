@@ -33,7 +33,6 @@
     ovirt_engine_setup_firewall_manager: null
     ovirt_engine_setup_answer_file_path: /root/ovirt-engine-answers
     ovirt_engine_setup_use_remote_answer_file: true
-    ovirt_engine_setup_accept_defaults: true
     ovirt_engine_setup_update_all_packages: false
     ovirt_engine_setup_offline: true
     ovirt_engine_setup_admin_password: "{{ he_admin_password }}"

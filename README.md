@@ -129,7 +129,6 @@ All the playbooks can be found inside the `examples/` folder.
     ovirt_engine_setup_firewall_manager: null
     ovirt_engine_setup_answer_file_path: /root/ovirt-engine-answers
     ovirt_engine_setup_use_remote_answer_file: True
-    ovirt_engine_setup_accept_defaults: True
     ovirt_engine_setup_update_all_packages: false
     ovirt_engine_setup_offline: true
     ovirt_engine_setup_admin_password: "{{ he_admin_password }}"
@@ -216,7 +215,6 @@ All the playbooks can be found inside the `examples/` folder.
     ovirt_engine_setup_firewall_manager: null
     ovirt_engine_setup_answer_file_path: /root/ovirt-engine-answers
     ovirt_engine_setup_use_remote_answer_file: True
-    ovirt_engine_setup_accept_defaults: True
     ovirt_engine_setup_update_all_packages: false
     ovirt_engine_setup_offline: true
     ovirt_engine_setup_admin_password: "{{ he_admin_password }}"
