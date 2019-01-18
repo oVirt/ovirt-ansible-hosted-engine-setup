@@ -87,6 +87,12 @@
           changed_when: true
           ignore_errors: true
         - debug: var=hostname_res_count_output
+        - name: Filter resolved address list
+          set_fact:
+            hostname_res_count_output_filtered: >-
+              {{ hostname_res_count_output.stdout_lines |
+              difference(target_address_v6_list) |
+              difference([target_address_v4]) }}
         - name: Ensure the resolved address resolves only on the selected interface
           fail:
             msg: >
@@ -97,7 +103,7 @@
               Please make sure that the hostname got from
               the interface for the management network resolves
               only there.
-          when: hostname_res_count_output.stdout_lines|length > 1
+          when: hostname_res_count_output_filtered|length > 0
       when: he_bridge_if is defined and he_mgmt_network is defined
   when: he_host_address is defined and he_host_address is not none
 - name: Validate engine he_fqdn
