@@ -9,8 +9,9 @@
         register: host_domain_name
       - name: Set he_cloud_init_domain_name
         set_fact:
-          he_cloud_init_domain_name: "{{ host_domain_name.stdout_lines[0] }}"
+          he_cloud_init_domain_name: "{{ host_domain_name.stdout_lines[0] if host_domain_name.stdout_lines else '' }}"
         register: he_cloud_init_domain_name
+    when: he_cloud_init_domain_name is not defined
   - debug: var=he_cloud_init_domain_name
 
   - name: Define he_cloud_init_host_name
