@@ -1,0 +1,51 @@
+- name: Include Host vars
+  include_vars: "{{ file_item }}"
+  with_fileglob: "/usr/share/ansible/gluster_inventory.yml"
+  loop_control:
+    loop_var: file_item
+- debug: var=gluster
+
+- name: Set Engine public key as authorized key without validating the TLS/SSL certificates
+  authorized_key:
+    user: root
+    state: present
+    key: https://{{ FQDN }}/ovirt-engine/services/pki-resource?resource=engine-certificate&format=OPENSSH-PUBKEY
+    validate_certs: False
+  delegate_to: "{{ host }}"
+  with_items: "{{ gluster.hosts }}"
+  loop_control:
+    loop_var: host
+  when: "gluster is defined and 'hosts' in gluster"
+
+- name: Add additional gluster hosts to engine
+  async: 50
+  poll: 0
+  ignore_errors: true
+  ovirt_hosts:
+    cluster: "{{ CLUSTER }}"
+    name: "{{ host }}"
+    address: "{{ host }}"
+    state: present
+    public_key: true
+    auth: "{{ ovirt_auth }}"
+    hosted_engine: deploy
+  with_items: "{{ gluster.hosts }}"
+  loop_control:
+    loop_var: host
+  when: "gluster is defined and 'hosts' in gluster"
+
+- name: "Add additional glusterfs storage domains"
+  ignore_errors: true
+  ovirt_storage_domains:
+      name: "{{ sd.name }}"
+      host: "{{ HOST_NAME }}"
+      auth: "{{ ovirt_auth }}"
+      data_center: "{{ datacenter_name }}"
+      glusterfs:
+        address: "{{ STORAGE_DOMAIN_ADDR }}"
+        mount_options: "{{ sd.mount_options }}"
+        path: "{{ sd.path }}"
+  with_items: "{{ gluster.vars.storage_domains }}"
+  loop_control:
+    loop_var: sd
+  when: "gluster is defined and 'hosts' in gluster and 'vars' in gluster"
