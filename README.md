@@ -48,6 +48,7 @@ No.
 | he_data_center | Default | name of the datacenter with hosted-engine hosts |
 | he_host_name | $(hostname -f) | name used by the engine for the first host |
 | he_host_address | $(hostname -f) | address used by the engine for the first host |
+| he_bridge_if | null | interface used for the management bridge |
 
 ## NFS / Gluster Variables
 

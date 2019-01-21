@@ -62,7 +62,7 @@ he_source_email: root@localhost
 
 ## Mandatory variables:
 
-he_bridge_if: eth0
+he_bridge_if: null
 he_fqdn: null
 he_mem_size_MB: max
 he_vcpus: max
