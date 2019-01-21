@@ -104,7 +104,7 @@
               the interface for the management network resolves
               only there.
           when: hostname_res_count_output_filtered|length > 0
-      when: he_bridge_if is defined and he_mgmt_network is defined
+      when: he_bridge_if is defined and he_bridge_if is not none and he_mgmt_network is defined
   when: he_host_address is defined and he_host_address is not none
 - name: Validate engine he_fqdn
   block:
