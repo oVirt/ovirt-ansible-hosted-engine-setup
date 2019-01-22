@@ -73,7 +73,7 @@ he_enable_hc_gluster_service: false
 he_vm_mac_addr: null
 
 ## Storage domain vars:
-he_domain_type: null  # can be: nfs | iscsi | gluster | fc
+he_domain_type: null  # can be: nfs | iscsi | glusterfs | fc
 he_storage_domain_addr: null
 
 ## NFS vars:
