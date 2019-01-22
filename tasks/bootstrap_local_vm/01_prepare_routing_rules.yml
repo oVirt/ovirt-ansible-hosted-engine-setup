@@ -25,19 +25,12 @@
   - name: Get libvirt interfaces
     virt_net:
       command: facts
-  - name: Get routing rules, IPv4
-    command: ip rule
+  - name: Get routing rules
+    command: ip {%-if ipv6_deployment%} -6 {%-endif%} rule
     environment: "{{ he_cmd_lang }}"
-    register: route_rules_ipv4
+    register: route_rules
     changed_when: true
-  - debug: var=route_rules_ipv4
-  - name: Get routing rules, IPv6
-    command: ip -6 rule
-    environment: "{{ he_cmd_lang }}"
-    register: route_rules_ipv6
-    changed_when: true
-    when: ipv6_deployment
-  - debug: var=route_rules_ipv6
+  - debug: var=route_rules
   - name: Save bridge name
     set_fact:
       virbr_default: "{{ ansible_libvirt_networks['default']['bridge'] }}"
@@ -51,48 +44,35 @@
     delay: 3
   - name: Refresh network facts
     setup:
-    tags: ['skip_ansible_lint']
-  - name: Fetch IPv4 CIDR for {{ virbr_default }}
+    tags: [ 'skip_ansible_lint' ]
+  - name: Fetch IPv4 subnet for {{ virbr_default }}
+    # Single item list for use in unified route modification
     set_fact:
-      virbr_cidr_ipv4: >-
-        {{ (hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['address']+'/'
-        +hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['netmask']) |ipv4('host/prefix') }}
-    when: not ipv6_deployment
-  - debug: var=virbr_cidr_ipv4
-  - name: Fetch IPv6 CIDR for {{ virbr_default }}
+      virbr_subnets: >-
+        {{ [(hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['address']+'/'
+        +hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['netmask'])|ipv4('subnet')] }}
+    when:
+      - not ipv6_deployment
+  - name: Fetch IPv6 subnets for {{ virbr_default }}
     set_fact:
-      virbr_cidr_ipv6: >-
-        {{ (hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv6'][0]['address']+'/'+
-        hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv6'][0]['prefix']) |
-        ipv6('host/prefix') if 'ipv6' in hostvars[inventory_hostname]['ansible_'+virbr_default] else None }}
-    when: ipv6_deployment
-  - debug: var=virbr_cidr_ipv6
-  - name: Add IPv4 outbound route rules
-    command: ip rule add from {{ virbr_cidr_ipv4 }} priority 101 table main
+      virbr_subnets: >-
+        {{ (virbr_subnet|default([])+[item['address']+'/'+item['prefix'])|ipv6('subnet')])|unique }}
+    when:
+      - ipv6_deployment
+    with_items: "{{ hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv6']|rejectattr('scope','equalto','local')|list }}"
+  - name: Add outbound route rules
+    command: ip {%-if ipv6_deployment%} -6 {%-endif%} rule add from {{ item }} priority 101 table main
     environment: "{{ he_cmd_lang }}"
     register: result
-    when: not ipv6_deployment and "\"101:\tfrom \"+virbr_cidr_ipv4+\" lookup main\" not in route_rules_ipv4.stdout"
-    changed_when: true
+    when:
+      - route_rules.stdout|regex_search("^.*from\s+"+item|regex_escape()+"\s+lookup\s+main.*$", multiline=true) == None
+    with_items: "{{ virbr_subnets }}"
   - debug: var=result
-  - name: Add IPv4 inbound route rules
-    command: ip rule add from all to {{ virbr_cidr_ipv4 }} priority 100 table main
+  - name: Add inbound route rules
+    command: ip {%-if ipv6_deployment%} -6 {%-endif%} rule add from all to {{ item }} priority 100 table main
     environment: "{{ he_cmd_lang }}"
     register: result
-    changed_when: true
-    when: >-
-      not ipv6_deployment and "\"100:\tfrom all to \"+virbr_cidr_ipv4+\" lookup main\" not in route_rules_ipv4.stdout"
-  - debug: var=result
-  - name: Add IPv6 outbound route rules
-    command: ip -6 rule add from {{ virbr_cidr_ipv6 }} priority 101 table main
-    environment: "{{ he_cmd_lang }}"
-    register: result
-    when: ipv6_deployment and "\"101:\tfrom \"+virbr_cidr_ipv6+\" lookup main\" not in route_rules_ipv6.stdout"
-    changed_when: true
-  - debug: var=result
-  - name: Add IPv6 inbound route rules
-    command: ip -6 rule add from all to {{ virbr_cidr_ipv6 }} priority 100 table main
-    environment: "{{ he_cmd_lang }}"
-    register: result
-    changed_when: true
-    when: ipv6_deployment and "\"100:\tfrom all to \"+virbr_cidr_ipv6+\" lookup main\" not in route_rules_ipv6.stdout"
+    when:
+      - route_rules.stdout|regex_search("^.*from\s+all\s+to\s+"+item|regex_escape()+"\s+lookup\s+main.*$", multiline=true) == None
+    with_items: "{{ virbr_subnets }}"
   - debug: var=result
