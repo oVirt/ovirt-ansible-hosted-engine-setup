@@ -1,5 +1,21 @@
 ---
 - block:
+  - name: Determine localhost fqdn
+    command: hostname -f
+    register: localhost_fqdn
+    delegate_to: localhost
+    run_once: True
+    become: False
+    changed_when: False
+  - name: Preseed local_deployment fact with 'False'
+    set_fact:
+      local_deployment: False
+  - name: Determine that deployment is local
+    set_fact:
+      local_deployment: True
+    when:
+      - ansible_fqdn in localhost_fqdn.stdout
+      - ansible_fqdn not in he_fqdn
   - name: Install required packages for oVirt Hosted Engine deployment
     include_tasks: install_packages.yml
     when: he_install_packages

@@ -7,7 +7,7 @@
       groups: engine
       ansible_connection: smart
       ansible_ssh_extra_args: >-
-        -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {% if he_ansible_host_name != "localhost" %}
+        -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {% if not local_deployment %}
         -o ProxyCommand="ssh -W %h:%p -q root@{{ he_ansible_host_name }}" {% endif %}
       ansible_ssh_pass: "{{ he_appliance_password }}"
       ansible_user: root
@@ -128,10 +128,10 @@
           backup: true
       - name: Wait for SSH to restart on the local VM
         wait_for:
-          host='{{ he_fqdn }}'
-          port=22
-          delay=30
-          timeout=300
+          host: '{{ he_fqdn }}'
+          port: 22
+          delay: 30
+          timeout: 300
     rescue:
       - include_tasks: clean_localvm_dir.yml
       - name: Notify the user about a failure
