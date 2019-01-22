@@ -40,7 +40,7 @@ No.
 | he_vcpus | max | The amount of CPUs used on the engine VM |
 | he_disk_size_GB | 61 | Disk size of the engine VM |
 | he_vm_mac_addr | null | MAC address of the engine vm network interface. |
-| he_domain_type | null | Storage domain type. available options: *nfs*, *iscsi*, *gluster*, *fc* |
+| he_domain_type | null | Storage domain type. available options: *nfs*, *iscsi*, *glusterfs*, *fc* |
 | he_storage_domain_addr | null | Storage domain IP/DNS address |
 | he_ansible_host_name | localhost | hostname in use on the first HE host (not necessarily the Ansible controller one) |
 | he_restore_from_file | null | a backup file created with engine-backup to be restored on the fly |
