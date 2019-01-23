@@ -9,7 +9,7 @@
   authorized_key:
     user: root
     state: present
-    key: https://{{ FQDN }}/ovirt-engine/services/pki-resource?resource=engine-certificate&format=OPENSSH-PUBKEY
+    key: https://{{ he_fqdn }}/ovirt-engine/services/pki-resource?resource=engine-certificate&format=OPENSSH-PUBKEY
     validate_certs: False
   delegate_to: "{{ host }}"
   with_items: "{{ gluster.hosts }}"
@@ -22,7 +22,7 @@
   poll: 0
   ignore_errors: true
   ovirt_hosts:
-    cluster: "{{ CLUSTER }}"
+    cluster: "{{ he_cluster }}"
     name: "{{ host }}"
     address: "{{ host }}"
     state: present
@@ -38,11 +38,11 @@
   ignore_errors: true
   ovirt_storage_domains:
       name: "{{ sd.name }}"
-      host: "{{ HOST_NAME }}"
+      host: "{{ he_host_name }}"
       auth: "{{ ovirt_auth }}"
       data_center: "{{ datacenter_name }}"
       glusterfs:
-        address: "{{ STORAGE_DOMAIN_ADDR }}"
+        address: "{{ he_storage_domain_addr }}"
         mount_options: "{{ sd.mount_options }}"
         path: "{{ sd.path }}"
   with_items: "{{ gluster.vars.storage_domains }}"
