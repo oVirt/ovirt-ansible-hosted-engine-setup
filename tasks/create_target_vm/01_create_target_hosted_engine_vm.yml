@@ -154,6 +154,18 @@
       he_conf_disk_details: "{{ add_disks.results[2] }}"
       he_metadata_disk_details: "{{ add_disks.results[3] }}"
   - debug: var=add_disks
+  - name: Set default graphics protocols
+    set_fact:
+      he_graphic_protocols: [vnc, spice]
+  - name: Check if FIPS is enabled
+    command: sysctl -n crypto.fips_enabled
+    register: he_fips_enabled
+  - debug: var=he_fips_enabled
+  - name: Select graphic protocols
+    set_fact:
+      he_graphic_protocols: [spice]
+    when: he_fips_enabled.stdout == "1"
+  - debug: var=he_graphic_protocols
   - name: Add VM
     ovirt_vm:
       state: stopped
@@ -165,9 +177,7 @@
       cpu_sockets: 1
       graphical_console:
         headless_mode: false
-        protocol:
-          - vnc
-          - spice
+        protocol: "{{ he_graphic_protocols }}"
       serial_console: true
       operating_system: rhel_7x64
       type: server
