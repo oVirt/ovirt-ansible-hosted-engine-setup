@@ -21,7 +21,7 @@
   async: 50
   poll: 0
   ignore_errors: true
-  ovirt_hosts:
+  ovirt_host:
     cluster: "{{ he_cluster }}"
     name: "{{ host }}"
     address: "{{ host }}"
@@ -36,7 +36,7 @@
 
 - name: "Add additional glusterfs storage domains"
   ignore_errors: true
-  ovirt_storage_domains:
+  ovirt_storage_domain:
       name: "{{ sd.name }}"
       host: "{{ he_host_name }}"
       auth: "{{ ovirt_auth }}"
