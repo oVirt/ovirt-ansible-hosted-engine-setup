@@ -30,6 +30,7 @@
       wait: true
       local: false
       auth: "{{ ovirt_auth }}"
+    register: dc_result_presence
   - name: Ensure that the target cluster is present in the target datacenter
     ovirt_cluster:
       state: present
@@ -37,6 +38,15 @@
       data_center: "{{ he_data_center }}"
       wait: true
       auth: "{{ ovirt_auth }}"
+    register: cluster_result_presence
+  - name: Check actual cluster location
+    fail:
+      msg: >-
+        A cluster named '{{ he_cluster }}' has been created earlier in a different
+        datacenter and cluster moving is still not supported.
+        You can avoid this specifying a different cluster name;
+        please fix accordingly and try again.
+    when: cluster_result_presence.cluster.data_center.id != dc_result_presence.datacenter.id
   - name: Enable GlusterFS at cluster level
     ovirt_cluster:
       data_center: "{{ he_data_center }}"
