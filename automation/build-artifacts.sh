@@ -4,6 +4,10 @@
 rm -rf output
 rm -f ./*tar.gz
 
+# Run linters
+ansible-lint .
+yamllint .
+
 # Get the tarball
 ./build.sh dist
 
