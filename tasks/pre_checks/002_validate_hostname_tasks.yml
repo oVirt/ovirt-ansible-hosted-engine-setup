@@ -46,41 +46,37 @@
     - name: Ensure the resolved address resolves on the selected interface
       block:
         - name: Get target address from selected interface (IPv4)
-          set_fact:
-            target_address_v4: "{{
-              hostvars[inventory_hostname]['ansible_' + he_mgmt_network.replace('-','_')]['ipv4']['address']
-                if 'ansible_' + he_mgmt_network.replace('-','_') in hostvars[inventory_hostname] and
-                  'ipv4' in hostvars[inventory_hostname]['ansible_' + he_mgmt_network.replace('-','_')]
-              else
-              hostvars[inventory_hostname]['ansible_' + he_bridge_if.replace('-','_')]['ipv4']['address']
-                if 'ansible_' + he_bridge_if.replace('-','_') in hostvars[inventory_hostname] and
-                  'ipv4' in hostvars[inventory_hostname]['ansible_' + he_bridge_if.replace('-','_')]
-              else
-              None
-            }}"
+          shell: >-
+            ip addr show
+            {{ he_mgmt_network
+            if 'ansible_' + he_mgmt_network.replace('-','_') in hostvars[inventory_hostname]
+            else he_bridge_if }} |
+            grep 'inet ' |
+            cut -d' ' -f6 |
+            cut -d'/' -f1
+          register: target_address_v4
+          changed_when: true
         - debug: var=target_address_v4
         - name: Get target address from selected interface (IPv6)
-          set_fact:
-            target_address_v6_list: "{{
-              hostvars[inventory_hostname]['ansible_' + he_mgmt_network.replace('-','_')]['ipv6'] |
-              map(attribute='address') | list
-                if 'ansible_' + he_mgmt_network.replace('-','_') in hostvars[inventory_hostname] and
-                  'ipv6' in hostvars[inventory_hostname]['ansible_' + he_mgmt_network.replace('-','_')]
-              else
-              hostvars[inventory_hostname]['ansible_' + he_bridge_if.replace('-','_')]['ipv6'] |
-              map(attribute='address') | list
-                if 'ansible_' + he_bridge_if.replace('-','_') in hostvars[inventory_hostname] and
-                  'ipv6' in hostvars[inventory_hostname]['ansible_' + he_bridge_if.replace('-','_')]
-              else
-              []
-            }}"
-        - debug: var=target_address_v6_list
+          shell: >-
+            ip addr show
+            {{ he_mgmt_network
+            if 'ansible_' + he_mgmt_network.replace('-','_') in hostvars[inventory_hostname]
+            else he_bridge_if }} |
+            grep 'inet6 ' |
+            cut -d' ' -f6 |
+            cut -d'/' -f1
+          register: target_address_v6
+          changed_when: true
+        - debug: var=target_address_v6
         - name: Check the resolved address resolves on the selected interface
           fail:
             msg: >
               The resolved address doesn't resolve
               on the selected interface
-          when: r_host_address != target_address_v4 and r_host_address not in target_address_v6_list
+          when: >-
+            r_host_address not in target_address_v4.stdout_lines and
+            r_host_address not in target_address_v6.stdout_lines
         - name: Check for alias
           shell: getent ahosts {{ he_host_address }} | cut -d' ' -f1 | uniq
           register: hostname_res_count_output
@@ -91,8 +87,8 @@
           set_fact:
             hostname_res_count_output_filtered: >-
               {{ hostname_res_count_output.stdout_lines |
-              difference(target_address_v6_list) |
-              difference([target_address_v4]) }}
+              difference(target_address_v6.stdout_lines) |
+              difference(target_address_v4.stdout_lines) }}
         - name: Ensure the resolved address resolves only on the selected interface
           fail:
             msg: >
