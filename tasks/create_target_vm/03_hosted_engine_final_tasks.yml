@@ -306,6 +306,9 @@
             Engine VM IP address is {{ engine_vm_ip_vdsm }} while the engine's he_fqdn {{ he_fqdn }} resolves to
             {{ engine_vm_ip.stdout_lines[0] }}. If you are using DHCP, check your DHCP reservation configuration
         when: engine_vm_ip_vdsm != engine_vm_ip.stdout_lines[0]
+      - name: Fail is for any other reason the engine didn't started
+        fail:
+          msg: The engine failed to start inside the engine VM; please check engine.log.
   - name: Get target engine VM address
     shell: getent ahosts {{ he_fqdn }} | cut -d' ' -f1 | uniq
     environment: "{{ he_cmd_lang }}"
