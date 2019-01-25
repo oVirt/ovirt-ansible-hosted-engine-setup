@@ -12,6 +12,7 @@
       port: "{{ item.1 }}"
       target: "{{ he_iscsi_target }}"
     auth: "{{ ovirt_auth }}"
+  nolog: true
   ignore_errors: true
   # TODO: avoid the with_together loop once
   # https://github.com/ansible/ansible/issues/32640 got properly fixed
@@ -28,6 +29,7 @@
       port: "{{ he_iscsi_portal_port.split(',')|first if he_iscsi_portal_port is string else he_iscsi_portal_port }}"
       target: "{{ he_iscsi_target }}"
     auth: "{{ ovirt_auth }}"
+  nolog: true
   register: otopi_iscsi_devices
 - debug: var=otopi_iscsi_devices
 ...
