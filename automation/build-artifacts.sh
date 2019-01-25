@@ -4,9 +4,17 @@
 rm -rf output
 rm -f ./*tar.gz
 
-# Run linters
-ansible-lint .
-yamllint .
+# Run linters if available
+if [ -x "$(command -v ansible-lint)" ] ; then
+    ansible-lint .
+else
+    echo "Skipping ansible-lint because it's not available"
+fi
+if [ -x "$(command -v yamllint)" ] ; then
+    yamllint .
+else
+    echo "Skipping yamllint because it's not available"
+fi
 
 # Get the tarball
 ./build.sh dist
