@@ -64,11 +64,7 @@
         address: "{{ he_storage_domain_addr }}"
         path: "{{ he_storage_domain_path }}"
         mount_options: "{{ he_mount_options }}"
-      auth:
-        username: admin@internal
-        password: "{{ he_admin_password }}"
-        url: https://{{ he_fqdn }}/ovirt-engine/api
-        insecure: true
+      auth: "{{ ovirt_auth }}"
     when: he_domain_type == "glusterfs"
     register: otopi_storage_domain_details_gluster
   - name: Add iSCSI storage domain

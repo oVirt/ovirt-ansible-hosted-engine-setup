@@ -8,6 +8,7 @@
         port: "{{ he_iscsi_portal_port }}"
         username: "{{ he_iscsi_discover_username }}"
         password: "{{ he_iscsi_discover_password }}"
+  nolog: true
 - name: Fetch host facts
   ovirt_host_facts:
     pattern: name={{ he_host_name }}
@@ -31,6 +32,7 @@
     headers:
       Content-Type: application/json
       Accept: application/json
+  nolog: true
   register: otopi_iscsi_targets
 - debug: var=otopi_iscsi_targets
 # TODO: perform an iSCSI logout when viable, see:

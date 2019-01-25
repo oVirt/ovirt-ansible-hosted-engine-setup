@@ -34,6 +34,7 @@
     lineinfile:
       path: /root/ovirt-engine-answers
       line: "{{ item }}"
+    no_log: true
     with_items:
       - "OVESETUP_CONFIG/adminPassword=str:{{ he_admin_password }}"
   - name: Include before engine-setup custom tasks files for the engine VM
