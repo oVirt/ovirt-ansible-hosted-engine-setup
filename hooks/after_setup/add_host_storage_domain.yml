@@ -1,3 +1,4 @@
+---
 - name: Include Host vars
   include_vars: "{{ file_item }}"
   with_fileglob: "/usr/share/ansible/gluster_inventory.yml"
@@ -10,7 +11,7 @@
     user: root
     state: present
     key: https://{{ he_fqdn }}/ovirt-engine/services/pki-resource?resource=engine-certificate&format=OPENSSH-PUBKEY
-    validate_certs: False
+    validate_certs: false
   delegate_to: "{{ host }}"
   with_items: "{{ gluster.hosts }}"
   loop_control:
@@ -37,14 +38,14 @@
 - name: "Add additional glusterfs storage domains"
   ignore_errors: true
   ovirt_storage_domain:
-      name: "{{ sd.name }}"
-      host: "{{ he_host_name }}"
-      auth: "{{ ovirt_auth }}"
-      data_center: "{{ datacenter_name }}"
-      glusterfs:
-        address: "{{ he_storage_domain_addr }}"
-        mount_options: "{{ sd.mount_options }}"
-        path: "{{ sd.path }}"
+    name: "{{ sd.name }}"
+    host: "{{ he_host_name }}"
+    auth: "{{ ovirt_auth }}"
+    data_center: "{{ datacenter_name }}"
+    glusterfs:
+      address: "{{ he_storage_domain_addr }}"
+      mount_options: "{{ sd.mount_options }}"
+      path: "{{ sd.path }}"
   with_items: "{{ gluster.vars.storage_domains }}"
   loop_control:
     loop_var: sd
