@@ -1,7 +1,7 @@
 ---
 - name: Include Host vars
   include_vars: "{{ file_item }}"
-  with_fileglob: "/usr/share/ansible/gluster_inventory.yml"
+  with_fileglob: "/usr/share/ovirt-hosted-engine-setup/gdeploy-inventory.yml"
   loop_control:
     loop_var: file_item
 - debug: var=gluster
