@@ -11,7 +11,7 @@
         -o ProxyCommand="ssh -W %h:%p -q root@{{ he_ansible_host_name }}" {% endif %}
       ansible_ssh_pass: "{{ he_appliance_password }}"
       ansible_user: root
-    nolog: true
+    no_log: true
   - name: Initial tasks
     block:
       - name: Get host unique id
