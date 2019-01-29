@@ -1,8 +1,8 @@
 #!/bin/bash
 
-VERSION="1.0.8"
-MILESTONE=
-RPM_RELEASE="1"
+VERSION="1.0.9"
+MILESTONE=master
+RPM_RELEASE="0.1.$MILESTONE.$(date -u +%Y%m%d%H%M%S)"
 
 ROLE_NAME="ovirt.hosted_engine_setup"
 PACKAGE_NAME="ovirt-ansible-hosted-engine-setup"
