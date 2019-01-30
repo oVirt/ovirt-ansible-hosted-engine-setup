@@ -53,25 +53,31 @@
   - name: Final clean
     include_tasks: final_clean.yml
     when: he_final_clean
+  tags: he_full_setup
 
 - name: Sub-Stages for interactive setup execution
   block:
     - name: Validate network interface
       import_tasks: "pre_checks/001_validate_network_interfaces.yml"
+      tags: he_pre_checks_network
       when: he_pre_checks_network
 
     - name: Validate hostnames
       import_tasks: "pre_checks/002_validate_hostname_tasks.yml"
+      tags: he_pre_checks_validate_hostnames
       when: he_pre_checks_validate_hostnames
 
     - name: Get FC devices
       import_tasks: "fc_getdevices.yml"
+      tags: he_setup_fc_getdevices
       when: he_setup_fc_getdevices
 
     - name: iSCSI discover
       import_tasks: "iscsi_discover.yml"
+      tags: he_setup_iscsi_discover
       when: he_setup_iscsi_discover
 
     - name: Get iSCSI devices
       import_tasks: "iscsi_getdevices.yml"
+      tags: he_setup_iscsi_getdevices
       when: he_setup_iscsi_getdevices
