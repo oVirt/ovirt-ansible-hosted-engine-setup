@@ -1,77 +1,19 @@
 ---
-- block:
-  - name: Install required packages for oVirt Hosted Engine deployment
-    include_tasks: install_packages.yml
-    when: he_install_packages
+- name: Deploy hosted-engine
+  import_tasks: full_execution.yml
+  tags: always
 
-  - name: Clean environment before deployment
-    include_tasks: initial_clean.yml
-    when: he_initial_clean
-
-  - name: System configuration validations
-    include_tasks: "{{ item }}"
-    with_fileglob: "pre_checks/*.yml"
-    when: he_pre_checks
-
-  - name: 01_02 bootstrap local vm tasks
-    block:
-      - name: 01 Bootstrap local VM
-        include_tasks: bootstrap_local_vm/01_prepare_routing_rules.yml
-
-      - name: 02 Bootstrap local VM
-        include_tasks: bootstrap_local_vm/02_create_local_vm.yml
-    when: he_bootstrap_local_vm
-
-  - name: 03 Bootstrap local VM
-    include_tasks: bootstrap_local_vm/03_engine_initial_tasks.yml
-    when: he_bootstrap_pre_install_local_engine_vm
-
-  - name: 04 Bootstrap local VM
-    include_tasks: bootstrap_local_vm/04_engine_final_tasks.yml
-    when: he_bootstrap_post_install_local_engine_vm
-
-  - name: 05 Bootstrap local VM
-    include_tasks: bootstrap_local_vm/05_add_host.yml
-    when: he_bootstrap_local_vm_add_host
-
-  - name: Create Storage Domain
-    include_tasks: create_storage_domain.yml
-    when: he_create_storage_domain
-
-  - name: Create target hosted engine vm
-    include_tasks: create_target_vm/01_create_target_hosted_engine_vm.yml
-    when: he_create_target_vm
-
-  - name: Engine VM configuration
-    include_tasks: create_target_vm/02_engine_vm_configuration.yml
-    when: he_engine_vm_configuration
-
-  - name: Hosted engine final tasks
-    include_tasks: create_target_vm/03_hosted_engine_final_tasks.yml
-    when: he_final_tasks
-
-  - name: Final clean
-    include_tasks: final_clean.yml
-    when: he_final_clean
-
-- name: Sub-Stages for interactive setup execution
-  block:
-    - name: Validate network interface
-      import_tasks: "pre_checks/001_validate_network_interfaces.yml"
-      when: he_pre_checks_network
-
-    - name: Validate hostnames
-      import_tasks: "pre_checks/002_validate_hostname_tasks.yml"
-      when: he_pre_checks_validate_hostnames
-
-    - name: Get FC devices
-      import_tasks: "fc_getdevices.yml"
-      when: he_setup_fc_getdevices
-
-    - name: iSCSI discover
-      import_tasks: "iscsi_discover.yml"
-      when: he_setup_iscsi_discover
-
-    - name: Get iSCSI devices
-      import_tasks: "iscsi_getdevices.yml"
-      when: he_setup_iscsi_getdevices
+- name: Execute just a specific set of steps
+  import_tasks: partial_execution.yml
+  tags:
+    - initial_clean
+    - final_clean
+    - bootstrap_local_vm
+    - create_storage_domain
+    - create_target_vm
+    - iscsi_discover
+    - iscsi_getdevices
+    - fc_getdevices
+    - get_network_interfaces
+    - validate_hostnames
+    - never

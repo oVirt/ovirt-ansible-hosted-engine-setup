@@ -107,9 +107,6 @@
       name: "{{ he_vm_name }}Local"
       command: undefine
       uri: 'qemu+tls://{{ he_host_address }}/system'
-  - name: Set spmId
-    set_fact: spmId="{{ hostvars[he_fqdn]['host_spm_id'] }}"
-  - debug: var=spmId
   - name: Detect ovirt-hosted-engine-ha version
     command: >-
       python -c 'from ovirt_hosted_engine_ha.agent import constants as agentconst; print(agentconst.PACKAGE_VERSION)'
