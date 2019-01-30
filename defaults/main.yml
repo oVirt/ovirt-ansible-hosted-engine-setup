@@ -1,25 +1,4 @@
 ---
-# Stages
-he_install_packages: false
-he_initial_clean: false
-he_pre_checks: false
-he_bootstrap_local_vm: false
-he_bootstrap_pre_install_local_engine_vm: false
-he_bootstrap_post_install_local_engine_vm: false
-he_bootstrap_local_vm_add_host: false
-he_create_storage_domain: false
-he_create_target_vm: false
-he_engine_vm_configuration: false
-he_final_tasks: false
-he_final_clean: false
-
-# Sub-Stages for interactive setup execution
-he_pre_checks_network: false
-he_pre_checks_validate_hostnames: false
-he_setup_fc_getdevices: false
-he_setup_iscsi_discover: false
-he_setup_iscsi_getdevices: false
-
 # Default vars
 # Do not change these variables
 # Changes in this section are NOT supported

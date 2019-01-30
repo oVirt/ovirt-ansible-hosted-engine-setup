@@ -95,85 +95,9 @@ All the playbooks can be found inside the `examples/` folder.
 
 ```yml
 ---
-- name: Install packages and bootstrap local engine VM
+- name: Deploy oVirt hosted engine
   hosts: localhost
   connection: local
-  vars_files:
-    - passwords.yml
-  vars:
-    he_install_packages: true
-    he_pre_checks: true
-    he_initial_clean: true
-    he_bootstrap_local_vm: true
-    ovirt_repositories_ovirt_release_rpm: "{{ ovirt_repo_release_rpm }}"
-  roles:
-    - role: ovirt.repositories
-    - role: ovirt.hosted_engine_setup
-
-- name: Local engine VM installation - Pre tasks
-  hosts: engine
-  vars_files:
-    - passwords.yml
-  vars:
-    he_bootstrap_pre_install_local_engine_vm: true
-  roles:
-    - role: ovirt.hosted_engine_setup
-
-- name: Engine Setup on local VM
-  hosts: engine
-  vars_files:
-    - passwords.yml
-  vars:
-    ovirt_engine_setup_hostname: "{{ he_fqdn.split('.')[0] }}"
-    ovirt_engine_setup_organization: "{{ he_cloud_init_domain_name }}"
-    ovirt_engine_setup_dwh_db_host: "{{ he_fqdn.split('.')[0] }}"
-    ovirt_engine_setup_firewall_manager: null
-    ovirt_engine_setup_answer_file_path: /root/ovirt-engine-answers
-    ovirt_engine_setup_use_remote_answer_file: True
-    ovirt_engine_setup_update_all_packages: false
-    ovirt_engine_setup_offline: true
-    ovirt_engine_setup_admin_password: "{{ he_admin_password }}"
-  roles:
-    - role: ovirt.engine-setup
-
-- name: Local engine VM installation - Post tasks
-  hosts: engine
-  vars_files:
-    - passwords.yml
-  vars:
-    he_bootstrap_post_install_local_engine_vm: true
-  roles:
-    - role: ovirt.hosted_engine_setup
-
-- name: Configure engine VM on a storage domain
-  hosts: localhost
-  connection: local
-  vars_files:
-    - passwords.yml
-  vars:
-    he_bootstrap_local_vm_add_host: true
-    he_create_storage_domain: true
-    he_create_target_vm: true
-  roles:
-    - role: ovirt.hosted_engine_setup
-
-- name: Configure database settings
-  hosts: engine
-  vars_files:
-    - passwords.yml
-  vars:
-    he_engine_vm_configuration: true
-  roles:
-    - role: ovirt.hosted_engine_setup
-
-- name: Closeup
-  hosts: localhost
-  connection: local
-  vars_files:
-    - passwords.yml
-  vars:
-    he_final_tasks: true
-    he_final_clean: true
   roles:
     - role: ovirt.hosted_engine_setup
 ```
@@ -182,89 +106,11 @@ All the playbooks can be found inside the `examples/` folder.
 
 ```yml
 ---
-- name: Install packages and bootstrap local engine VM
+- name: Deploy oVirt hosted engine
   hosts: host123.localdomain
-  vars_files:
-    - passwords.yml
-  vars:
-    he_install_packages: true
-    he_pre_checks: true
-    he_initial_clean: true
-    he_bootstrap_local_vm: true
-    ovirt_repositories_ovirt_release_rpm: "{{ ovirt_repo_release_rpm }}"
-  roles:
-    - role: ovirt.repositories
-    - role: ovirt.hosted_engine_setup
-
-- name: Local engine VM installation - Pre tasks
-  hosts: engine
-  vars_files:
-    - passwords.yml
-  vars:
-    he_bootstrap_pre_install_local_engine_vm: true
-  roles:
-    - role: ovirt.hosted_engine_setup
-
-- name: Engine Setup on local VM
-  hosts: engine
-  vars_files:
-    - passwords.yml
-  vars:
-    ovirt_engine_setup_hostname: "{{ he_fqdn.split('.')[0] }}"
-    ovirt_engine_setup_organization: "{{ he_cloud_init_domain_name }}"
-    ovirt_engine_setup_dwh_db_host: "{{ he_fqdn.split('.')[0] }}"
-    ovirt_engine_setup_firewall_manager: null
-    ovirt_engine_setup_answer_file_path: /root/ovirt-engine-answers
-    ovirt_engine_setup_use_remote_answer_file: True
-    ovirt_engine_setup_update_all_packages: false
-    ovirt_engine_setup_offline: true
-    ovirt_engine_setup_admin_password: "{{ he_admin_password }}"
-  roles:
-    - role: oVirt.engine-setup
-
-- name: Local engine VM installation - Post tasks
-  hosts: engine
-  vars_files:
-    - passwords.yml
-  vars:
-    he_bootstrap_post_install_local_engine_vm: true
-  roles:
-    - role: ovirt.hosted_engine_setup
-
-- name: Configure engine VM on a storage domain
-  hosts: host123.localdomain
-  vars_files:
-    - passwords.yml
-  vars:
-    he_bootstrap_local_vm_add_host: true
-    he_create_storage_domain: true
-    he_create_target_vm: true
-  roles:
-    - role: ovirt.hosted_engine_setup
-
-- name: Configure database settings
-  hosts: engine
-  vars_files:
-    - passwords.yml
-  vars:
-    he_engine_vm_configuration: true
-  roles:
-    - role: ovirt.hosted_engine_setup
-
-- name: Closeup
-  hosts: host123.localdomain
-  vars_files:
-    - passwords.yml
-  vars:
-    he_final_tasks: true
-    he_final_clean: true
   roles:
     - role: ovirt.hosted_engine_setup
 ```
-
-
-### __Note__:
-Unlike standard roles that are called once in a playbook, we call this role 5 times. The reason for that is due to the fact that Ansible allows executing a role only for one host. Thus, because we need to execute tasks on both `host` and `engine` hosts we had to call the role more than one time.
 
 ## passwords.yml
 
@@ -454,12 +300,12 @@ $ ansible-vault encrypt passwords.yml
 
 Local deployment:
 ```sh
-$ ansible-playbook hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --ask-vault-pass
+$ ansible-playbook hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --extra-vars='@passwords.yml' --ask-vault-pass
 ```
 
 Deployment over a remote host:
 ```sh
-ansible-playbook -i host123.localdomain, hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --ask-vault-pass
+ansible-playbook -i host123.localdomain, hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --extra-vars='@passwords.yml' --ask-vault-pass
 ```
 
 Demo
