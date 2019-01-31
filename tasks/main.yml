@@ -4,7 +4,7 @@
   tags: always
 
 - name: Execute just a specific set of steps
-  import_tasks: partial_execution.yml
+  include_tasks: partial_execution.yml
   tags:
     - initial_clean
     - final_clean
