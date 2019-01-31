@@ -1,4 +1,20 @@
 ---
+- name: Force facts gathering
+  setup:
+  tags:
+    - initial_clean
+    - final_clean
+    - bootstrap_local_vm
+    - create_storage_domain
+    - create_target_vm
+    - iscsi_discover
+    - iscsi_getdevices
+    - fc_getdevices
+    - get_network_interfaces
+    - validate_hostnames
+    - never
+
+
 - name: Initial validations and cleanups
   block:
     - name: Install required packages for oVirt Hosted Engine deployment
