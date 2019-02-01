@@ -18,7 +18,7 @@
         shell: |
            if [ -e /etc/vdsm/vdsm.id ];
            then cat /etc/vdsm/vdsm.id;
-           else if [ -e /proc/device-tree/system-id ];
+           elif [ -e /proc/device-tree/system-id ];
            then cat /proc/device-tree/system-id; #ppc64le
            else dmidecode -s system-uuid;
            fi;
