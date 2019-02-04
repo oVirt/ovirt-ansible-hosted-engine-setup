@@ -15,7 +15,13 @@
   - name: Initial tasks
     block:
       - name: Get host unique id
-        shell: if [ -e /etc/vdsm/vdsm.id ]; then cat /etc/vdsm/vdsm.id; else dmidecode -s system-uuid; fi;
+        shell: |
+          if [ -e /etc/vdsm/vdsm.id ];
+          then cat /etc/vdsm/vdsm.id;
+          elif [ -e /proc/device-tree/system-id ];
+          then cat /proc/device-tree/system-id; #ppc64le
+          else dmidecode -s system-uuid;
+          fi;
         environment: "{{ he_cmd_lang }}"
         changed_when: true
         register: unique_id_out
