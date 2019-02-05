@@ -29,7 +29,6 @@
       port: "{{ he_iscsi_portal_port.split(',')|first if he_iscsi_portal_port is string else he_iscsi_portal_port }}"
       target: "{{ he_iscsi_target }}"
     auth: "{{ ovirt_auth }}"
-  no_log: true
   register: otopi_iscsi_devices
 - debug: var=otopi_iscsi_devices
 ...
