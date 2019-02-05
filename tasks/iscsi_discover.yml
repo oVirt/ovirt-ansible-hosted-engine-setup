@@ -32,7 +32,6 @@
     headers:
       Content-Type: application/json
       Accept: application/json
-  no_log: true
   register: otopi_iscsi_targets
 - debug: var=otopi_iscsi_targets
 # TODO: perform an iSCSI logout when viable, see:
