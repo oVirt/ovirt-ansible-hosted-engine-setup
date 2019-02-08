@@ -1,16 +1,11 @@
 ---
 - name: Hosted-Engine final tasks
   block:
-  # workaround for https://bugzilla.redhat.com/1590943
-  - name: Enable again the serial console device
-    ovirt_vm:
-      id: "{{ he_vm_details.vm.id }}"
-      serial_console: true
-      auth: "{{ ovirt_auth }}"
-  - name: Trigger hosted engine OVF update
+  - name: Trigger hosted engine OVF update and enable the serial console
     ovirt_vm:
       id: "{{ he_vm_details.vm.id }}"
       description: "Hosted engine VM"
+      serial_console: true
       auth: "{{ ovirt_auth }}"
   - name: Wait until OVF update finishes
     ovirt_storage_domain_facts:

@@ -181,7 +181,7 @@
       graphical_console:
         headless_mode: false
         protocol: "{{ he_graphic_protocols }}"
-      serial_console: true
+      serial_console: false
       operating_system: rhel_7x64
       type: server
       high_availability_priority: 1
