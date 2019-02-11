@@ -27,6 +27,17 @@
     command: engine-config -s OvfUpdateIntervalInMinutes=1
     environment: "{{ he_cmd_lang }}"
     changed_when: true
+  - name: Allow the webadmin UI to be accessed over the first host
+    block:
+      - name: Saving original value
+        replace:
+          path: /etc/ovirt-engine/engine.conf.d/11-setup-sso.conf
+          regexp: '^(SSO_ALTERNATE_ENGINE_FQDNS=.*)'
+          replace: '#\1 # pre hosted-engine-setup'
+      - name: Adding new SSO_ALTERNATE_ENGINE_FQDNS line
+        lineinfile:
+          path: /etc/ovirt-engine/engine.conf.d/11-setup-sso.conf
+          line: 'SSO_ALTERNATE_ENGINE_FQDNS="{{ he_host_address }}" # hosted-engine-setup'
   - name: Restart ovirt-engine service for changed OVF Update configuration and LibgfApi support
     systemd:
       state: restarted

@@ -27,6 +27,7 @@ he_mgmt_network: ovirtmgmt
 he_storage_domain_name: hosted_storage
 he_ansible_host_name: localhost
 he_ipv6_subnet_prefix: fd00:1234:5678:900
+he_webui_forward_port: 6900  # by default already open for VM console
 
 he_host_ip: null
 he_host_name: null
