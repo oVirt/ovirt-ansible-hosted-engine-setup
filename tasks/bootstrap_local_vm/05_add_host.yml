@@ -10,6 +10,29 @@
     retries: 30
     delay: 20
   - debug: var=engine_status
+  - name: Open a port on firewalld
+    firewalld:
+      port: "{{ he_webui_forward_port }}/tcp"
+      permanent: false
+      immediate: true
+      state: enabled
+  - name: Expose engine VM webui over a local port via ssh port forwarding
+    command: >-
+      sshpass -e ssh -tt -o ServerAliveInterval=5 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -g -L
+      {{ he_webui_forward_port }}:{{ he_fqdn }}:443 {{ he_fqdn }}
+    environment:
+      - "{{ he_cmd_lang }}"
+      - SSHPASS: "{{ he_appliance_password }}"
+    changed_when: true
+    async: 86400
+    poll: 0
+    register: sshpf
+  - debug: var=sshpf
+  - name: Evaluate temporary bootstrap engine URL
+    set_fact: bootstrap_engine_url="https://{{ he_host_address }}:{{ he_webui_forward_port }}/ovirt-engine/"
+  - debug:
+      msg: >-
+        The bootstrap engine is temporary accessible over {{ bootstrap_engine_url }}
   - name: Detect VLAN ID
     shell: ip -d link show {{ he_bridge_if }} | grep 'vlan ' | grep -Po 'id \K[\d]+' | cat
     environment: "{{ he_cmd_lang }}"

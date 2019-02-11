@@ -62,3 +62,15 @@
       path: /root/OvfUpdateIntervalInMinutes.txt
       state: absent
     changed_when: true
+  - name: Restore original SSO_ALTERNATE_ENGINE_FQDNS
+    block:
+      - name: Removing temporary value
+        lineinfile:
+          path: /etc/ovirt-engine/engine.conf.d/11-setup-sso.conf
+          regexp: '^SSO_ALTERNATE_ENGINE_FQDNS=.* # hosted-engine-setup'
+          state: absent
+      - name: Restoring original value
+        replace:
+          path: /etc/ovirt-engine/engine.conf.d/11-setup-sso.conf
+          regexp: '^#(SSO_ALTERNATE_ENGINE_FQDNS=.*) # pre hosted-engine-setup'
+          replace: '\1'
