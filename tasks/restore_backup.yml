@@ -72,8 +72,8 @@
   command: >-
     {{ scl_pg_prefix }} psql -d engine -c
     "UPDATE storage_domain_static SET
-    storage_name='{{ STORAGE_DOMAIN_NAME }}_old_{{ ansible_date_time.iso8601_basic_short }}' WHERE
-    storage_name='{{ STORAGE_DOMAIN_NAME }}'"
+    storage_name='{{ he_storage_domain_name }}_old_{{ ansible_date_time.iso8601_basic_short }}' WHERE
+    storage_name='{{ he_storage_domain_name }}'"
   environment: "{{ he_cmd_lang }}"
   become: true
   become_user: postgres
