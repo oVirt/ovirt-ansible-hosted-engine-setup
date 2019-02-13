@@ -13,8 +13,10 @@ chpasswd:
 {% if he_time_zone is defined %}
 timezone: {{ he_time_zone }}
 {% endif %}
-bootcmd:
+runcmd:
+{% if he_apply_openscap_profile and oscap_profile.stdout|length > 1 and oscap_datastream|length > 1 %}
+  - oscap xccdf eval --profile {{ oscap_profile.stdout }} --remediate --report /root/openscap-report.html {{ oscap_datastream }}
+{% endif %}
   - if grep -Gq "^\s*PermitRootLogin" /etc/ssh/sshd_config; then sed -re "s/^\s*(PermitRootLogin)\s+(yes|no|without-password)/\1 {{ he_root_ssh_access }}/" -i.$(date -u +%Y%m%d%H%M%S) /etc/ssh/sshd_config; else echo "PermitRootLogin {{ he_root_ssh_access }}" >> /etc/ssh/sshd_config; fi
   - if grep -Gq "^\s*UseDNS" /etc/ssh/sshd_config; then sed -re "s/^\s*(UseDNS)\s+(yes|no)/\1 no/" -i.$(date -u +%Y%m%d%H%M%S) /etc/ssh/sshd_config; else echo "UseDNS no" >> /etc/ssh/sshd_config; fi
-runcmd:
   - systemctl restart sshd &

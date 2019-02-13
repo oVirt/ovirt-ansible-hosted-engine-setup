@@ -50,6 +50,7 @@ No.
 | he_host_name | $(hostname -f) | name used by the engine for the first host |
 | he_host_address | $(hostname -f) | address used by the engine for the first host |
 | he_bridge_if | null | interface used for the management bridge |
+| he_apply_openscap_profile | false | apply a default OpenSCAP security profile on HE VM |
 
 ## NFS / Gluster Variables
 
