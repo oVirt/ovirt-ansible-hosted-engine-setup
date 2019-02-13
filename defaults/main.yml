@@ -40,6 +40,9 @@ he_smtp_server: localhost
 he_dest_email: root@localhost
 he_source_email: root@localhost
 
+he_force_ip4: false
+he_force_ip6: false
+
 ## Mandatory variables:
 
 he_bridge_if: null

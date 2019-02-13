@@ -1,20 +1,9 @@
 ---
-- name: Get full hostname
-  command: hostname -f
-  changed_when: true
-  register: host_full_name
-- name: Define he_host_name if not defined
-  set_fact:
-    he_host_name: "{{ host_full_name.stdout_lines[0] }}"
-  register: he_host_name
-  when: he_host_name is none
-- debug: var=he_host_name
-- name: Define he_host_address if not defined
-  set_fact:
-    he_host_address: "{{ host_full_name.stdout_lines[0] }}"
-  register: he_host_address
-  when: he_host_address is none
-- debug: var=he_host_address
+- name: Choose IPv4, IPv6 or auto
+  import_tasks: ipv_switch.yml
+- name: Define he_host_address and he_host_ip
+  import_tasks: fetch_host_ip.yml
+  when: he_host_ip is none or he_host_address is none
 
 - name: Validate host hostname
   block:
@@ -23,26 +12,11 @@
         msg: >
           localhost is not a valid address
       when: he_host_address in ['localhost', 'localhost.localdomain']
-    - name: Get host address resolution
-      shell: getent ahosts {{ he_host_address }} | grep {{ he_host_address }}
-      register: hostname_resolution_output
-      changed_when: true
-      ignore_errors: true
-    - debug: var=hostname_resolution_output
-    - name: Check address resolution
-      fail:
-        msg: >
-          Unable to resolve address
-      when: hostname_resolution_output.rc != 0
-    - name: Parse host address resolution
-      set_fact:
-        r_host_address: "{{ hostname_resolution_output.stdout.split()[0] }}"
-    - debug: var=r_host_address
     - name: Ensure host address resolves locally
       fail:
         msg: >
           The address proposed for this host does not resolves locally
-      when: r_host_address not in ansible_all_ipv4_addresses | union(ansible_all_ipv6_addresses)
+      when: he_host_ip not in ansible_all_ipv4_addresses | union(ansible_all_ipv6_addresses)
     - name: Ensure the resolved address resolves on the selected interface
       block:
         - name: Get target address from selected interface (IPv4)
@@ -75,10 +49,10 @@
               The resolved address doesn't resolve
               on the selected interface
           when: >-
-            r_host_address not in target_address_v4.stdout_lines and
-            r_host_address not in target_address_v6.stdout_lines
+            he_host_ip not in target_address_v4.stdout_lines and
+            he_host_ip not in target_address_v6.stdout_lines
         - name: Check for alias
-          shell: getent ahosts {{ he_host_address }} | cut -d' ' -f1 | uniq
+          shell: getent {{ ip_key }} {{ he_host_address }} | cut -d' ' -f1 | uniq
           register: hostname_res_count_output
           changed_when: true
           ignore_errors: true
@@ -95,7 +69,7 @@
               hostname '{{ he_host_address }}' doesn't uniquely match the interface
               '{{ he_bridge_if }}' selected for the management bridge;
               it matches also interface with IP {{ hostname_res_count_output.stdout_lines |
-              difference([r_host_address,]) }}.
+              difference([he_host_ip,]) }}.
               Please make sure that the hostname got from
               the interface for the management network resolves
               only there.
@@ -110,7 +84,7 @@
           localhost is not a valid he_fqdn for the engine VM
       when: he_fqdn in ['localhost', 'localhost.localdomain']
     - name: Get engine FQDN resolution
-      shell: getent ahosts {{ he_fqdn }} | grep STREAM
+      shell: getent {{ ip_key }} {{ he_fqdn }} | grep STREAM
       environment: "{{ he_cmd_lang }}"
       register: fqdn_resolution_output
       changed_when: true
