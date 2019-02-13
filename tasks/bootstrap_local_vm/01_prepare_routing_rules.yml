@@ -15,8 +15,8 @@
   - name: Check IPv6
     set_fact:
       ipv6_deployment: >-
-        {{ true if r_host_address not in target_address_v4.stdout_lines and
-        r_host_address in target_address_v6.stdout_lines
+        {{ true if he_host_ip not in target_address_v4.stdout_lines and
+        he_host_ip in target_address_v6.stdout_lines
         else false }}
   - include_tasks: libvirt_default_net_ipv6_tasks.yml
     when: ipv6_deployment

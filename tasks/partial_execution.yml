@@ -82,6 +82,9 @@
 
 - name: Create and configure target VM
   block:
+    - name: Fetch host IP address
+      import_tasks: fetch_host_ip.yml
+
     - name: Create target hosted engine vm
       import_tasks: create_target_vm/01_create_target_hosted_engine_vm.yml
 

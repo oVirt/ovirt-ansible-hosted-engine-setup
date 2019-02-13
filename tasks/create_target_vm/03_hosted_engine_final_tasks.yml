@@ -1,6 +1,8 @@
 ---
 - name: Hosted-Engine final tasks
   block:
+  - name: Choose IPv4, IPv6 or auto
+    import_tasks: ipv_switch.yml
   - name: Trigger hosted engine OVF update and enable the serial console
     ovirt_vm:
       id: "{{ he_vm_details.vm.id }}"
@@ -278,7 +280,7 @@
           msg: "Engine VM is not running, please check vdsm logs"
         when: vm_status_virsh.rc != 0
       - name: Get target engine VM IP address
-        shell: getent ahosts {{ he_fqdn }} | cut -d' ' -f1 | uniq
+        shell: getent {{ ip_key }} {{ he_fqdn }} | cut -d' ' -f1 | uniq
         environment: "{{ he_cmd_lang }}"
         register: engine_vm_ip
         changed_when: true
@@ -302,7 +304,7 @@
         fail:
           msg: The engine failed to start inside the engine VM; please check engine.log.
   - name: Get target engine VM address
-    shell: getent ahosts {{ he_fqdn }} | cut -d' ' -f1 | uniq
+    shell: getent {{ ip_key }} {{ he_fqdn }} | cut -d' ' -f1 | uniq
     environment: "{{ he_cmd_lang }}"
     register: engine_vm_ip
     when: engine_vm_ip is not defined
