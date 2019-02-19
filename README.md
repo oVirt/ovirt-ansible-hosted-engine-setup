@@ -307,6 +307,18 @@ Deployment over a remote host:
 ansible-playbook -i host123.localdomain, hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --extra-vars='@passwords.yml' --ask-vault-pass
 ```
 
+Runtime improvements
+---
+
+To significantly decrease the runtime of the deployment __over a remote host__, add the following lines to `/etc/ansible/ansible.cfg` under the `[ssh_connection]` section:
+
+```
+ssh_args = -C -o ControlMaster=auto -o ControlPersist=30m
+control_path_dir = /root/cp
+control_path = %(directory)s/%%h-%%r
+pipelining = True
+```
+
 Demo
 ----
 Here a demo showing a deployment on NFS configuring the engine VM with static IP.
