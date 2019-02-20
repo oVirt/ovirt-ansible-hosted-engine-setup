@@ -7,8 +7,12 @@
       groups: engine
       ansible_connection: smart
       ansible_ssh_extra_args: >-
-        -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {% if he_ansible_host_name != "localhost" %}
-        -o ProxyCommand="ssh -W %h:%p -q root@{{ he_ansible_host_name }}" {% endif %}
+        -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+        -C -o ControlMaster=auto -o ControlPersist=30m
+        -o ControlPath=/root/.ssh/%r-%h
+        {% if he_ansible_host_name != "localhost" %}
+        -o ProxyCommand="ssh -W %h:%p -q root@{{ he_ansible_host_name }}"
+        {% endif %}
       ansible_ssh_pass: "{{ he_appliance_password }}"
       ansible_user: root
     no_log: true
