@@ -59,6 +59,11 @@
       - ovirt-ha-agent
       - ovirt-ha-broker
       - vdsmd
+  - name: Restore initial libvirt default network configuration
+    copy:
+      remote_src: true
+      src: /usr/share/libvirt/networks/default.xml
+      dest: /etc/libvirt/qemu/networks/default.xml
   - name: Start libvirt
     service:
       name: libvirtd
