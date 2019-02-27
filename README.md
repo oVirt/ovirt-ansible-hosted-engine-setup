@@ -307,10 +307,10 @@ Deployment over a remote host:
 ansible-playbook -i host123.localdomain, hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --extra-vars='@passwords.yml' --ask-vault-pass
 ```
 
-Runtime improvements
+Deployment time improvements
 ---
 
-To significantly decrease the runtime of the deployment __over a remote host__, add the following lines to `/etc/ansible/ansible.cfg` under the `[ssh_connection]` section:
+To significantly reduce the amount of time it takes to deploy a hosted engine __over a remote host__, add the following lines to `/etc/ansible/ansible.cfg` under the `[ssh_connection]` section:
 
 ```
 ssh_args = -C -o ControlMaster=auto -o ControlPersist=30m
