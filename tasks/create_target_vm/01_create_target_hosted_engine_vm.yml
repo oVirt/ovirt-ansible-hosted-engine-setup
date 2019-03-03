@@ -11,6 +11,7 @@
         -o ProxyCommand="ssh -W %h:%p -q root@{{ he_ansible_host_name }}" {% endif %}
       ansible_ssh_pass: "{{ he_appliance_password }}"
       ansible_user: root
+    no_log: true
   - include_tasks: auth_sso.yml
   - name: Get local VM IP
     shell: virsh -r net-dhcp-leases default | grep -i {{ he_vm_mac_addr }} | awk '{ print $5 }' | cut -f1 -d'/'
@@ -65,6 +66,7 @@
       status_code: 200
       headers:
         Accept: application/json
+    no_log: true
     register: server_cpu_list
   - debug: var=server_cpu_list
   # TODO: use a proper ansible module for this once available
@@ -81,6 +83,7 @@
       status_code: 200
       headers:
         Accept: application/json
+    no_log: true
     register: emulated_machine_list
   - name: Prepare for parsing server CPU list
     set_fact:
@@ -178,7 +181,7 @@
       graphical_console:
         headless_mode: false
         protocol: "{{ he_graphic_protocols }}"
-      serial_console: true
+      serial_console: false
       operating_system: rhel_7x64
       type: server
       high_availability_priority: 1

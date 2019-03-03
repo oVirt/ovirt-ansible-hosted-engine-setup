@@ -1,16 +1,13 @@
 ---
 - name: Hosted-Engine final tasks
   block:
-  # workaround for https://bugzilla.redhat.com/1590943
-  - name: Enable again the serial console device
-    ovirt_vm:
-      id: "{{ he_vm_details.vm.id }}"
-      serial_console: true
-      auth: "{{ ovirt_auth }}"
-  - name: Trigger hosted engine OVF update
+  - name: Choose IPv4, IPv6 or auto
+    import_tasks: ipv_switch.yml
+  - name: Trigger hosted engine OVF update and enable the serial console
     ovirt_vm:
       id: "{{ he_vm_details.vm.id }}"
       description: "Hosted engine VM"
+      serial_console: true
       auth: "{{ ovirt_auth }}"
   - name: Wait until OVF update finishes
     ovirt_storage_domain_facts:
@@ -107,9 +104,6 @@
       name: "{{ he_vm_name }}Local"
       command: undefine
       uri: 'qemu+tls://{{ he_host_address }}/system'
-  - name: Set spmId
-    set_fact: spmId="{{ hostvars[he_fqdn]['host_spm_id'] }}"
-  - debug: var=spmId
   - name: Detect ovirt-hosted-engine-ha version
     command: >-
       python -c 'from ovirt_hosted_engine_ha.agent import constants as agentconst; print(agentconst.PACKAGE_VERSION)'
@@ -286,7 +280,7 @@
           msg: "Engine VM is not running, please check vdsm logs"
         when: vm_status_virsh.rc != 0
       - name: Get target engine VM IP address
-        shell: getent ahosts {{ he_fqdn }} | cut -d' ' -f1 | uniq
+        shell: getent {{ ip_key }} {{ he_fqdn }} | cut -d' ' -f1 | uniq
         environment: "{{ he_cmd_lang }}"
         register: engine_vm_ip
         changed_when: true
@@ -306,8 +300,11 @@
             Engine VM IP address is {{ engine_vm_ip_vdsm }} while the engine's he_fqdn {{ he_fqdn }} resolves to
             {{ engine_vm_ip.stdout_lines[0] }}. If you are using DHCP, check your DHCP reservation configuration
         when: engine_vm_ip_vdsm != engine_vm_ip.stdout_lines[0]
+      - name: Fail is for any other reason the engine didn't started
+        fail:
+          msg: The engine failed to start inside the engine VM; please check engine.log.
   - name: Get target engine VM address
-    shell: getent ahosts {{ he_fqdn }} | cut -d' ' -f1 | uniq
+    shell: getent {{ ip_key }} {{ he_fqdn }} | cut -d' ' -f1 | uniq
     environment: "{{ he_cmd_lang }}"
     register: engine_vm_ip
     when: engine_vm_ip is not defined
