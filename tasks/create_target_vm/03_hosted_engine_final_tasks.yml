@@ -352,6 +352,11 @@
         register: vmremove_result
       - debug: var=vmremove_result
     when: local_vm_f.ansible_facts.ovirt_vms|length > 0
+  - name: Remove ovirt-engine-appliance rpm
+    yum:
+      name: ovirt-engine-appliance
+      state: absent
+    when: he_remove_appliance_rpm
 
   - name: Include custom tasks for after setup customization
     include_tasks: "{{ item }}"
