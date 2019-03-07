@@ -53,6 +53,8 @@
     delay: 10
     until: ovf_store_content.rc == 0
     with_items: "{{ ovf_store_disks }}"
+    args:
+      warn: false
   - name: Prepare images
     command: >-
       vdsm-client Image prepare storagepoolID={{ datacenter_id }}
@@ -130,6 +132,7 @@
     environment: "{{ he_cmd_lang }}"
     args:
       chdir: "{{ he_local_vm_dir }}"
+      warn: false
     changed_when: true
     tags: ['skip_ansible_lint']
   - name: Create ovirt-hosted-engine-ha run directory
@@ -153,6 +156,8 @@
     become_user: vdsm
     become_method: sudo
     changed_when: true
+    args:
+      warn: false
   - name: Initialize metadata volume
     command: dd bs=1M count=1024 oflag=direct if=/dev/zero of="{{ he_metadata_disk_path }}"
     environment: "{{ he_cmd_lang }}"

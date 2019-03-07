@@ -13,6 +13,8 @@
       '/## beginning of configuration section by
       vdsm-4.[0-9]\+.[0-9]\+/,/## end of configuration section by vdsm-4.[0-9]\+.[0-9]\+/d' {{ item }}
     environment: "{{ he_cmd_lang }}"
+    args:
+      warn: false
     with_items:
       - /etc/libvirt/libvirtd.conf
       - /etc/libvirt/qemu.conf
@@ -49,6 +51,8 @@
     command: >-
       sed -i '/## start vdsm-4.[0-9]\+.[0-9]\+ configuration/,/## end vdsm configuration/d' /etc/sasl2/libvirt.conf
     environment: "{{ he_cmd_lang }}"
+    args:
+      warn: false
     tags: ['skip_ansible_lint']
   - name: Stop and disable services
     service:
