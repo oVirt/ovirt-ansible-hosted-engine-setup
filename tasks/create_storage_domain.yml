@@ -134,7 +134,8 @@
       required_size: >-
         {{ disk_size_xml.matches[0].Disk['{http://schemas.dmtf.org/ovf/envelope/1/}size']|int * 1024 * 1024 * 1024 +
         storage_domain_details.ansible_facts.ovirt_storage_domains[0].critical_space_action_blocker|int *
-        1024 * 1024 * 1024 + 5 * 1024 * 1024 * 1024 }} # +5G: 2xOVF_STORE, lockspace, metadata, configuration
+        1024 * 1024 * 1024 + 5 * 1024 * 1024 * 1024 }}
+    # +5G: 2xOVF_STORE, lockspace, metadata, configuration
   - debug: var=required_size
   - name: Remove unsuitable storage domain
     ovirt_storage_domain:
