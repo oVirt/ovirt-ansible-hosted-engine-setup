@@ -85,6 +85,10 @@
           virtual_size={{ qemu_img_out.stdout|from_json|json_query('"virtual-size"') }}
         register: otopi_appliance_disk_size
       - debug: var=virtual_size
+      - name: Hash the appliance root password
+        command: openssl passwd -1 {{ he_appliance_password }}
+        register: he_hashed_appliance_password
+        no_log: true
       - name: Create cloud init user-data and meta-data files
         template:
           src: "{{ item.src }}"
