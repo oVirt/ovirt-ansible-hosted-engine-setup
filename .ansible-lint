@@ -1,4 +1,0 @@
-# see https://github.com/ansible/ansible-lint/issues/450
-# remove once galaxy will move to ansible-lint 4.0.1
-skip_list:
-  - '602'
