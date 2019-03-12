@@ -8,13 +8,13 @@
   retries: 10
   delay: 2
 - name: Parse appliance configuration for path
-  shell: grep path /etc/ovirt-hosted-engine/10-appliance.conf | cut -f2 -d'='
+  shell: set -euo pipefail && grep path /etc/ovirt-hosted-engine/10-appliance.conf | cut -f2 -d'='
   environment: "{{ he_cmd_lang }}"
   register: he_appliance_ova_out
   changed_when: true
 - debug: var=he_appliance_ova_out
 - name: Parse appliance configuration for sha1sum
-  shell: grep sha1sum /etc/ovirt-hosted-engine/10-appliance.conf | cut -f2 -d'='
+  shell: set -euo pipefail && grep sha1sum /etc/ovirt-hosted-engine/10-appliance.conf | cut -f2 -d'='
   environment: "{{ he_cmd_lang }}"
   register: he_appliance_ova_sha1
   changed_when: true
