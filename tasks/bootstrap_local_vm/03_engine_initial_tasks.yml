@@ -24,7 +24,7 @@
     command: ip -6 route add default via "{{ he_ipv6_subnet_prefix + '::1' }}"
     environment: "{{ he_cmd_lang }}"
     changed_when: true
-    when: hostvars[he_ansible_host_name]['ipv6_deployment']
+    when: hostvars[he_ansible_host_name]['ipv6_deployment']|bool
   - name: Restore sshd reverse DNS lookups
     lineinfile:
       path: /etc/ssh/sshd_config

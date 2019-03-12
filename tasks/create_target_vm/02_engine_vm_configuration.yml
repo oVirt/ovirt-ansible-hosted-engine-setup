@@ -3,6 +3,13 @@
   block:
   - include_tasks: pg_scl.yml
   - debug: var=scl_conf
+  - name: Create a temporary directory for ansible as postgres user
+    file:
+      path: /var/lib/pgsql/.ansible/tmp
+      state: directory
+      owner: postgres
+      group: postgres
+      mode: 0700
   - name: Update target VM details at DB level
     command: >-
       {{ scl_pg_prefix }} psql -d engine -c
@@ -74,3 +81,7 @@
           path: /etc/ovirt-engine/engine.conf.d/11-setup-sso.conf
           regexp: '^#(SSO_ALTERNATE_ENGINE_FQDNS=.*) # pre hosted-engine-setup'
           replace: '\1'
+  - name: Remove temporary directory for ansible as postgres user
+    file:
+      path: /var/lib/pgsql/.ansible
+      state: absent

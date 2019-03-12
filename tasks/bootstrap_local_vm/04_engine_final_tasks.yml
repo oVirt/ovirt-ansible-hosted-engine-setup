@@ -17,7 +17,7 @@
     environment: "{{ he_cmd_lang }}"
     register: libgfapi_support_out
     changed_when: true
-    when: he_enable_libgfapi
+    when: he_enable_libgfapi|bool
   - debug: var=libgfapi_support_out
   - name: Save original OvfUpdateIntervalInMinutes
     shell: "engine-config -g OvfUpdateIntervalInMinutes | cut -d' ' -f2 > /root/OvfUpdateIntervalInMinutes.txt"
