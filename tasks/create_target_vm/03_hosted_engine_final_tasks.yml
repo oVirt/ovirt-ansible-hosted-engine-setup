@@ -274,7 +274,7 @@
       - debug: var=health_result
     rescue:
       - name: Check VM status at virt level
-        shell: virsh -r list | grep HostedEngine | grep running
+        shell: virsh -r list | grep {{ he_vm_name }} | grep running
         environment: "{{ he_cmd_lang }}"
         ignore_errors: true
         changed_when: true
