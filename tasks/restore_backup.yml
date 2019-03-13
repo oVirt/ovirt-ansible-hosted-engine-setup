@@ -89,3 +89,10 @@
   command: "engine-config -s DisableFenceAtStartupInSec=86400"
   environment: "{{ he_cmd_lang }}"
   changed_when: true
+- name: Add lines to engine-setup answerfile for PKI renewal
+  lineinfile:
+    path: /root/ovirt-engine-answers
+    line: "{{ item }}"
+  with_items:
+    - "OVESETUP_PKI/renew=bool:{{ he_pki_renew_on_restore }}"
+    - "QUESTION/1/OVESETUP_SKIP_RENEW_PKI_CONFIRM=str:yes"
