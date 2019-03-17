@@ -55,6 +55,7 @@ he_enable_libgfapi: false
 he_enable_hc_gluster_service: false
 he_vm_mac_addr: null
 he_remove_appliance_rpm: true
+he_pki_renew_on_restore: false
 
 ## Storage domain vars:
 he_domain_type: null  # can be: nfs | iscsi | glusterfs | fc
