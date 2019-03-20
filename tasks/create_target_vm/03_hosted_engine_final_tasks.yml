@@ -220,8 +220,11 @@
       line: "{{ he_host_ip }} {{ he_host_address }}"
       state: absent
     when: not he_vm_etc_hosts
-  - name: Copy /etc/hosts back to the Hosted Engine VM
-    command: virt-copy-in -a {{ local_vm_disk_path }} "{{ he_local_vm_dir }}"/hosts /etc
+  - name: Inject /etc/hosts with guestfish
+    command: >-
+      guestfish -a {{ local_vm_disk_path }} --rw -i copy-in "{{ he_local_vm_dir }}/hosts"
+      /etc {{ ":" }} selinux-relabel /etc/selinux/targeted/contexts/files/file_contexts
+      /etc/hosts force{{ ":" }}true
     environment:
       LIBGUESTFS_BACKEND: direct
       LANG: en_US.UTF-8
