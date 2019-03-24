@@ -11,6 +11,8 @@
       he_vm_mac_addr: >-
         {{ mac_address.stdout if he_vm_mac_addr is not defined or he_vm_mac_addr is none else he_vm_mac_addr }}
     register: he_vm_mac_addr
+  - name: Fail if MAC address structure is incorrect
+    fail:
+      msg: "Invalid MAC address structure. Got {{ he_vm_mac_addr }}"
+    when: not he_vm_mac_addr | regex_search( "^([a-fA-F0-9]{2}:){5}[a-fA-F0-9]{2}$" )
 - debug: var=he_vm_mac_addr
-
-## add a mac structure validation
