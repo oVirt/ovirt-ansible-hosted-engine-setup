@@ -50,6 +50,7 @@ install() {
   cp -pR examples/ $PKG_DATA_DIR
   cp -pR handlers/ $PKG_DATA_DIR
   cp -pR hooks/ $PKG_DATA_DIR
+  cp -pR library/ $PKG_DATA_DIR
   cp -pR meta/ $PKG_DATA_DIR
   cp -pR tasks/ $PKG_DATA_DIR
   cp -pR templates/ $PKG_DATA_DIR
