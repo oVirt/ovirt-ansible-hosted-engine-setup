@@ -120,6 +120,7 @@
       format: "{{ item.format }}"
       sparse: "{{ item.sparse }}"
       description: "{{ item.description }}"
+      content_type: "{{ item.content }}"
       interface: virtio
       storage_domain: "{{ he_storage_domain_name }}"
       wait: true
@@ -131,28 +132,32 @@
         description: 'Hosted-Engine disk',
         size: "{{ he_disk_size_GB }}GiB",
         format: 'raw',
-        sparse: "{{ false if he_domain_type == 'fc' or he_domain_type == 'iscsi' else true }}"
+        sparse: "{{ false if he_domain_type == 'fc' or he_domain_type == 'iscsi' else true }}",
+        content: 'hosted_engine'
       }
       - {
         name: 'he_sanlock',
         description: 'Hosted-Engine sanlock disk',
         size: '1GiB',
         format: 'raw',
-        sparse: false
+        sparse: false,
+        content: 'hosted_engine_sanlock'
       }
       - {
         name: 'HostedEngineConfigurationImage',
         description: 'Hosted-Engine configuration disk',
         size: '1GiB',
         format: 'raw',
-        sparse: false
+        sparse: false,
+        content: 'hosted_engine_configuration'
       }
       - {
         name: 'he_metadata',
         description: 'Hosted-Engine metadata disk',
         size: '1GiB',
         format: 'raw',
-        sparse: false
+        sparse: false,
+        content: 'hosted_engine_metadata'
       }
     register: add_disks
   - name: Register disk details
