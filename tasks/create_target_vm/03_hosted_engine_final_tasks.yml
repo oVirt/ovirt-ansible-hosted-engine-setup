@@ -324,15 +324,26 @@
     command: vdsm-tool ovn-config {{ engine_vm_ip.stdout_lines[0] }} {{ he_mgmt_network }}
     environment: "{{ he_cmd_lang }}"
     changed_when: true
-  - include_tasks: auth_sso.yml
   # Workaround for https://bugzilla.redhat.com/1540107
   # the engine fails deleting a VM if its status in the engine DB
   # is not up to date.
-  - name: Check for the local bootstrap VM
-    ovirt_vm_facts:
-      pattern: id="{{ external_local_vm_uuid.stdout_lines|first }}"
-      auth: "{{ ovirt_auth }}"
-    register: local_vm_f
+  - name: Identify the bootstrap local VM
+    block:
+      - include_tasks: auth_sso.yml
+      - name: Check for the local bootstrap VM
+        ovirt_vm_facts:
+          pattern: id="{{ external_local_vm_uuid.stdout_lines|first }}"
+          auth: "{{ ovirt_auth }}"
+        register: local_vm_f
+    rescue:
+      # let's simply try a second time with a fresh token
+      # as a workaround for https://bugzilla.redhat.com/1660595
+      - include_tasks: auth_sso.yml
+      - name: Check for the local bootstrap VM
+        ovirt_vm_facts:
+          pattern: id="{{ external_local_vm_uuid.stdout_lines|first }}"
+          auth: "{{ ovirt_auth }}"
+        register: local_vm_f
   - name: Remove the bootstrap local VM
     block:
       - name: Make the engine aware that the external VM is stopped
