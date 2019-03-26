@@ -127,7 +127,6 @@
         vssd: http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData
         xsi: http://www.w3.org/2001/XMLSchema-instance
       content: attribute
-      attribute: size
     register: disk_size_xml
   - name: Get required size
     set_fact:
