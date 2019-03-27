@@ -13,6 +13,6 @@
     register: he_vm_mac_addr
   - name: Fail if MAC address structure is incorrect
     fail:
-      msg: "Invalid MAC address structure. Got {{ he_vm_mac_addr }}"
-    when: not he_vm_mac_addr | regex_search( "^([a-fA-F0-9]{2}:){5}[a-fA-F0-9]{2}$" )
+      msg: "Invalid unicast MAC address format. Got {{ he_vm_mac_addr }}"
+    when: not he_vm_mac_addr | regex_search( "^[a-fA-F0-9][02468aAcCeE](:[a-fA-F0-9]{2}){5}$" )
 - debug: var=he_vm_mac_addr
