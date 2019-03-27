@@ -70,7 +70,7 @@ No.
 | he_iscsi_target | null | iscsi target |
 | he_lun_id | null | Lun ID |
 | he_iscsi_portal_port | null | iscsi portal port |
-| he_iscsi_portal_addr | null | iscsi portal address |
+| he_iscsi_portal_addr | null | iscsi portal address (just for interactive iSCSI discovery, use he_storage_domain_addr for the deployment) |
 | he_iscsi_tpgt | null | iscsi tpgt |
 | he_discard | false |  Discard the whole disk space when removed. more info [here](https://ovirt.org/develop/release-management/features/storage/discard-after-delete/)
 
