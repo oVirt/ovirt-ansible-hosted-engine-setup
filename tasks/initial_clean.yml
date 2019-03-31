@@ -108,4 +108,5 @@
       name: "{{ he_fqdn }}"
       state: absent
     delegate_to: localhost
+    become: false
 ...
