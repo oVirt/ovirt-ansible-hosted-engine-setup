@@ -120,7 +120,7 @@
             register: oscap_profile
             when: oscap_ds_stat.stat.exists
           - debug: var=oscap_profile
-        when: he_apply_openscap_profile
+        when: he_apply_openscap_profile|bool
       - name: Create cloud init user-data and meta-data files
         template:
           src: "{{ item.src }}"
