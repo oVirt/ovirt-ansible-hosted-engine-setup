@@ -25,6 +25,9 @@ ca_subject="C=EN, L=Test, O=Test, CN=Test"
 vdsm_use_ssl=true
 gateway={{ he_gateway }}
 bridge={{ he_mgmt_network }}
+network_test={{ he_network_test }}
+tcp_t_address={{ he_tcp_t_address }}
+tcp_t_port={{ he_tcp_t_port }}
 metadata_volume_UUID={{ he_metadata_disk_details.disk.image_id }}
 metadata_image_UUID={{ he_metadata_disk_details.disk.id }}
 lockspace_volume_UUID={{ he_sanlock_disk_details.disk.image_id }}
