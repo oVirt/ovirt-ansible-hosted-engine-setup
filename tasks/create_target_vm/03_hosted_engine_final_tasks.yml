@@ -262,6 +262,15 @@
       name: ovirt-ha-agent
       state: started
       enabled: true
+  - name: Exit HE maintenance mode
+    command: hosted-engine --set-maintenance --mode=none
+    environment: "{{ he_cmd_lang }}"
+    register: mresult
+    until: mresult.rc == 0
+    retries: 3
+    delay: 10
+    changed_when: true
+  - debug: var=mresult
   - name: Wait for the engine to come up on the target VM
     block:
       - name: Check engine VM health
