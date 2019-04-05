@@ -11,8 +11,10 @@
     mode: 0700
 - include_tasks: get_local_vm_disk_path.yml
 - name: Give the vm time to flush dirty buffers
-  pause:
-    seconds: 10
+  wait_for:
+    timeout: 10
+  delegate_to: localhost
+  become: false
 - name: Copy engine logs
   command: virt-copy-out -a {{ local_vm_disk_path }} {{ item }} {{ destdir }}
   environment:
