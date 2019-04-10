@@ -119,7 +119,7 @@
     register: storage_domain_details
   - debug: var=storage_domain_details
   - name: Add HE disks
-    ovirt_disk:
+    ovirt_disk_27:
       name: "{{ item.name }}"
       size: "{{ item.size }}"
       format: "{{ item.format }}"
