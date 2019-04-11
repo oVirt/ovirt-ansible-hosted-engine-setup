@@ -98,28 +98,6 @@
         set_fact:
           he_hashed_appliance_password: "{{ he_appliance_password | string | password_hash('sha512') }}"
         no_log: true
-      - block:
-          - name: Initialize OpenSCAP variables
-            set_fact:
-              oscap_dir: "/usr/share/xml/scap/ssg/content"
-              oscap_dist: "{{ ansible_distribution | replace('RedHat', 'rhel') | lower }}"
-              oscap_ver: "{{ ansible_distribution_major_version if ansible_distribution != 'Fedora' else '' }}"
-          - name: Set OpenSCAP datastream path
-            set_fact:
-              oscap_datastream: "{{ oscap_dir }}/ssg-{{ oscap_dist }}{{ oscap_ver }}-ds.xml"
-          - debug: var=oscap_datastream
-          - name: Verify OpenSCAP datastream
-            stat:
-              path: "{{ oscap_datastream }}"
-            register: oscap_ds_stat
-          - name: Set default OpenSCAP profile
-            shell: >-
-                oscap info --profiles {{ oscap_datastream }} |
-                grep -Ei "(standard|disa)" | sort | tail -1 | cut -d':' -f1
-            register: oscap_profile
-            when: oscap_ds_stat.stat.exists
-          - debug: var=oscap_profile
-        when: he_apply_openscap_profile|bool
       - name: Create cloud init user-data and meta-data files
         template:
           src: "{{ item.src }}"

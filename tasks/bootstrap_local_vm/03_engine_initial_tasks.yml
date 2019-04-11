@@ -37,6 +37,9 @@
     no_log: true
     with_items:
       - "OVESETUP_CONFIG/adminPassword=str:{{ he_admin_password }}"
+  - name: Import OpenSCAP task
+    import_tasks: apply_openscap_profile.yml
+    when: he_apply_openscap_profile|bool
   - name: Include before engine-setup custom tasks files for the engine VM
     include_tasks: "{{ item }}"
     with_fileglob: "hooks/enginevm_before_engine_setup/*.yml"
