@@ -99,6 +99,15 @@
       auth: "{{ ovirt_auth }}"
     async: 1
     poll: 0
+  - name: Pause the execution to let the user interactively reconfigure the host
+    block:
+      - name: Let the user connect to the bootstrap engine to manually fix host configuration
+        debug:
+          msg: >-
+            You can now connect to {{ bootstrap_engine_url }} and check the status of this host and
+            eventually remediate it, please continue only when the host is listed as 'up'
+      - include_tasks: pause_execution.yml
+    when: he_pause_host|bool
   - name: Wait for the host to be up
     ovirt_host_facts:
       pattern: name={{ he_host_name }}
