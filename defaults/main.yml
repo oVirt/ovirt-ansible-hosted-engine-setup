@@ -46,6 +46,8 @@ he_source_email: root@localhost
 he_force_ip4: false
 he_force_ip6: false
 
+he_pause_host: false
+
 ## Mandatory variables:
 
 he_bridge_if: null

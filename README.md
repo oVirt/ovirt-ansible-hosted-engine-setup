@@ -55,6 +55,7 @@ No.
 | he_network_test | dns | the way of the network connectivity check performed by ovirt-hosted-engine-ha and ovirt-hosted-engine-setup, available options: *dns*, *ping*, *tcp* or *none*.  |
 | he_tcp_t_address | null | hostname to connect if he_network_test is *tcp*  |
 | he_tcp_t_port | null | port to connect if he_network_test is *tcp* |
+| he_pause_host | false | Pause the execution to let the user interactively fix host configuration |
 
 ## NFS / Gluster Variables
 
