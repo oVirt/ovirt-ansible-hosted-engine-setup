@@ -313,6 +313,19 @@ Deployment over a remote host:
 ansible-playbook -i host123.localdomain, hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --extra-vars='@passwords.yml' --ask-vault-pass
 ```
 
+Deploy over a remote host from Ansible AWX/Tower
+---
+
+The flow creates a temporary VM with a running engine to use for configuring and bootstrapping the whole environment.
+The bootstrap engine VM runs over libvirt natted network so, in that stage, is not reachable from outside the host where it's running on.
+
+When the role dynamically adds the freshly created engine VM to the inventory, it also configures the host to be used as an ssh proxy and this perfectly works directly running the playbook with ansible-playbook.
+On the other side, Ansible AWX/Tower by defaults relies on PRoot to isolate jobs and so the credentials supplied by AWX/Tower will not flow to the jump host configured with ProxyCommand.
+
+[This can be avoided disabling job isolation in AWX/Tower](https://docs.ansible.com/ansible-tower/latest/html/administration/tipsandtricks.html#setting-up-a-jump-host-to-use-with-tower)
+
+Please notice that *job isolation* can be configured system wise but not only for the HE deploy job and so it's not a recommended practice on production environments.
+
 Deployment time improvements
 ---
 
