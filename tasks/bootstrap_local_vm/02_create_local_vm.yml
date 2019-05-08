@@ -152,7 +152,7 @@
         environment: "{{ he_cmd_lang }}"
         register: local_vm_ip
         until: local_vm_ip.stdout_lines|length >= 1
-        retries: 50
+        retries: 90
         delay: 10
         changed_when: true
       - debug: var=local_vm_ip
