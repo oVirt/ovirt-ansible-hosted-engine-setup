@@ -37,6 +37,7 @@ No.
 | he_bridge_if | eth0 | The network interface ovirt management bridge will be configured on |
 | he_fqdn | null | The engine FQDN as it configured on the DNS |
 | he_mem_size_MB | max | The amount of memory used on the engine VM |
+| he_reserved_memory_MB | 512 | The amount of memory reserved for the host |
 | he_vcpus | max | The amount of CPUs used on the engine VM |
 | he_disk_size_GB | 61 | Disk size of the engine VM |
 | he_vm_mac_addr | null | MAC address of the engine vm network interface. |
