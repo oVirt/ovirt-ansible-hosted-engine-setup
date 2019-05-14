@@ -22,8 +22,6 @@
   uri:
     url: https://{{ he_fqdn }}/ovirt-engine/api/hosts/{{ host_result.ansible_facts.ovirt_hosts[0].id }}/iscsidiscover
     validate_certs: false
-    user: admin@internal
-    password: "{{ he_admin_password }}"
     method: POST
     body: "{{ iscsid | to_json }}"
     return_content: true
@@ -32,6 +30,7 @@
     headers:
       Content-Type: application/json
       Accept: application/json
+      Authorization: "Basic {{ ('admin@internal' + ':' +  he_admin_password ) | b64encode }}"
   register: otopi_iscsi_targets
 - debug: var=otopi_iscsi_targets
 # TODO: perform an iSCSI logout when viable, see:
