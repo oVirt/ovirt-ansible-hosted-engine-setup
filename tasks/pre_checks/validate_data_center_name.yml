@@ -1,3 +1,4 @@
+---
 - name: Validate Data Center name format
   block:
   - name: Fail if Data Center name format is incorrect
