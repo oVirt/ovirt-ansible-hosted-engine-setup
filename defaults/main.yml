@@ -30,6 +30,7 @@ he_ansible_host_name: localhost
 he_ipv6_subnet_prefix: fd00:1234:5678:900
 he_webui_forward_port: 6900  # by default already open for VM console
 he_reserved_memory_MB: 512
+he_avail_memory_grace_MB: 50
 
 he_host_ip: null
 he_host_name: null
