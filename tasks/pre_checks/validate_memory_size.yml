@@ -13,7 +13,7 @@
   - debug: var=cached_mem
   - name: Set Max memory
     set_fact:
-      max_mem: "{{ free_mem.stdout|int + cached_mem.stdout|int - he_reserved_memory_MB }}"
+      max_mem: "{{ free_mem.stdout|int + cached_mem.stdout|int - he_reserved_memory_MB + he_avail_memory_grace_MB }}"
     register: max_mem
   - debug: var=max_mem
 
