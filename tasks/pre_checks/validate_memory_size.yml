@@ -46,7 +46,9 @@
       Be aware that {{ he_reserved_memory_MB }}MB is reserved for the host and cannot be allocated to the
       engine VM.
 
-  when: he_mem_size_MB|int > max_mem|int
+  when: >-
+    he_requirements_check_enabled and
+    he_memory_requirements_check_enabled and he_mem_size_MB|int > max_mem|int
 
 - name: Fail if he_disk_size_GB is smaller then the minimal requirement
   fail:
