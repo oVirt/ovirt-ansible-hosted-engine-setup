@@ -18,12 +18,11 @@
         {{ true if he_host_ip not in target_address_v4.stdout_lines and
         he_host_ip in target_address_v6.stdout_lines
         else false }}
-  - include_tasks: libvirt_default_net_ipv6_tasks.yml
-    when: ipv6_deployment|bool
-    # all of the next is a workaround for a network issue:
-    # vdsm installation breaks the routing by defining separate
-    # routing table for ovirtmgmt. But we need to enable communication
-    # between virbr0 and ovirtmgmt
+  - include_tasks: alter_libvirt_default_net_configuration.yml
+  # all of the next is a workaround for a network issue:
+  # vdsm installation breaks the routing by defining separate
+  # routing table for ovirtmgmt. But we need to enable communication
+  # between virbr0 and ovirtmgmt
   - name: Get libvirt interfaces
     virt_net:
       command: facts
