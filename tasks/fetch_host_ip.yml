@@ -3,20 +3,18 @@
   command: hostname -f
   changed_when: true
   register: host_full_name
-- name: Define he_host_name if not defined
+- name: Set hostname variable if not defined
   set_fact:
     he_host_name: "{{ host_full_name.stdout_lines[0] }}"
-  register: he_host_name
   when: he_host_name is none
 - debug: var=he_host_name
-- name: Define he_host_address if not defined
+- name: Define host address variable if not defined
   set_fact:
     he_host_address: "{{ host_full_name.stdout_lines[0] }}"
-  register: he_host_address
   when: he_host_address is none
 - debug: var=he_host_address
 
-- name: Define he_host_ip
+- name: Get host IP address
   block:
     - name: Choose IPv4, IPv6 or auto
       import_tasks: ipv_switch.yml

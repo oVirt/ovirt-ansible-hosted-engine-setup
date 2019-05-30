@@ -20,7 +20,6 @@
         get_gateway_6.stdout_lines[0] if get_gateway_6.stdout_lines else
         ''
         }}
-    register: he_gateway
     when: he_gateway is not defined or he_gateway is none or not he_gateway|trim
   - debug: var=he_gateway
 
