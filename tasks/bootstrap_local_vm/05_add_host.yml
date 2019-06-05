@@ -108,6 +108,9 @@
             eventually remediate it, please continue only when the host is listed as 'up'
       - include_tasks: pause_execution.yml
     when: he_pause_host|bool
+  # refresh the auth token after a long operation to avoid having it expired
+  - include_tasks: auth_revoke.yml
+  - include_tasks: auth_sso.yml
   - name: Wait for the host to be up
     ovirt_host_facts:
       pattern: name={{ he_host_name }}

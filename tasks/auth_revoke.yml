@@ -3,3 +3,4 @@
   ovirt_auth:
     state: absent
     ovirt_auth: "{{ ovirt_sso_auth }}"
+  ignore_errors: true
