@@ -202,9 +202,8 @@
       high_availability_priority: 1
       delete_protected: true
       # timezone: "{{ he_time_zone }}" # TODO: fix with the right parameter syntax
-      storage_domain: "{{ he_storage_domain_name }}"
       disks:
-        - name: "{{ he_virtio_disk_details.disk.id }}"
+        - id: "{{ he_virtio_disk_details.disk.id }}"
       nics:
         - name: vnet0
           profile_name: "{{ he_mgmt_network }}"
