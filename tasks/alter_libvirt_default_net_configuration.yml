@@ -49,7 +49,7 @@
         xpath: /network/ip[@family='ipv6']/dhcp/range
         attribute: end
         value: "{{ he_ipv6_subnet_prefix + '::ff' }}"
-      register: finaledit
+      register: finaledit6
     - debug: var=finaledit
   when: ipv6_deployment|bool
 
@@ -75,7 +75,7 @@
         xpath: /network/ip/dhcp/range
         attribute: end
         value: "{{ he_ipv4_subnet_prefix + '.254' }}"
-      register: finaledit
+      register: finaledit4
   when: not ipv6_deployment|bool
 
 - name: Update libvirt default network configuration, destroy
@@ -91,7 +91,7 @@
   virt_net:
     command: define
     name: default
-    xml: "{{ finaledit.xmlstring }}"
+    xml: "{{ finaledit6.xmlstring if ipv6_deployment else finaledit4.xmlstring }}"
 - name: Activate default libvirt network
   virt_net:
     name: default
