@@ -126,16 +126,47 @@
     retries: 120
     delay: 5
   - debug: var=host_result_up_check
-  - name: Check host status
-    fail:
-      msg: >
-        The host has been set in non_operational status,
-        please check engine logs,
-        fix accordingly and re-deploy.
+  - name: Handle deployment failure
+    block:
+      - set_fact: host_id={{ host_result_up_check.ansible_facts.ovirt_hosts[0].id }}
+      - name: Collect error events from the Engine
+        ovirt_event_facts:
+          auth: "{{ ovirt_auth }}"
+          search: "severity>=error"
+        register: error_events
+
+      - name: Generate the error message from the engine events
+        set_fact:
+          error_description: >-
+            {% for event in error_events.ansible_facts.ovirt_events | groupby('code') %}
+            {% if event[1][0].host.id == host_id %}
+            code {{ event[0] }}: {{ event[1][0].description }},
+            {% endif %}
+            {% endfor %}
+        ignore_errors: true
+
+      - name: Fail with error description
+        fail:
+          msg: >-
+            The host has been set in non_operational status,
+            deployment errors: {{ error_description }}
+            fix accordingly and re-deploy.
+        when: error_description is defined
+
+      - name: Fail with generic error
+        fail:
+          msg: >-
+            The host has been set in non_operational status,
+            please check engine logs,
+            more info can be found in the engine logs,
+            fix accordingly and re-deploy.
+        when: error_description is not defined
+
     when: >-
       host_result_up_check is succeeded and
       host_result_up_check.ansible_facts.ovirt_hosts|length >= 1 and
       host_result_up_check.ansible_facts.ovirt_hosts[0].status == 'non_operational'
+
   - name: Remove host-deploy configuration file
     file:
       state: absent
