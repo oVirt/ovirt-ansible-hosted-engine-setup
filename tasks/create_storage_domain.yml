@@ -64,11 +64,7 @@
         address: "{{ he_storage_domain_addr }}"
         path: "{{ he_storage_domain_path }}"
         mount_options: "{{ he_mount_options }}"
-      auth:
-        username: admin@internal
-        password: "{{ he_admin_password }}"
-        url: https://{{ he_fqdn }}/ovirt-engine/api
-        insecure: true
+      auth: "{{ ovirt_auth }}"
     when: he_domain_type == "glusterfs"
     register: otopi_storage_domain_details_gluster
   - name: Add iSCSI storage domain
@@ -131,14 +127,14 @@
         vssd: http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData
         xsi: http://www.w3.org/2001/XMLSchema-instance
       content: attribute
-      attribute: size
     register: disk_size_xml
   - name: Get required size
     set_fact:
       required_size: >-
         {{ disk_size_xml.matches[0].Disk['{http://schemas.dmtf.org/ovf/envelope/1/}size']|int * 1024 * 1024 * 1024 +
         storage_domain_details.ansible_facts.ovirt_storage_domains[0].critical_space_action_blocker|int *
-        1024 * 1024 * 1024 + 5 * 1024 * 1024 * 1024 }} # +5G: 2xOVF_STORE, lockspace, metadata, configuration
+        1024 * 1024 * 1024 + 5 * 1024 * 1024 * 1024 }}
+    # +5G: 2xOVF_STORE, lockspace, metadata, configuration
   - debug: var=required_size
   - name: Remove unsuitable storage domain
     ovirt_storage_domain:

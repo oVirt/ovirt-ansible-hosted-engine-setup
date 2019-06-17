@@ -1,6 +1,13 @@
 ---
 - name: Create hosted engine local vm
   block:
+  - name: Fetch the value of HOST_KEY_CHECKING
+    set_fact: host_key_checking="{{ lookup('config', 'HOST_KEY_CHECKING') }}"
+  - debug: var=host_key_checking
+  - name: Get the username running the deploy
+    become: false
+    command: whoami
+    register: username_on_host
   - name: Register the engine FQDN as a host
     add_host:
       name: "{{ he_fqdn }}"
@@ -8,13 +15,22 @@
       ansible_connection: smart
       ansible_ssh_extra_args: >-
         -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {% if he_ansible_host_name != "localhost" %}
-        -o ProxyCommand="ssh -W %h:%p -q root@{{ he_ansible_host_name }}" {% endif %}
+        -o ProxyCommand="ssh -W %h:%p -q
+        {% if not host_key_checking %} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {% endif %}
+        {{ username_on_host.stdout }}@{{ he_ansible_host_name }}" {% endif %}
       ansible_ssh_pass: "{{ he_appliance_password }}"
       ansible_user: root
+    no_log: true
   - name: Initial tasks
     block:
       - name: Get host unique id
-        shell: if [ -e /etc/vdsm/vdsm.id ]; then cat /etc/vdsm/vdsm.id; else dmidecode -s system-uuid; fi;
+        shell: |
+          if [ -e /etc/vdsm/vdsm.id ];
+          then cat /etc/vdsm/vdsm.id;
+          elif [ -e /proc/device-tree/system-id ];
+          then cat /proc/device-tree/system-id; #ppc64le
+          else dmidecode -s system-uuid;
+          fi;
         environment: "{{ he_cmd_lang }}"
         changed_when: true
         register: unique_id_out
@@ -78,6 +94,10 @@
           virtual_size={{ qemu_img_out.stdout|from_json|json_query('"virtual-size"') }}
         register: otopi_appliance_disk_size
       - debug: var=virtual_size
+      - name: Hash the appliance root password
+        set_fact:
+          he_hashed_appliance_password: "{{ he_appliance_password | string | password_hash('sha512') }}"
+        no_log: true
       - name: Create cloud init user-data and meta-data files
         template:
           src: "{{ item.src }}"
@@ -109,7 +129,7 @@
         environment: "{{ he_cmd_lang }}"
         register: local_vm_ip
         until: local_vm_ip.stdout_lines|length >= 1
-        retries: 50
+        retries: 90
         delay: 10
         changed_when: true
       - debug: var=local_vm_ip

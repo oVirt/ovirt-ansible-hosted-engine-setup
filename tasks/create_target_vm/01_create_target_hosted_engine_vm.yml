@@ -1,6 +1,13 @@
 ---
 - name: Create target Hosted Engine VM
   block:
+  - name: Fetch the value of HOST_KEY_CHECKING
+    set_fact: host_key_checking="{{ lookup('config', 'HOST_KEY_CHECKING') }}"
+  - debug: var=host_key_checking
+  - name: Get the username running the deploy
+    become: false
+    command: whoami
+    register: username_on_host
   - name: Register the engine FQDN as a host
     add_host:
       name: "{{ he_fqdn }}"
@@ -8,9 +15,12 @@
       ansible_connection: smart
       ansible_ssh_extra_args: >-
         -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {% if he_ansible_host_name != "localhost" %}
-        -o ProxyCommand="ssh -W %h:%p -q root@{{ he_ansible_host_name }}" {% endif %}
+        -o ProxyCommand="ssh -W %h:%p -q
+        {% if not host_key_checking %} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {% endif %}
+        {{ username_on_host.stdout }}@{{ he_ansible_host_name }}" {% endif %}
       ansible_ssh_pass: "{{ he_appliance_password }}"
       ansible_user: root
+    no_log: true
   - include_tasks: auth_sso.yml
   - name: Get local VM IP
     shell: virsh -r net-dhcp-leases default | grep -i {{ he_vm_mac_addr }} | awk '{ print $5 }' | cut -f1 -d'/'
@@ -65,6 +75,7 @@
       status_code: 200
       headers:
         Accept: application/json
+    no_log: true
     register: server_cpu_list
   - debug: var=server_cpu_list
   # TODO: use a proper ansible module for this once available
@@ -81,6 +92,7 @@
       status_code: 200
       headers:
         Accept: application/json
+    no_log: true
     register: emulated_machine_list
   - name: Prepare for parsing server CPU list
     set_fact:
@@ -106,12 +118,14 @@
     register: storage_domain_details
   - debug: var=storage_domain_details
   - name: Add HE disks
-    ovirt_disk:
+    # rename it to ovirt_disk with ansible 2.8+
+    ovirt_disk_28:
       name: "{{ item.name }}"
       size: "{{ item.size }}"
       format: "{{ item.format }}"
       sparse: "{{ item.sparse }}"
       description: "{{ item.description }}"
+      content_type: "{{ item.content }}"
       interface: virtio
       storage_domain: "{{ he_storage_domain_name }}"
       wait: true
@@ -123,28 +137,32 @@
         description: 'Hosted-Engine disk',
         size: "{{ he_disk_size_GB }}GiB",
         format: 'raw',
-        sparse: "{{ false if he_domain_type == 'fc' or he_domain_type == 'iscsi' else true }}"
+        sparse: "{{ false if he_domain_type == 'fc' or he_domain_type == 'iscsi' else true }}",
+        content: 'hosted_engine'
       }
       - {
         name: 'he_sanlock',
         description: 'Hosted-Engine sanlock disk',
         size: '1GiB',
         format: 'raw',
-        sparse: false
+        sparse: false,
+        content: 'hosted_engine_sanlock'
       }
       - {
         name: 'HostedEngineConfigurationImage',
         description: 'Hosted-Engine configuration disk',
         size: '1GiB',
         format: 'raw',
-        sparse: false
+        sparse: false,
+        content: 'hosted_engine_configuration'
       }
       - {
         name: 'he_metadata',
         description: 'Hosted-Engine metadata disk',
         size: '1GiB',
         format: 'raw',
-        sparse: false
+        sparse: false,
+        content: 'hosted_engine_metadata'
       }
     register: add_disks
   - name: Register disk details
@@ -154,6 +172,18 @@
       he_conf_disk_details: "{{ add_disks.results[2] }}"
       he_metadata_disk_details: "{{ add_disks.results[3] }}"
   - debug: var=add_disks
+  - name: Set default graphics protocols
+    set_fact:
+      he_graphic_protocols: [vnc, spice]
+  - name: Check if FIPS is enabled
+    command: sysctl -n crypto.fips_enabled
+    register: he_fips_enabled
+  - debug: var=he_fips_enabled
+  - name: Select graphic protocols
+    set_fact:
+      he_graphic_protocols: [spice]
+    when: he_fips_enabled.stdout == "1"
+  - debug: var=he_graphic_protocols
   - name: Add VM
     ovirt_vm:
       state: stopped
@@ -165,18 +195,15 @@
       cpu_sockets: 1
       graphical_console:
         headless_mode: false
-        protocol:
-          - vnc
-          - spice
-      serial_console: true
+        protocol: "{{ he_graphic_protocols }}"
+      serial_console: false
       operating_system: rhel_7x64
       type: server
       high_availability_priority: 1
       delete_protected: true
       # timezone: "{{ he_time_zone }}" # TODO: fix with the right parameter syntax
-      storage_domain: "{{ he_storage_domain_name }}"
       disks:
-        - name: he_virtio_disk
+        - id: "{{ he_virtio_disk_details.disk.id }}"
       nics:
         - name: vnet0
           profile_name: "{{ he_mgmt_network }}"

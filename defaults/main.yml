@@ -1,25 +1,4 @@
 ---
-# Stages
-he_install_packages: false
-he_initial_clean: false
-he_pre_checks: false
-he_bootstrap_local_vm: false
-he_bootstrap_pre_install_local_engine_vm: false
-he_bootstrap_post_install_local_engine_vm: false
-he_bootstrap_local_vm_add_host: false
-he_create_storage_domain: false
-he_create_target_vm: false
-he_engine_vm_configuration: false
-he_final_tasks: false
-he_final_clean: false
-
-# Sub-Stages for interactive setup execution
-he_pre_checks_network: false
-he_pre_checks_validate_hostnames: false
-he_setup_fc_getdevices: false
-he_setup_iscsi_discover: false
-he_setup_iscsi_getdevices: false
-
 # Default vars
 # Do not change these variables
 # Changes in this section are NOT supported
@@ -37,6 +16,7 @@ he_local_vm_dir_prefix: localvm
 he_appliance_ova: ''
 he_root_ssh_pubkey: ''
 he_root_ssh_access: 'yes'
+he_apply_openscap_profile: false
 he_cdrom: ''
 he_console_type: vnc
 he_video_device: vga
@@ -47,7 +27,11 @@ he_minimal_disk_size_GB: 50
 he_mgmt_network: ovirtmgmt
 he_storage_domain_name: hosted_storage
 he_ansible_host_name: localhost
+he_ipv4_subnet_prefix: "192.168.222"
 he_ipv6_subnet_prefix: fd00:1234:5678:900
+he_webui_forward_port: 6900  # by default already open for VM console
+he_reserved_memory_MB: 512
+he_avail_memory_grace_MB: 200
 
 he_host_ip: null
 he_host_name: null
@@ -60,9 +44,14 @@ he_smtp_server: localhost
 he_dest_email: root@localhost
 he_source_email: root@localhost
 
+he_force_ip4: false
+he_force_ip6: false
+
+he_pause_host: false
+
 ## Mandatory variables:
 
-he_bridge_if: eth0
+he_bridge_if: null
 he_fqdn: null
 he_mem_size_MB: max
 he_vcpus: max
@@ -71,9 +60,11 @@ he_disk_size_GB: 61
 he_enable_libgfapi: false
 he_enable_hc_gluster_service: false
 he_vm_mac_addr: null
+he_remove_appliance_rpm: true
+he_pki_renew_on_restore: false
 
 ## Storage domain vars:
-he_domain_type: null  # can be: nfs | iscsi | gluster | fc
+he_domain_type: null  # can be: nfs | iscsi | glusterfs | fc
 he_storage_domain_addr: null
 
 ## NFS vars:
@@ -101,6 +92,9 @@ he_vm_ip_prefix: null
 he_dns_addr: null  # up to 3 DNS servers IPs can be added
 he_vm_etc_hosts: false  # user can add lines to /etc/hosts on the engine VM
 he_default_gateway: null
+he_network_test: 'dns'  # can be: 'dns', 'ping', 'tcp' or 'none'
+he_tcp_t_address: null
+he_tcp_t_port: null
 
 # ovirt-hosted-engine-setup variables
 he_just_collect_network_interfaces: false

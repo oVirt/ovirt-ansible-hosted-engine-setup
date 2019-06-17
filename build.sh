@@ -1,8 +1,8 @@
 #!/bin/bash
 
-VERSION="1.0.6"
-MILESTONE=
-RPM_RELEASE="1"
+VERSION="1.0.22"
+MILESTONE=master
+RPM_RELEASE="0.1.$MILESTONE.$(date -u +%Y%m%d%H%M%S)"
 
 ROLE_NAME="ovirt.hosted_engine_setup"
 PACKAGE_NAME="ovirt-ansible-hosted-engine-setup"
@@ -50,6 +50,7 @@ install() {
   cp -pR examples/ $PKG_DATA_DIR
   cp -pR handlers/ $PKG_DATA_DIR
   cp -pR hooks/ $PKG_DATA_DIR
+  cp -pR library/ $PKG_DATA_DIR
   cp -pR meta/ $PKG_DATA_DIR
   cp -pR tasks/ $PKG_DATA_DIR
   cp -pR templates/ $PKG_DATA_DIR

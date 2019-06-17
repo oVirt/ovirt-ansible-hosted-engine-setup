@@ -1,0 +1,31 @@
+---
+- name: Validate IP prefix
+  block:
+    - name: IPv4 Validation
+      block:
+        - name: Get IP route
+          command: ip route get {{ he_ipv4_subnet_prefix + ".1" }}
+          register: ip_route_result
+        - debug: var=ip_route_result
+        - name: Check if route exists
+          fail:
+            msg: >-
+              "Libvirt network subnet ({{ he_ipv4_subnet_prefix }}) is already in use."
+              "Please set it to an unused subnet by adding the variable 'he_ipv4_subnet_prefix'"
+              "to the variable-file. ( e.g. he_ipv4_subnet_prefix: '192.168.153' )"
+          when: ip_route_result.stdout.find("via") == -1
+      when: not ipv6_deployment|bool
+    - name: IPv6 Validation
+      block:
+        - name: Get IP route
+          command: ip route get {{ he_ipv6_subnet_prefix + "::1" }}
+          register: ip_route_result
+        - debug: var=ip_route_result
+        - name: Check if route exists
+          fail:
+            msg: >-
+              "Libvirt network subnet ({{ he_ipv6_subnet_prefix }}) is already in use."
+              "Please set it to an unused subnet by adding the variable 'he_ipv6_subnet_prefix'"
+              "to the variable-file. ( e.g. he_ipv6_subnet_prefix: 'fd00:9876:4321:900' )"
+          when: ip_route_result.stdout.find("via") == -1
+      when: ipv6_deployment|bool

@@ -1,16 +1,13 @@
 ---
 - name: Hosted-Engine final tasks
   block:
-  # workaround for https://bugzilla.redhat.com/1590943
-  - name: Enable again the serial console device
-    ovirt_vm:
-      id: "{{ he_vm_details.vm.id }}"
-      serial_console: true
-      auth: "{{ ovirt_auth }}"
-  - name: Trigger hosted engine OVF update
+  - name: Choose IPv4, IPv6 or auto
+    import_tasks: ipv_switch.yml
+  - name: Trigger hosted engine OVF update and enable the serial console
     ovirt_vm:
       id: "{{ he_vm_details.vm.id }}"
       description: "Hosted engine VM"
+      serial_console: true
       auth: "{{ ovirt_auth }}"
   - name: Wait until OVF update finishes
     ovirt_storage_domain_facts:
@@ -56,6 +53,8 @@
     delay: 10
     until: ovf_store_content.rc == 0
     with_items: "{{ ovf_store_disks }}"
+    args:
+      warn: false
   - name: Prepare images
     command: >-
       vdsm-client Image prepare storagepoolID={{ datacenter_id }}
@@ -107,9 +106,6 @@
       name: "{{ he_vm_name }}Local"
       command: undefine
       uri: 'qemu+tls://{{ he_host_address }}/system'
-  - name: Set spmId
-    set_fact: spmId="{{ hostvars[he_fqdn]['host_spm_id'] }}"
-  - debug: var=spmId
   - name: Detect ovirt-hosted-engine-ha version
     command: >-
       python -c 'from ovirt_hosted_engine_ha.agent import constants as agentconst; print(agentconst.PACKAGE_VERSION)'
@@ -136,6 +132,7 @@
     environment: "{{ he_cmd_lang }}"
     args:
       chdir: "{{ he_local_vm_dir }}"
+      warn: false
     changed_when: true
     tags: ['skip_ansible_lint']
   - name: Create ovirt-hosted-engine-ha run directory
@@ -159,6 +156,8 @@
     become_user: vdsm
     become_method: sudo
     changed_when: true
+    args:
+      warn: false
   - name: Initialize metadata volume
     command: dd bs=1M count=1024 oflag=direct if=/dev/zero of="{{ he_metadata_disk_path }}"
     environment: "{{ he_cmd_lang }}"
@@ -221,8 +220,11 @@
       line: "{{ he_host_ip }} {{ he_host_address }}"
       state: absent
     when: not he_vm_etc_hosts
-  - name: Copy /etc/hosts back to the Hosted Engine VM
-    command: virt-copy-in -a {{ local_vm_disk_path }} "{{ he_local_vm_dir }}"/hosts /etc
+  - name: Inject /etc/hosts with guestfish
+    command: >-
+      guestfish -a {{ local_vm_disk_path }} --rw -i copy-in "{{ he_local_vm_dir }}/hosts"
+      /etc {{ ":" }} selinux-relabel /etc/selinux/targeted/contexts/files/file_contexts
+      /etc/hosts force{{ ":" }}true
     environment:
       LIBGUESTFS_BACKEND: direct
       LANG: en_US.UTF-8
@@ -260,6 +262,15 @@
       name: ovirt-ha-agent
       state: started
       enabled: true
+  - name: Exit HE maintenance mode
+    command: hosted-engine --set-maintenance --mode=none
+    environment: "{{ he_cmd_lang }}"
+    register: mresult
+    until: mresult.rc == 0
+    retries: 3
+    delay: 10
+    changed_when: true
+  - debug: var=mresult
   - name: Wait for the engine to come up on the target VM
     block:
       - name: Check engine VM health
@@ -275,7 +286,7 @@
       - debug: var=health_result
     rescue:
       - name: Check VM status at virt level
-        shell: virsh -r list | grep HostedEngine | grep running
+        shell: virsh -r list | grep {{ he_vm_name }} | grep running
         environment: "{{ he_cmd_lang }}"
         ignore_errors: true
         changed_when: true
@@ -286,7 +297,7 @@
           msg: "Engine VM is not running, please check vdsm logs"
         when: vm_status_virsh.rc != 0
       - name: Get target engine VM IP address
-        shell: getent ahosts {{ he_fqdn }} | cut -d' ' -f1 | uniq
+        shell: getent {{ ip_key }} {{ he_fqdn }} | cut -d' ' -f1 | uniq
         environment: "{{ he_cmd_lang }}"
         register: engine_vm_ip
         changed_when: true
@@ -306,8 +317,11 @@
             Engine VM IP address is {{ engine_vm_ip_vdsm }} while the engine's he_fqdn {{ he_fqdn }} resolves to
             {{ engine_vm_ip.stdout_lines[0] }}. If you are using DHCP, check your DHCP reservation configuration
         when: engine_vm_ip_vdsm != engine_vm_ip.stdout_lines[0]
+      - name: Fail is for any other reason the engine didn't started
+        fail:
+          msg: The engine failed to start inside the engine VM; please check engine.log.
   - name: Get target engine VM address
-    shell: getent ahosts {{ he_fqdn }} | cut -d' ' -f1 | uniq
+    shell: getent {{ ip_key }} {{ he_fqdn }} | cut -d' ' -f1 | uniq
     environment: "{{ he_cmd_lang }}"
     register: engine_vm_ip
     when: engine_vm_ip is not defined
@@ -319,15 +333,26 @@
     command: vdsm-tool ovn-config {{ engine_vm_ip.stdout_lines[0] }} {{ he_mgmt_network }}
     environment: "{{ he_cmd_lang }}"
     changed_when: true
-  - include_tasks: auth_sso.yml
   # Workaround for https://bugzilla.redhat.com/1540107
   # the engine fails deleting a VM if its status in the engine DB
   # is not up to date.
-  - name: Check for the local bootstrap VM
-    ovirt_vm_facts:
-      pattern: id="{{ external_local_vm_uuid.stdout_lines|first }}"
-      auth: "{{ ovirt_auth }}"
-    register: local_vm_f
+  - name: Identify the bootstrap local VM
+    block:
+      - include_tasks: auth_sso.yml
+      - name: Check for the local bootstrap VM
+        ovirt_vm_facts:
+          pattern: id="{{ external_local_vm_uuid.stdout_lines|first }}"
+          auth: "{{ ovirt_auth }}"
+        register: local_vm_f
+    rescue:
+      # let's simply try a second time with a fresh token
+      # as a workaround for https://bugzilla.redhat.com/1660595
+      - include_tasks: auth_sso.yml
+      - name: Check for the local bootstrap VM
+        ovirt_vm_facts:
+          pattern: id="{{ external_local_vm_uuid.stdout_lines|first }}"
+          auth: "{{ ovirt_auth }}"
+        register: local_vm_f
   - name: Remove the bootstrap local VM
     block:
       - name: Make the engine aware that the external VM is stopped
@@ -355,6 +380,11 @@
         register: vmremove_result
       - debug: var=vmremove_result
     when: local_vm_f.ansible_facts.ovirt_vms|length > 0
+  - name: Remove ovirt-engine-appliance rpm
+    yum:
+      name: ovirt-engine-appliance
+      state: absent
+    when: he_remove_appliance_rpm|bool
 
   - name: Include custom tasks for after setup customization
     include_tasks: "{{ item }}"

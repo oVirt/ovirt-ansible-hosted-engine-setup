@@ -8,7 +8,7 @@ ssh_authorized_keys:
 ssh_pwauth: True
 chpasswd:
   list: |
-    root:{{ he_appliance_password }}
+    root:{{ he_hashed_appliance_password }}
   expire: False
 {% if he_time_zone is defined %}
 timezone: {{ he_time_zone }}

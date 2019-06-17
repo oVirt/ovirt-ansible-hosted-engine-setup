@@ -37,17 +37,25 @@ No.
 | he_bridge_if | eth0 | The network interface ovirt management bridge will be configured on |
 | he_fqdn | null | The engine FQDN as it configured on the DNS |
 | he_mem_size_MB | max | The amount of memory used on the engine VM |
+| he_reserved_memory_MB | 512 | The amount of memory reserved for the host |
 | he_vcpus | max | The amount of CPUs used on the engine VM |
 | he_disk_size_GB | 61 | Disk size of the engine VM |
 | he_vm_mac_addr | null | MAC address of the engine vm network interface. |
-| he_domain_type | null | Storage domain type. available options: *nfs*, *iscsi*, *gluster*, *fc* |
+| he_domain_type | null | Storage domain type. available options: *nfs*, *iscsi*, *glusterfs*, *fc* |
 | he_storage_domain_addr | null | Storage domain IP/DNS address |
 | he_ansible_host_name | localhost | hostname in use on the first HE host (not necessarily the Ansible controller one) |
 | he_restore_from_file | null | a backup file created with engine-backup to be restored on the fly |
+| he_pki_renew_on_restore | false | Renew engine PKI on restore if needed |
 | he_cluster | Default | name of the cluster with hosted-engine hosts |
 | he_data_center | Default | name of the datacenter with hosted-engine hosts |
 | he_host_name | $(hostname -f) | name used by the engine for the first host |
 | he_host_address | $(hostname -f) | address used by the engine for the first host |
+| he_bridge_if | null | interface used for the management bridge |
+| he_apply_openscap_profile | false | apply a default OpenSCAP security profile on HE VM |
+| he_network_test | dns | the way of the network connectivity check performed by ovirt-hosted-engine-ha and ovirt-hosted-engine-setup, available options: *dns*, *ping*, *tcp* or *none*.  |
+| he_tcp_t_address | null | hostname to connect if he_network_test is *tcp*  |
+| he_tcp_t_port | null | port to connect if he_network_test is *tcp* |
+| he_pause_host | false | Pause the execution to let the user interactively fix host configuration |
 
 ## NFS / Gluster Variables
 
@@ -67,7 +75,7 @@ No.
 | he_iscsi_target | null | iscsi target |
 | he_lun_id | null | Lun ID |
 | he_iscsi_portal_port | null | iscsi portal port |
-| he_iscsi_portal_addr | null | iscsi portal address |
+| he_iscsi_portal_addr | null | iscsi portal address (just for interactive iSCSI discovery, use he_storage_domain_addr for the deployment) |
 | he_iscsi_tpgt | null | iscsi tpgt |
 | he_discard | false |  Discard the whole disk space when removed. more info [here](https://ovirt.org/develop/release-management/features/storage/discard-after-delete/)
 
@@ -94,85 +102,9 @@ All the playbooks can be found inside the `examples/` folder.
 
 ```yml
 ---
-- name: Install packages and bootstrap local engine VM
+- name: Deploy oVirt hosted engine
   hosts: localhost
   connection: local
-  vars_files:
-    - passwords.yml
-  vars:
-    he_install_packages: true
-    he_pre_checks: true
-    he_initial_clean: true
-    he_bootstrap_local_vm: true
-    ovirt_repositories_ovirt_release_rpm: "{{ ovirt_repo_release_rpm }}"
-  roles:
-    - role: ovirt.repositories
-    - role: ovirt.hosted_engine_setup
-
-- name: Local engine VM installation - Pre tasks
-  hosts: engine
-  vars_files:
-    - passwords.yml
-  vars:
-    he_bootstrap_pre_install_local_engine_vm: true
-  roles:
-    - role: ovirt.hosted_engine_setup
-
-- name: Engine Setup on local VM
-  hosts: engine
-  vars_files:
-    - passwords.yml
-  vars:
-    ovirt_engine_setup_hostname: "{{ he_fqdn.split('.')[0] }}"
-    ovirt_engine_setup_organization: "{{ he_cloud_init_domain_name }}"
-    ovirt_engine_setup_dwh_db_host: "{{ he_fqdn.split('.')[0] }}"
-    ovirt_engine_setup_firewall_manager: null
-    ovirt_engine_setup_answer_file_path: /root/ovirt-engine-answers
-    ovirt_engine_setup_use_remote_answer_file: True
-    ovirt_engine_setup_update_all_packages: false
-    ovirt_engine_setup_offline: true
-    ovirt_engine_setup_admin_password: "{{ he_admin_password }}"
-  roles:
-    - role: ovirt.engine-setup
-
-- name: Local engine VM installation - Post tasks
-  hosts: engine
-  vars_files:
-    - passwords.yml
-  vars:
-    he_bootstrap_post_install_local_engine_vm: true
-  roles:
-    - role: ovirt.hosted_engine_setup
-
-- name: Configure engine VM on a storage domain
-  hosts: localhost
-  connection: local
-  vars_files:
-    - passwords.yml
-  vars:
-    he_bootstrap_local_vm_add_host: true
-    he_create_storage_domain: true
-    he_create_target_vm: true
-  roles:
-    - role: ovirt.hosted_engine_setup
-
-- name: Configure database settings
-  hosts: engine
-  vars_files:
-    - passwords.yml
-  vars:
-    he_engine_vm_configuration: true
-  roles:
-    - role: ovirt.hosted_engine_setup
-
-- name: Closeup
-  hosts: localhost
-  connection: local
-  vars_files:
-    - passwords.yml
-  vars:
-    he_final_tasks: true
-    he_final_clean: true
   roles:
     - role: ovirt.hosted_engine_setup
 ```
@@ -181,89 +113,11 @@ All the playbooks can be found inside the `examples/` folder.
 
 ```yml
 ---
-- name: Install packages and bootstrap local engine VM
+- name: Deploy oVirt hosted engine
   hosts: host123.localdomain
-  vars_files:
-    - passwords.yml
-  vars:
-    he_install_packages: true
-    he_pre_checks: true
-    he_initial_clean: true
-    he_bootstrap_local_vm: true
-    ovirt_repositories_ovirt_release_rpm: "{{ ovirt_repo_release_rpm }}"
-  roles:
-    - role: ovirt.repositories
-    - role: ovirt.hosted_engine_setup
-
-- name: Local engine VM installation - Pre tasks
-  hosts: engine
-  vars_files:
-    - passwords.yml
-  vars:
-    he_bootstrap_pre_install_local_engine_vm: true
-  roles:
-    - role: ovirt.hosted_engine_setup
-
-- name: Engine Setup on local VM
-  hosts: engine
-  vars_files:
-    - passwords.yml
-  vars:
-    ovirt_engine_setup_hostname: "{{ he_fqdn.split('.')[0] }}"
-    ovirt_engine_setup_organization: "{{ he_cloud_init_domain_name }}"
-    ovirt_engine_setup_dwh_db_host: "{{ he_fqdn.split('.')[0] }}"
-    ovirt_engine_setup_firewall_manager: null
-    ovirt_engine_setup_answer_file_path: /root/ovirt-engine-answers
-    ovirt_engine_setup_use_remote_answer_file: True
-    ovirt_engine_setup_update_all_packages: false
-    ovirt_engine_setup_offline: true
-    ovirt_engine_setup_admin_password: "{{ he_admin_password }}"
-  roles:
-    - role: oVirt.engine-setup
-
-- name: Local engine VM installation - Post tasks
-  hosts: engine
-  vars_files:
-    - passwords.yml
-  vars:
-    he_bootstrap_post_install_local_engine_vm: true
-  roles:
-    - role: ovirt.hosted_engine_setup
-
-- name: Configure engine VM on a storage domain
-  hosts: host123.localdomain
-  vars_files:
-    - passwords.yml
-  vars:
-    he_bootstrap_local_vm_add_host: true
-    he_create_storage_domain: true
-    he_create_target_vm: true
-  roles:
-    - role: ovirt.hosted_engine_setup
-
-- name: Configure database settings
-  hosts: engine
-  vars_files:
-    - passwords.yml
-  vars:
-    he_engine_vm_configuration: true
-  roles:
-    - role: ovirt.hosted_engine_setup
-
-- name: Closeup
-  hosts: host123.localdomain
-  vars_files:
-    - passwords.yml
-  vars:
-    he_final_tasks: true
-    he_final_clean: true
   roles:
     - role: ovirt.hosted_engine_setup
 ```
-
-
-### __Note__:
-Unlike standard roles that are called once in a playbook, we call this role 5 times. The reason for that is due to the fact that Ansible allows executing a role only for one host. Thus, because we need to execute tasks on both `host` and `engine` hosts we had to call the role more than one time.
 
 ## passwords.yml
 
@@ -292,8 +146,7 @@ he_admin_password: 123456
     "he_vm_mac_addr": "00:a5:3f:66:ba:12",
     "he_domain_type": "nfs",
     "he_storage_domain_addr": "192.168.100.50",
-    "he_storage_domain_path": "/var/nfs_folder",
-    "ovirt_repo_release_rpm": "http://plain.resources.ovirt.org/pub/yum-repo/ovirt-release42.rpm"
+    "he_storage_domain_path": "/var/nfs_folder"
 }
 ```
 
@@ -453,12 +306,37 @@ $ ansible-vault encrypt passwords.yml
 
 Local deployment:
 ```sh
-$ ansible-playbook hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --ask-vault-pass
+$ ansible-playbook hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --extra-vars='@passwords.yml' --ask-vault-pass
 ```
 
 Deployment over a remote host:
 ```sh
-ansible-playbook -i host123.localdomain, hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --ask-vault-pass
+ansible-playbook -i host123.localdomain, hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --extra-vars='@passwords.yml' --ask-vault-pass
+```
+
+Deploy over a remote host from Ansible AWX/Tower
+---
+
+The flow creates a temporary VM with a running engine to use for configuring and bootstrapping the whole environment.
+The bootstrap engine VM runs over libvirt natted network so, in that stage, is not reachable from outside the host where it's running on.
+
+When the role dynamically adds the freshly created engine VM to the inventory, it also configures the host to be used as an ssh proxy and this perfectly works directly running the playbook with ansible-playbook.
+On the other side, Ansible AWX/Tower by defaults relies on PRoot to isolate jobs and so the credentials supplied by AWX/Tower will not flow to the jump host configured with ProxyCommand.
+
+[This can be avoided disabling job isolation in AWX/Tower](https://docs.ansible.com/ansible-tower/latest/html/administration/tipsandtricks.html#setting-up-a-jump-host-to-use-with-tower)
+
+Please notice that *job isolation* can be configured system wise but not only for the HE deploy job and so it's not a recommended practice on production environments.
+
+Deployment time improvements
+---
+
+To significantly reduce the amount of time it takes to deploy a hosted engine __over a remote host__, add the following lines to `/etc/ansible/ansible.cfg` under the `[ssh_connection]` section:
+
+```
+ssh_args = -C -o ControlMaster=auto -o ControlPersist=30m
+control_path_dir = /root/cp
+control_path = %(directory)s/%%h-%%r
+pipelining = True
 ```
 
 Demo

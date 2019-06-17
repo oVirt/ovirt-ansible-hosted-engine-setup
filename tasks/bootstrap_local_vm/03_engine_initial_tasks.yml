@@ -24,7 +24,7 @@
     command: ip -6 route add default via "{{ he_ipv6_subnet_prefix + '::1' }}"
     environment: "{{ he_cmd_lang }}"
     changed_when: true
-    when: hostvars[he_ansible_host_name]['ipv6_deployment']
+    when: hostvars[he_ansible_host_name]['ipv6_deployment']|bool
   - name: Restore sshd reverse DNS lookups
     lineinfile:
       path: /etc/ssh/sshd_config
@@ -34,8 +34,12 @@
     lineinfile:
       path: /root/ovirt-engine-answers
       line: "{{ item }}"
+    no_log: true
     with_items:
       - "OVESETUP_CONFIG/adminPassword=str:{{ he_admin_password }}"
+  - name: Import OpenSCAP task
+    import_tasks: apply_openscap_profile.yml
+    when: he_apply_openscap_profile|bool
   - name: Include before engine-setup custom tasks files for the engine VM
     include_tasks: "{{ item }}"
     with_fileglob: "hooks/enginevm_before_engine_setup/*.yml"
