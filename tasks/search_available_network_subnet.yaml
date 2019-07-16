@@ -18,7 +18,7 @@
         msg: >-
           "Cannot find an available subnet for internal Libvirt network"
           "Please set it to an unused subnet by adding the variable 'he_ipv4_subnet_prefix'"
-          "to the variable-file ( e.g. he_ipv4_subnet_prefix: '123.456.789' )."
+          "to the variable-file ( e.g. he_ipv4_subnet_prefix: '123.123.123' )."
       when: result.stdout.find("via") == -1 and chunk|int > 253
     - name: Set new IPv4 subnet prefix
       set_fact:
