@@ -1,17 +1,6 @@
 ---
 - name: Prepare routing rules
   block:
-  - name: Start libvirt
-    service:
-      name: libvirtd
-      state: started
-      enabled: true
-  - name: Activate default libvirt network
-    virt_net:
-      name: default
-      state: active
-    register: virt_net_out
-  - debug: var=virt_net_out
   - name: Check IPv6
     set_fact:
       ipv6_deployment: >-
@@ -24,6 +13,17 @@
   # vdsm installation breaks the routing by defining separate
   # routing table for ovirtmgmt. But we need to enable communication
   # between virbr0 and ovirtmgmt
+  - name: Start libvirt
+    service:
+      name: libvirtd
+      state: started
+      enabled: true
+  - name: Activate default libvirt network
+    virt_net:
+      name: default
+      state: active
+    register: virt_net_out
+  - debug: var=virt_net_out
   - name: Get libvirt interfaces
     virt_net:
       command: facts
