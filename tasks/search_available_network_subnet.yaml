@@ -9,8 +9,8 @@
       set_fact:
         chunk: "{{ chunk|int + 1 }}"
     - debug: var=chunk
-    - name: get_ip_route
-      shell: ip route get 192.168.{{ chunk }}.1 | grep "via"
+    - name: Get ip route
+      shell: ip route get 192.168.{{ chunk }}.1 | grep "via" | cat
       register: result
     - debug: var=result
     - name: Fail if can't find an available subnet
@@ -39,8 +39,8 @@
       set_fact:
         chunk: "{{ chunk|int + 45 }}"  # 200 tries
     - debug: var=chunk
-    - name: get_ip_route
-      shell: ip -6 route get fd00:1234:{{ chunk }}:900::1 | grep "via"
+    - name: Get ip route
+      shell: ip -6 route get fd00:1234:{{ chunk }}:900::1 | grep "via" | cat
       register: result
     - debug: var=result
     - name: Fail if can't find an available subnet
