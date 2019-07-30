@@ -58,7 +58,7 @@
         when: he_appliance_ova is not none and he_appliance_ova|length > 0
       - debug: var=he_appliance_ova_path
       - name: Check available space on local VM directory
-        shell: df -k --output=avail "{{ he_local_vm_dir_path }}" | grep -v Avail
+        shell: df -k --output=avail "{{ he_local_vm_dir_path }}" | grep -v Avail | cat
         environment: "{{ he_cmd_lang }}"
         changed_when: true
         register: local_vm_dir_space_out
