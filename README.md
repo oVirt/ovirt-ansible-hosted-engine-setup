@@ -339,6 +339,28 @@ control_path = %(directory)s/%%h-%%r
 pipelining = True
 ```
 
+Make changes in the engine VM during the deployment
+---
+In some cases, a user may want to make adjustments to the engine VM
+during the deployment process. There are 2 ways to do that:
+
+**Automatic:**
+
+Write ansible playbooks that will run on the engine VM before or after the engine VM installation.
+
+Add the playbooks that will run __before__ the engine setup to
+```hooks/enginevm_before_engine_setup``` and the playbooks that will run __after__ the engine setup to ```hooks/enginevm_after_engine_setup```.
+
+These playbooks will be consumed automatically by the role when you execute it.
+
+**Manual:**
+
+To make manual adjustments you can set the variable ```he_pause_host``` to true. This will pause the deployment after the engine has been setup and create a lock-file at /tmp that ends with ```_he_setup_lock``` on the machine the role was executed on. The deployment will continue after deleting the lock-file, or after 24 hours ( if the lock-file hasn't been removed ).
+
+In order to proceed with the deployment, before deleting the lock-file, make sure that the host is on 'up' state at the engine's URL.
+
+Both of the lock-file path and the engine's URL will be presented during the role execution.
+
 Demo
 ----
 Here a demo showing a deployment on NFS configuring the engine VM with static IP.
