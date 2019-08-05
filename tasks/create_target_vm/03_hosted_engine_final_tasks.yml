@@ -286,7 +286,7 @@
       - debug: var=health_result
     rescue:
       - name: Check VM status at virt level
-        shell: virsh -r list | grep {{ he_vm_name }} | grep running
+        shell: virsh -r list | grep {{ he_vm_name }} | grep running | cat
         environment: "{{ he_cmd_lang }}"
         ignore_errors: true
         changed_when: true
@@ -384,6 +384,10 @@
     yum:
       name: ovirt-engine-appliance
       state: absent
+    register: yum_result
+    until: yum_result is success
+    retries: 10
+    delay: 5
     when: he_remove_appliance_rpm|bool
 
   - name: Include custom tasks for after setup customization

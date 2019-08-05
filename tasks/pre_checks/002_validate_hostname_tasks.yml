@@ -84,7 +84,7 @@
           localhost is not a valid he_fqdn for the engine VM
       when: he_fqdn in ['localhost', 'localhost.localdomain']
     - name: Get engine FQDN resolution
-      shell: getent {{ ip_key }} {{ he_fqdn }} | grep STREAM
+      shell: getent {{ ip_key }} {{ he_fqdn }} | grep STREAM | cat
       environment: "{{ he_cmd_lang }}"
       register: fqdn_resolution_output
       changed_when: true

@@ -15,7 +15,11 @@ BuildArch:      noarch
 Url:            http://www.ovirt.org
 
 Requires: ansible >= 2.7
+%if 0%{?fedora} >= 30 || 0%{?rhel} >= 8
+Requires: python3-netaddr
+%else
 Requires: python-netaddr
+%endif
 Requires: ovirt-ansible-engine-setup >= 1.1.5
 Requires: ovirt-ansible-repositories >= 1.1.2
 
