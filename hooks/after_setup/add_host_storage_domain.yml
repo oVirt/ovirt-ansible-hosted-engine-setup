@@ -33,7 +33,7 @@
   with_items: "{{ gluster.hosts }}"
   loop_control:
     loop_var: host
-  when: gluster is defined and "hosts in gluster" and gluster.hosts | length > 1
+  when: gluster is defined and hosts in gluster and gluster.hosts | length > 1
 
 - name: "Add additional glusterfs storage domains"
   ignore_errors: true
