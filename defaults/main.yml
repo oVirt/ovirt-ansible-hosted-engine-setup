@@ -4,6 +4,7 @@
 # Changes in this section are NOT supported
 
 he_cmd_lang:
+  LANGUAGE: en_US.UTF-8
   LANG: en_US.UTF-8
   LC_MESSAGES: en_US.UTF-8
   LC_ALL: en_US.UTF-8
