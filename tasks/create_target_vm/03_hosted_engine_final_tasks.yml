@@ -106,6 +106,17 @@
       name: "{{ he_vm_name }}Local"
       command: undefine
       uri: 'qemu+tls://{{ he_host_address }}/system'
+  - name: Update libvirt default network configuration, destroy
+    virt_net:
+      command: destroy
+      name: default
+      uri: 'qemu+tls://{{ he_host_address }}/system'
+  - name: Update libvirt default network configuration, undefine
+    virt_net:
+      command: undefine
+      name: default
+      uri: 'qemu+tls://{{ he_host_address }}/system'
+    ignore_errors: true
   - name: Detect ovirt-hosted-engine-ha version
     command: >-
       python -c 'from ovirt_hosted_engine_ha.agent import constants as agentconst; print(agentconst.PACKAGE_VERSION)'
