@@ -225,6 +225,12 @@
       dest: "{{ he_local_vm_dir }}/hosts"
       regexp: "# hosted-engine-setup-{{ hostvars[he_ansible_host_name]['he_local_vm_dir'] }}$"
       state: absent
+  - name: Add an entry on /etc/hosts for the Hosted Engine VM for the VM itself
+    lineinfile:
+      dest: "{{ he_local_vm_dir }}/hosts"
+      line: "{{ he_vm_ip_addr }} {{ he_fqdn }}"
+      state: present
+    when: he_vm_etc_hosts and he_vm_ip_addr is not none
   - name: Clean /etc/hosts for the Hosted Engine VM for host address
     lineinfile:
       dest: "{{ he_local_vm_dir }}/hosts"
