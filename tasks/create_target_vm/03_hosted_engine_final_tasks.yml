@@ -106,6 +106,17 @@
       name: "{{ he_vm_name }}Local"
       command: undefine
       uri: 'qemu+tls://{{ he_host_address }}/system'
+  - name: Update libvirt default network configuration, destroy
+    virt_net:
+      command: destroy
+      name: default
+      uri: 'qemu+tls://{{ he_host_address }}/system'
+  - name: Update libvirt default network configuration, undefine
+    virt_net:
+      command: undefine
+      name: default
+      uri: 'qemu+tls://{{ he_host_address }}/system'
+    ignore_errors: true
   - name: Detect ovirt-hosted-engine-ha version
     command: >-
       python -c 'from ovirt_hosted_engine_ha.agent import constants as agentconst; print(agentconst.PACKAGE_VERSION)'
@@ -214,6 +225,12 @@
       dest: "{{ he_local_vm_dir }}/hosts"
       regexp: "# hosted-engine-setup-{{ hostvars[he_ansible_host_name]['he_local_vm_dir'] }}$"
       state: absent
+  - name: Add an entry on /etc/hosts for the Hosted Engine VM for the VM itself
+    lineinfile:
+      dest: "{{ he_local_vm_dir }}/hosts"
+      line: "{{ he_vm_ip_addr }} {{ he_fqdn }}"
+      state: present
+    when: he_vm_etc_hosts and he_vm_ip_addr is not none
   - name: Clean /etc/hosts for the Hosted Engine VM for host address
     lineinfile:
       dest: "{{ he_local_vm_dir }}/hosts"
@@ -286,7 +303,7 @@
       - debug: var=health_result
     rescue:
       - name: Check VM status at virt level
-        shell: virsh -r list | grep {{ he_vm_name }} | grep running | cat
+        shell: virsh -r list | grep {{ he_vm_name }} | grep running
         environment: "{{ he_cmd_lang }}"
         ignore_errors: true
         changed_when: true
