@@ -19,11 +19,7 @@ No.
 * Unless you are using Gluster, you must have prepared storage for your Hosted-Engine environment (choose one):
     * [Prepare NFS Storage](https://ovirt.org/documentation/admin-guide/chap-Storage/#preparing-nfs-storage)
     * [Prepare ISCSI Storage](https://ovirt.org/documentation/admin-guide/chap-Storage/#preparing-iscsi-storage)
-* Install additional oVirt ansible roles:
-
-    ```bash
-    $ ansible-galaxy install ovirt.repositories # case-sensitive
-    ```
+* Install additional oVirt ansible role:
 
     ```bash
     $ ansible-galaxy install ovirt.engine-setup # case-sensitive
