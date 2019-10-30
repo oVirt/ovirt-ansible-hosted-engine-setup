@@ -89,6 +89,28 @@
     template:
       src: templates/70-hosted-engine-setup.conf.j2
       dest: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
+  - name: Get active list of active firewalld zones
+    shell: set -euo pipefail && firewall-cmd --get-active-zones | grep -v "^\s*interfaces"
+    environment: "{{ he_cmd_lang }}"
+    register: active_f_zone
+    changed_when: true
+  - name: Configure libvirt firewalld zone
+    firewalld:
+      zone: libvirt
+      service: "{{ service_item }}"
+      permanent: true
+      immediate: true
+      state: enabled
+    with_items:
+      - vdsm
+      - libvirt-tls
+      - ovirt-imageio
+      - ovirt-vmconsole
+      - ssh
+      - vdsm
+    loop_control:
+      loop_var: service_item
+    when: "'libvirt' in active_f_zone.stdout_lines"
   - name: Add host
     ovirt_host:
       cluster: "{{ he_cluster }}"
