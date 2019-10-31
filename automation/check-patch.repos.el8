@@ -1,0 +1,2 @@
+# Provides ansible, ansible-lint, yamllint
+el8collection,https://copr-be.cloud.fedoraproject.org/results/sbonazzo/EL8_collection/epel-8-x86_64/
