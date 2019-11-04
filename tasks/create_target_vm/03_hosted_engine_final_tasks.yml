@@ -271,10 +271,29 @@
     environment: "{{ he_cmd_lang }}"
     register: result
     until: result.rc == 0
+    ignore_errors: true
     retries: 5
     delay: 10
     changed_when: true
   - debug: var=result
+  - block:
+      - name: Workaround for ovirt-ha-broker start failures
+        # Ugly workaround for https://bugzilla.redhat.com/1768511
+        # fix it on ovirt-ha-broker side and remove ASAP
+        systemd:
+          state: restarted
+          enabled: true
+          name: ovirt-ha-broker
+      - name: Initialize lockspace volume
+        command: hosted-engine --reinitialize-lockspace --force
+        environment: "{{ he_cmd_lang }}"
+        register: result2
+        until: result2.rc == 0
+        retries: 5
+        delay: 10
+        changed_when: true
+      - debug: var=result2
+    when: result.rc != 0
   - name: Start ovirt-ha-agent service on the host
     service:
       name: ovirt-ha-agent
