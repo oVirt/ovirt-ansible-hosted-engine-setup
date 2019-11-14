@@ -100,7 +100,8 @@
   - name: Parse server CPU list
     set_fact:
       server_cpu_dict: "{{ server_cpu_dict | combine({item.split(':')[1]: item.split(':')[3]}) }}"
-    with_items: "{{ server_cpu_list.json['values']['system_option_value'][0]['value'].split('; ')|list }}"
+    with_items: "{{ server_cpu_list.json['values']['system_option_value'][0]['value'].split('; ')
+                |list|difference(['']) }}"
   - debug: var=server_cpu_dict
   - name: Convert CPU model name
     set_fact:
