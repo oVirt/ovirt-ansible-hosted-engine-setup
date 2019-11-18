@@ -59,7 +59,7 @@ No.
 |---------------------------------|-----------------------|-----------------------------------------------------------|
 | he_mount_options | '' | NFS mount options
 | he_storage_domain_path | null | shared folder path on NFS server |
-| he_nfs_version | auto | NFS version.  available options: *auto*, *v4*, *v3*
+| he_nfs_version | auto | NFS version.  available options: *auto*, *v4*, *v3*, *v4_0*, *v4_1*, *v4_2*
 
 
 ## ISCSI Variables
