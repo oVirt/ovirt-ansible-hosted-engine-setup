@@ -91,7 +91,7 @@
     virt:
       name: "{{ he_vm_name }}Local"
       state: shutdown
-      uri: 'qemu+tls://{{ he_host_address }}/system'
+      uri: 'qemu:///system?authfile={{ he_libvirt_authfile }}'
   - name: Wait for local VM shutdown
     command: virsh -r domstate "{{ he_vm_name }}Local"
     environment: "{{ he_cmd_lang }}"
@@ -105,17 +105,17 @@
     virt:
       name: "{{ he_vm_name }}Local"
       command: undefine
-      uri: 'qemu+tls://{{ he_host_address }}/system'
+      uri: 'qemu:///system?authfile={{ he_libvirt_authfile }}'
   - name: Update libvirt default network configuration, destroy
     virt_net:
       command: destroy
       name: default
-      uri: 'qemu+tls://{{ he_host_address }}/system'
+      uri: 'qemu:///system?authfile={{ he_libvirt_authfile }}'
   - name: Update libvirt default network configuration, undefine
     virt_net:
       command: undefine
       name: default
-      uri: 'qemu+tls://{{ he_host_address }}/system'
+      uri: 'qemu:///system?authfile={{ he_libvirt_authfile }}'
     ignore_errors: true
   - name: Detect ovirt-hosted-engine-ha version
     command: >-
