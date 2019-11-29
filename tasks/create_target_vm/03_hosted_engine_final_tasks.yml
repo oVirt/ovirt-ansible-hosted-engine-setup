@@ -88,10 +88,8 @@
   - debug: var=he_virtio_disk_path
   - debug: var=he_metadata_disk_path
   - name: Shutdown local VM
-    virt:
-      name: "{{ he_vm_name }}Local"
-      state: shutdown
-      uri: 'qemu+tls://{{ he_host_address }}/system'
+    command: "virsh -c qemu:///system?authfile={{ he_libvirt_authfile }} shutdown {{ he_vm_name }}Local"
+    environment: "{{ he_cmd_lang }}"
   - name: Wait for local VM shutdown
     command: virsh -r domstate "{{ he_vm_name }}Local"
     environment: "{{ he_cmd_lang }}"
@@ -102,20 +100,14 @@
     delay: 5
   - debug: var=dominfo_out
   - name: Undefine local VM
-    virt:
-      name: "{{ he_vm_name }}Local"
-      command: undefine
-      uri: 'qemu+tls://{{ he_host_address }}/system'
+    command: "virsh -c qemu:///system?authfile={{ he_libvirt_authfile }} undefine {{ he_vm_name }}Local"
+    environment: "{{ he_cmd_lang }}"
   - name: Update libvirt default network configuration, destroy
-    virt_net:
-      command: destroy
-      name: default
-      uri: 'qemu+tls://{{ he_host_address }}/system'
+    command: "virsh -c qemu:///system?authfile={{ he_libvirt_authfile }} net-destroy default"
+    environment: "{{ he_cmd_lang }}"
   - name: Update libvirt default network configuration, undefine
-    virt_net:
-      command: undefine
-      name: default
-      uri: 'qemu+tls://{{ he_host_address }}/system'
+    command: "virsh -c qemu:///system?authfile={{ he_libvirt_authfile }} net-undefine default"
+    environment: "{{ he_cmd_lang }}"
     ignore_errors: true
   - name: Detect ovirt-hosted-engine-ha version
     command: >-
