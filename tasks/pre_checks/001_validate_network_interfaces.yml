@@ -15,7 +15,7 @@
     vars:
       acceptable_bond_modes: ['active-backup', 'balance-xor', 'broadcast', '802.3ad']
     set_fact:
-      otopi_net_host="{{ iface_item }}"
+      otopi_net_host="{{ hostvars[inventory_hostname]['ansible_' + iface_item]['device'] }}"
       type="{{ hostvars[inventory_hostname]['ansible_' + iface_item]['type'] }}"
       bond_valid_name="{{ iface_item | regex_search('(^bond[0-9]+)') }}"
     when: (
@@ -67,7 +67,7 @@
     set_fact:
       otopi_host_net: >-
         {{ [bridge_interface] if bridge_interface is defined else bb_filtered_list.results |
-        reject('skipped') | map(attribute='bond_item.iface_item') | list }}
+        reject('skipped') | map(attribute='bond_item.ansible_facts.otopi_net_host') | list }}
     register: otopi_host_net
   - debug: var=otopi_host_net
   - name: Validate selected bridge interface if management bridge does not exist
