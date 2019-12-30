@@ -70,7 +70,7 @@
         reject('skipped') | map(attribute='bond_item.iface_item') | list }}
     register: otopi_host_net
   - debug: var=otopi_host_net
-  - name: Validate selected bridge interface if management bridge does not exists
+  - name: Validate selected bridge interface if management bridge does not exist
     fail:
       msg: The selected network interface is not valid
     when:
