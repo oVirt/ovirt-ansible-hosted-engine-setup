@@ -17,7 +17,6 @@
     set_fact:
       otopi_net_host="{{ hostvars[inventory_hostname]['ansible_' + iface_item]['device'] }}"
       type="{{ hostvars[inventory_hostname]['ansible_' + iface_item]['type'] }}"
-      bond_valid_name="{{ iface_item | regex_search('(^bond[0-9]+)') }}"
     when: (
         (
           iface_item != 'lo'
@@ -51,23 +50,11 @@
       loop_var: iface_item
     register: valid_network_interfaces
   - debug: var=valid_network_interfaces
-  - name: Filter bonds with bad naming
-    set_fact:
-      net_iface="{{ bond_item }}"
-    when: >-
-      not 'skipped' in bond_item and ((bond_item['ansible_facts']['type']  == 'ether') or
-      ( (bond_item['ansible_facts']['type'] == 'bonding') and bond_item['ansible_facts']['bond_valid_name'] ))
-    with_items:
-      - "{{ valid_network_interfaces['results'] }}"
-    loop_control:
-      loop_var: bond_item
-    register: bb_filtered_list
-  - debug: var=bb_filtered_list
   - name: Generate output list
     set_fact:
       otopi_host_net: >-
-        {{ [bridge_interface] if bridge_interface is defined else bb_filtered_list.results |
-        reject('skipped') | map(attribute='bond_item.ansible_facts.otopi_net_host') | list }}
+        {{ [bridge_interface] if bridge_interface is defined else valid_network_interfaces.results |
+        reject('skipped') | map(attribute='ansible_facts.otopi_net_host') | list }}
     register: otopi_host_net
   - debug: var=otopi_host_net
   - name: Validate selected bridge interface if management bridge does not exist
