@@ -63,6 +63,9 @@ sh build.sh install
 %{_datadir}/%{ansible_roles_dir}/%{legacy_roleprefix}%{legacy_rolename}
 %{_datadir}/%{ansible_roles_dir}/%{roleprefix}%{legacy_rolename}
 
+# Turn off the brp-python-bytecompile for python2 and python2
+%define __os_install_post %{___build_post}
+
 %doc README.md
 %doc examples/
 
