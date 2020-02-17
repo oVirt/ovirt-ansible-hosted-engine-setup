@@ -85,10 +85,6 @@
       vlan_tag: "{{ vlan_id_out.stdout }}"
       auth: "{{ ovirt_auth }}"
     when: vlan_id_out.stdout|length > 0
-  - name: Force host-deploy in offline mode
-    template:
-      src: templates/70-hosted-engine-setup.conf.j2
-      dest: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
   - name: Get active list of active firewalld zones
     shell: set -euo pipefail && firewall-cmd --get-active-zones | grep -v "^\s*interfaces"
     environment: "{{ he_cmd_lang }}"
@@ -188,11 +184,6 @@
       host_result_up_check is succeeded and
       host_result_up_check.ansible_facts.ovirt_hosts|length >= 1 and
       host_result_up_check.ansible_facts.ovirt_hosts[0].status == 'non_operational'
-
-  - name: Remove host-deploy configuration file
-    file:
-      state: absent
-      path: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
   rescue:
     - name: Fetch logs from the engine VM
       include_tasks: fetch_engine_logs.yml
