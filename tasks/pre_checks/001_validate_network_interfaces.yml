@@ -65,11 +65,12 @@
   - debug: var=bb_filtered_list
   - name: Generate output list
     set_fact:
-      otopi_host_net: >-
+      host_net: >-
         {{ [bridge_interface] if bridge_interface is defined else bb_filtered_list.results |
         reject('skipped') | map(attribute='bond_item.ansible_facts.otopi_net_host') | list }}
-    register: otopi_host_net
-  - debug: var=otopi_host_net
+    register: host_net
+  - debug: var=host_net
+  - import_tasks: filter_team_devices.yml
   - name: Validate selected bridge interface if management bridge does not exist
     fail:
       msg: The selected network interface is not valid
