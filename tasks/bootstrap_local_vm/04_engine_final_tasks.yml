@@ -51,6 +51,12 @@
     with_items:
       - cloud-init-local
       - cloud-init
+
+  - name: Put SELinux in permissive mode, logging actions that would be blocked.
+    selinux:
+      policy: targeted
+      state: permissive
+
   rescue:
     - name: Fetch logs from the engine VM
       import_tasks: fetch_engine_logs.yml
