@@ -1,6 +1,6 @@
 ---
 - name: Collect interface types
-  shell: set -euo pipefail && nmcli con show {{ nic }} | grep connection.type
+  shell: set -euo pipefail && nmcli -g GENERAL.TYPE device show {{ nic }}
   with_items:
     - "{{ host_net }}"
   loop_control:
