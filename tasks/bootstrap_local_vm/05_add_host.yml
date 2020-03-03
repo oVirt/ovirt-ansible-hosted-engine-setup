@@ -77,6 +77,8 @@
       auth: "{{ ovirt_auth }}"
       virt: true
       gluster: true
+      fence_skip_if_gluster_bricks_up: true
+      fence_skip_if_gluster_quorum_not_met: true
     when: he_enable_hc_gluster_service is defined and he_enable_hc_gluster_service
   - name: Set VLAN ID at datacenter level
     ovirt_network:
