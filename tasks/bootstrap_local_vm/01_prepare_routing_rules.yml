@@ -28,7 +28,7 @@
     virt_net:
       command: facts
   - name: Get routing rules, IPv4
-    command: ip rule
+    command: ip -j rule
     environment: "{{ he_cmd_lang }}"
     register: route_rules_ipv4
     changed_when: true
@@ -73,7 +73,12 @@
     command: ip rule add from {{ virbr_cidr_ipv4 }} priority 101 table main
     environment: "{{ he_cmd_lang }}"
     register: result
-    when: not ipv6_deployment|bool and "\"101:\tfrom \"+virbr_cidr_ipv4+\" lookup main\" not in route_rules_ipv4.stdout"
+    when: >-
+      not ipv6_deployment|bool and
+      route_rules_ipv4.stdout | from_json |
+      selectattr('priority', 'equalto', 101) |
+      selectattr('src', 'equalto', virbr_cidr_ipv4 | ipaddr('address') ) |
+      list | length == 0
     changed_when: true
   - debug: var=result
   - name: Add IPv4 inbound route rules
@@ -83,7 +88,10 @@
     changed_when: true
     when: >-
       not ipv6_deployment|bool and
-      "\"100:\tfrom all to \"+virbr_cidr_ipv4+\" lookup main\" not in route_rules_ipv4.stdout"
+      route_rules_ipv4.stdout | from_json |
+      selectattr('priority', 'equalto', 100) |
+      selectattr('dst', 'equalto', virbr_cidr_ipv4 | ipaddr('address') ) |
+      list | length == 0
   - debug: var=result
   - name: Add IPv6 outbound route rules
     command: ip -6 rule add from {{ virbr_cidr_ipv6 }} priority 101 table main
