@@ -22,7 +22,7 @@
 - include_tasks: pg_scl.yml
 - name: Remove previous hosted-engine VM
   command: >-
-    {{ scl_pg_prefix }} psql -d engine -c "SELECT deletevm(vm_guid) FROM (SELECT vm_guid FROM vms WHERE origin=6) t"
+    psql -d engine -c "SELECT deletevm(vm_guid) FROM (SELECT vm_guid FROM vms WHERE origin=6) t"
   environment: "{{ he_cmd_lang }}"
   become: true
   become_user: postgres
@@ -31,7 +31,7 @@
   register: db_remove_old_enginevm
 - name: Update dynamic data for VMs on the host used to redeploy
   command: >-
-    {{ scl_pg_prefix }} psql -d engine -c
+    psql -d engine -c
     "UPDATE vm_dynamic SET run_on_vds = NULL, status=0 /* Down */ WHERE run_on_vds IN
     (SELECT vds_id FROM vds
     WHERE upper(vds_unique_id)=upper('{{ hostvars[he_ansible_host_name]['unique_id_out']['stdout_lines']|first }}'))"
@@ -44,7 +44,7 @@
 - debug: var=db_update_host_vms
 - name: Update dynamic data for VMs migrating to the host used to redeploy
   command: >-
-    {{ scl_pg_prefix }} psql -d engine -c
+    psql -d engine -c
     "UPDATE vm_dynamic SET migrating_to_vds = NULL, status=0 /* Down */ WHERE migrating_to_vds IN
     (SELECT vds_id FROM vds WHERE
     upper(vds_unique_id)=upper('{{ hostvars[he_ansible_host_name]['unique_id_out']['stdout_lines']|first }}'))"
@@ -57,7 +57,7 @@
 - debug: var=db_update_host_migrating_vms
 - name: Remove host used to redeploy
   command: >-
-    {{ scl_pg_prefix }} psql -d engine -c
+    psql -d engine -c
     "SELECT deletevds(vds_id) FROM
     (SELECT vds_id FROM vds WHERE
     upper(vds_unique_id)=upper('{{ hostvars[he_ansible_host_name]['unique_id_out']['stdout_lines']|first }}')) t"
@@ -70,7 +70,7 @@
 - debug: var=db_remove_he_host
 - name: Rename previous HE storage domain to avoid name conflicts
   command: >-
-    {{ scl_pg_prefix }} psql -d engine -c
+    psql -d engine -c
     "UPDATE storage_domain_static SET
     storage_name='{{ he_storage_domain_name }}_old_{{ ansible_date_time.iso8601_basic_short }}' WHERE
     storage_name='{{ he_storage_domain_name }}'"
