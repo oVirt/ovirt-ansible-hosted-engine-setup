@@ -29,16 +29,16 @@
     changed_when: true
   - debug: var=local_vm_ip
   - name: Fetch host facts
-    ovirt_host_facts:
+    ovirt_host_info:
       pattern: name={{ he_host_name }} status=up
       auth: "{{ ovirt_auth }}"
     register: host_result
-    until: host_result is succeeded and host_result.ansible_facts.ovirt_hosts|length >= 1
+    until: host_result is succeeded and host_result.ovirt_hosts|length >= 1
     retries: 50
     delay: 10
   - debug: var=host_result
   - name: Fetch Cluster ID
-    set_fact: cluster_id="{{ host_result.ansible_facts.ovirt_hosts[0].cluster.id }}"
+    set_fact: cluster_id="{{ host_result.ovirt_hosts[0].cluster.id }}"
   - name: Fetch Cluster facts
     ovirt_cluster_facts:
       auth: "{{ ovirt_auth }}"
