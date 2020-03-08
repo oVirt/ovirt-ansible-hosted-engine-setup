@@ -11,19 +11,19 @@
     when: not local_vm_dir_stat.stat.exists
   - include_tasks: auth_sso.yml
   - name: Fetch host facts
-    ovirt_host_facts:
+    ovirt_host_info:
       pattern: name={{ he_host_name }}
       auth: "{{ ovirt_auth }}"
     register: host_result
     until: >-
-      host_result and 'ansible_facts' in host_result and
-      'ovirt_hosts' in host_result.ansible_facts and host_result.ansible_facts.ovirt_hosts|length >= 1 and
-      'up' in host_result.ansible_facts.ovirt_hosts[0].status
+      host_result and 'ovirt_hosts' in host_result
+      and host_result.ovirt_hosts|length >= 1 and
+      'up' in host_result.ovirt_hosts[0].status
     retries: 50
     delay: 10
   - debug: var=host_result
   - name: Fetch cluster ID
-    set_fact: cluster_id="{{ host_result.ansible_facts.ovirt_hosts[0].cluster.id }}"
+    set_fact: cluster_id="{{ host_result.ovirt_hosts[0].cluster.id }}"
   - name: Fetch cluster facts
     ovirt_cluster_facts:
       auth: "{{ ovirt_auth }}"

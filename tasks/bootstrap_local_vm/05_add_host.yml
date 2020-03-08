@@ -132,23 +132,23 @@
   - include_tasks: auth_revoke.yml
   - include_tasks: auth_sso.yml
   - name: Wait for the host to be up
-    ovirt_host_facts:
+    ovirt_host_info:
       pattern: name={{ he_host_name }}
       auth: "{{ ovirt_auth }}"
     register: host_result_up_check
     until: >-
       host_result_up_check is succeeded and
-      host_result_up_check.ansible_facts.ovirt_hosts|length >= 1 and
+      host_result_up_check.ovirt_hosts|length >= 1 and
       (
-      host_result_up_check.ansible_facts.ovirt_hosts[0].status == 'up' or
-      host_result_up_check.ansible_facts.ovirt_hosts[0].status == 'non_operational'
+      host_result_up_check.ovirt_hosts[0].status == 'up' or
+      host_result_up_check.ovirt_hosts[0].status == 'non_operational'
       )
     retries: 120
     delay: 5
   - debug: var=host_result_up_check
   - name: Handle deployment failure
     block:
-      - set_fact: host_id={{ host_result_up_check.ansible_facts.ovirt_hosts[0].id }}
+      - set_fact: host_id={{ host_result_up_check.ovirt_hosts[0].id }}
       - name: Collect error events from the Engine
         ovirt_event_facts:
           auth: "{{ ovirt_auth }}"
@@ -184,8 +184,8 @@
 
     when: >-
       host_result_up_check is succeeded and
-      host_result_up_check.ansible_facts.ovirt_hosts|length >= 1 and
-      host_result_up_check.ansible_facts.ovirt_hosts[0].status == 'non_operational'
+      host_result_up_check.ovirt_hosts|length >= 1 and
+      host_result_up_check.ovirt_hosts[0].status == 'non_operational'
   rescue:
     - name: Fetch logs from the engine VM
       include_tasks: fetch_engine_logs.yml
