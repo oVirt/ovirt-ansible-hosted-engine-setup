@@ -4,4 +4,8 @@ config:
     name: eth0
     mac_address: {{ he_vm_mac_addr }}
     subnets:
+{% if ipv6_deployment %}
       - type: dhcp6
+{% else %}
+      - type: dhcp
+{% endif %}
