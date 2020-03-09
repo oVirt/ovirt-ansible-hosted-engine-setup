@@ -105,12 +105,14 @@
         with_items:
           - {src: templates/user-data.j2, dest: "{{ he_local_vm_dir }}/user-data"}
           - {src: templates/meta-data.j2, dest: "{{ he_local_vm_dir }}/meta-data"}
-          - {src: templates/network-config-dhcp6.j2, dest: "{{ he_local_vm_dir }}/network-config"}
+          - {src: templates/network-config-dhcp.j2, dest: "{{ he_local_vm_dir }}/network-config"}
+          - {src: templates/network-config-dhcp6.j2, dest: "{{ he_local_vm_dir }}/network-config-v6"}
       - name: Create ISO disk
         command: >-
           mkisofs -output {{ he_local_vm_dir }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8
           {{ he_local_vm_dir }}/meta-data {{ he_local_vm_dir }}/user-data
-          {{ he_local_vm_dir + '/network-config' if ipv6_deployment else None }}
+          {{ he_local_vm_dir + '/network-config-v6' if ipv6_deployment else he_local_vm_dir + '/network-config' }}
+
         environment: "{{ he_cmd_lang }}"
         changed_when: true
       - name: Create local VM
