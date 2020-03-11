@@ -2,7 +2,7 @@
 
 VERSION="1.1.1"
 MILESTONE=master
-RPM_RELEASE="0.1.$MILESTONE.$(date -u +%Y%m%d%H%M%S)"
+RPM_RELEASE="0.1.$MILESTONE.$(date -u +%Y%m%d%H%M%S).git$(git rev-parse --short HEAD)"
 
 ROLE_NAME="ovirt.hosted_engine_setup"
 PACKAGE_NAME="ovirt-ansible-hosted-engine-setup"
