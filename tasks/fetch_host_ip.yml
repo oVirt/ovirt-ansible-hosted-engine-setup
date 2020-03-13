@@ -31,7 +31,14 @@
       when: hostname_resolution_output.rc != 0
     - name: Parse host address resolution
       set_fact:
-        he_host_ip: "{{ hostname_resolution_output.stdout.split()[0] }}"
+        he_host_ip: "{{
+        (
+          hostname_resolution_output.stdout.split() | ipaddr |
+            difference(hostname_resolution_output.stdout.split() |
+              ipaddr('link-local')
+            )
+        )[0]
+        }}"
     - debug: var=he_host_ip
 
 - name: Fail if host's ip is empty
