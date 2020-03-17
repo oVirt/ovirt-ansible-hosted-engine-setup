@@ -19,7 +19,6 @@
   file:
     state: absent
     path: /root/engine_backup
-- include_tasks: pg_scl.yml
 - name: Remove previous hosted-engine VM
   command: >-
     psql -d engine -c "SELECT deletevm(vm_guid) FROM (SELECT vm_guid FROM vms WHERE origin=6) t"
