@@ -144,7 +144,7 @@
       host_result_up_check.ansible_facts.ovirt_hosts[0].status == 'non_operational'
       )
     retries: 120
-    delay: 5
+    delay: 10
   - debug: var=host_result_up_check
   - name: Handle deployment failure
     block:
