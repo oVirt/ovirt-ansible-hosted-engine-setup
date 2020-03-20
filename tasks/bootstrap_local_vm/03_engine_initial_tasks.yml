@@ -4,7 +4,7 @@
   - name: Wait for the local VM
     wait_for_connection:
       delay: 5
-      timeout: 180
+      timeout: 3600
   - name: Add an entry for this host on /etc/hosts on the local VM
     lineinfile:
       dest: /etc/hosts
