@@ -52,6 +52,7 @@ No.
 | he_tcp_t_address | null | hostname to connect if he_network_test is *tcp*  |
 | he_tcp_t_port | null | port to connect if he_network_test is *tcp* |
 | he_pause_host | false | Pause the execution to let the user interactively fix host configuration |
+| he_offline_deployment | false | If `True`, updates for all packages will be disabled |
 
 ## NFS / Gluster Variables
 
