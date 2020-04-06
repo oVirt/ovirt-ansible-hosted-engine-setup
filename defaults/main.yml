@@ -101,6 +101,7 @@ he_tcp_t_port: null
 he_just_collect_network_interfaces: false
 he_libvirt_authfile: '/etc/ovirt-hosted-engine/virsh_auth.conf'
 he_offline_deployment: false
+he_additional_package_list: []
 
 # *** Do Not Use On Production Environment ***
 # ********** Used for testing ONLY ***********
