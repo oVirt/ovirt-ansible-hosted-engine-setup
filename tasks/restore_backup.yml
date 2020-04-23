@@ -97,3 +97,11 @@
   with_items:
     - "OVESETUP_PKI/renew=bool:{{ he_pki_renew_on_restore }}"
     - "QUESTION/1/OVESETUP_SKIP_RENEW_PKI_CONFIRM=str:yes"
+- name: remove version lock from the engine
+  file:
+    state: absent
+    path: /etc/yum/pluginconf.d/versionlock.list
+- name: recreate versionlock empty file
+  file:
+    state: touch
+    path: /etc/yum/pluginconf.d/versionlock.list
