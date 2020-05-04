@@ -43,7 +43,7 @@ No.
 | he_restore_from_file | null | a backup file created with engine-backup to be restored on the fly |
 | he_pki_renew_on_restore | false | Renew engine PKI on restore if needed |
 | he_cluster | Default | name of the cluster with hosted-engine hosts |
-| he_cluster_cpu_type | null | cluster CPU type to be used in hosted-engine cluster (the same as he host or lower) |
+| he_cluster_cpu_type | null | cluster CPU type to be used in hosted-engine cluster (the same as HE host or lower) |
 | he_data_center | Default | name of the datacenter with hosted-engine hosts |
 | he_host_name | $(hostname -f) | name used by the engine for the first host |
 | he_host_address | $(hostname -f) | address used by the engine for the first host |
