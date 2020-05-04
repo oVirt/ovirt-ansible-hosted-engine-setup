@@ -59,7 +59,7 @@
       state: present
       name: "{{ he_cluster }}"
       data_center: "{{ he_data_center }}"
-      cpu_type:  "{{ he_cluster_cpu_type | default(omit) }}"
+      cpu_type: "{{ he_cluster_cpu_type | default(omit) }}"
       wait: true
       auth: "{{ ovirt_auth }}"
     register: cluster_result_presence
