@@ -55,6 +55,7 @@ No.
 | he_pause_host | false | Pause the execution to let the user interactively fix host configuration |
 | he_offline_deployment | false | If `True`, updates for all packages will be disabled |
 | he_additional_package_list | [] | List of additional packages to be installed on engine VM apart from ovirt-engine package |
+| he_debug_mode | false | If `True`, HE deployment will execute additional tasks for debug |
 
 ## NFS / Gluster Variables
 
