@@ -188,6 +188,9 @@
       host_result_up_check.ovirt_hosts|length >= 1 and
       host_result_up_check.ovirt_hosts[0].status == 'non_operational'
   rescue:
+    - name: Sync on engine machine
+      command: sync
+      changed_when: true
     - name: Fetch logs from the engine VM
       include_tasks: fetch_engine_logs.yml
       ignore_errors: true
