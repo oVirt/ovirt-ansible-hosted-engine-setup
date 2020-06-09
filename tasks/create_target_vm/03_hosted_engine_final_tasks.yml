@@ -374,23 +374,12 @@
   # Workaround for https://bugzilla.redhat.com/1540107
   # the engine fails deleting a VM if its status in the engine DB
   # is not up to date.
-  - name: Identify the bootstrap local VM
-    block:
-      - include_tasks: auth_sso.yml
-      - name: Check for the local bootstrap VM
-        ovirt_vm_facts:
-          pattern: id="{{ external_local_vm_uuid.stdout_lines|first }}"
-          auth: "{{ ovirt_auth }}"
-        register: local_vm_f
-    rescue:
-      # let's simply try a second time with a fresh token
-      # as a workaround for https://bugzilla.redhat.com/1660595
-      - include_tasks: auth_sso.yml
-      - name: Check for the local bootstrap VM
-        ovirt_vm_facts:
-          pattern: id="{{ external_local_vm_uuid.stdout_lines|first }}"
-          auth: "{{ ovirt_auth }}"
-        register: local_vm_f
+  - include_tasks: auth_sso.yml
+  - name: Check for the local bootstrap VM
+    ovirt_vm_facts:
+      pattern: id="{{ external_local_vm_uuid.stdout_lines|first }}"
+      auth: "{{ ovirt_auth }}"
+    register: local_vm_f
   - name: Remove the bootstrap local VM
     block:
       - name: Make the engine aware that the external VM is stopped
