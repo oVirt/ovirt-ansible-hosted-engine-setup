@@ -63,6 +63,7 @@
       - ovirt-ha-agent
       - ovirt-ha-broker
       - vdsmd
+      - libvirtd-tls.socket
   - name: Restore initial libvirt default network configuration
     copy:
       remote_src: true
