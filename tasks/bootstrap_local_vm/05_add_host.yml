@@ -146,7 +146,13 @@
       )
     retries: 120
     delay: 10
+    ignore_errors: true
   - debug: var=host_result_up_check
+  - name: Notify the user about a failure
+    fail:
+      msg: >-
+        Host is not up, please check logs, perhaps also on the engine machine
+    when: host_result_up_check is failed
   - name: Handle deployment failure
     block:
       - set_fact: host_id={{ host_result_up_check.ovirt_hosts[0].id }}
