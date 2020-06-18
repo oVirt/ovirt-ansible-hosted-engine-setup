@@ -21,6 +21,7 @@
     register: db_vm_update
     with_items:
       - {field: 'origin', value: 6}
+      - {field: 'bios_type', value: 2}
   - debug: var=db_vm_update
   - name: Insert Hosted Engine configuration disk uuid into Engine database
     command: >-
