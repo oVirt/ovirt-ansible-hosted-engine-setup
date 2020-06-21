@@ -195,6 +195,7 @@
       include_tasks: fetch_engine_logs.yml
       ignore_errors: true
     - include_tasks: clean_localvm_dir.yml
+    - include_tasks: clean_local_storage_pools.yml
     - name: Notify the user about a failure
       fail:
         msg: >
