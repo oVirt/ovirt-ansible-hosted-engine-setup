@@ -19,7 +19,7 @@
         - id
       pattern: "name={{ he_storage_domain_name }}"
     retries: 12
-    delay: 10
+    delay: 40
     until: "ovirt_storage_domains[0].disks | selectattr('name', 'match', '^OVF_STORE$') | list"
   - name: Parse OVF_STORE disk list
     set_fact:
@@ -34,7 +34,7 @@
     changed_when: true
     register: ovf_store_status
     retries: 12
-    delay: 10
+    delay: 40
     until: >-
       ovf_store_status.rc == 0 and ovf_store_status.stdout|from_json|json_query('status') == 'OK' and
       ovf_store_status.stdout|from_json|json_query('description')|from_json|json_query('Updated')
@@ -50,7 +50,7 @@
     changed_when: true
     register: ovf_store_content
     retries: 12
-    delay: 10
+    delay: 40
     until: ovf_store_content.rc == 0
     with_items: "{{ ovf_store_disks }}"
     args:
