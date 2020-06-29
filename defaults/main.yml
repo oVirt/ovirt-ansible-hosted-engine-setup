@@ -73,6 +73,7 @@ he_storage_domain_addr: null
 he_mount_options: ''
 he_storage_domain_path: null
 he_nfs_version: auto  # can be: auto, v4 or v3
+he_storage_if: null
 
 ## ISCSI vars:
 ## Defaults are null, user should specify if ISCSI is chosen

@@ -1,6 +1,15 @@
 ---
 - name: Create hosted engine local vm
   block:
+  - name: Wait for the storage interface to be up
+    command: ip -j link show '{{ he_storage_if }}'
+    register: storage_if_result_up_check
+    until: >-
+      storage_if_result_up_check.stdout|from_json|map(attribute='operstate')|join('') == 'UP'
+    retries: 120
+    delay: 5
+    delegate_to: "{{ he_ansible_host_name }}"
+    when: (he_domain_type == "glusterfs" or he_domain_type == "nfs") and he_storage_if is not none
   - name: Check local VM dir stat
     stat:
       path: "{{ he_local_vm_dir }}"
