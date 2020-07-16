@@ -37,8 +37,8 @@
     no_log: true
     with_items:
       - "OVESETUP_CONFIG/adminPassword=str:{{ he_admin_password }}"
-      - "OVESETUP_DWH_DB/password=str:{{ ovirt_engine_setup_dwh_db_password }}"
-      - "OVESETUP_DB/password=str:{{ ovirt_engine_setup_db_password  }}"
+      - "OVESETUP_DWH_DB/password=str:{{ ovirt_engine_setup_dwh_db_password | default(omit) }}"
+      - "OVESETUP_DB/password=str:{{ ovirt_engine_setup_db_password | default(omit) }}"
   - name: Import OpenSCAP task
     import_tasks: apply_openscap_profile.yml
     when: he_apply_openscap_profile|bool
