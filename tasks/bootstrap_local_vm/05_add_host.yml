@@ -1,6 +1,16 @@
 ---
 - name: Add host
   block:
+  - name: Open a port on firewalld
+    firewalld:
+      service: "{{ item }}"
+      permanent: false
+      immediate: true
+      state: enabled
+    delegate_to: "{{ he_fqdn }}" 
+    loop:
+      - http
+      - https
   - name: Wait for ovirt-engine service to start
     uri:
       url: http://{{ he_fqdn }}/ovirt-engine/services/health
