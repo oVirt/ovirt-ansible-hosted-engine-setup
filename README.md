@@ -135,6 +135,11 @@ All the playbooks can be found inside the `examples/` folder.
 #
 he_appliance_password: 123456
 he_admin_password: 123456
+# Optionally you can define these variables given below
+# if you don't define them, ovirt_engine_setup generates random passwords for
+# database and datawarehouse
+ovirt_engine_setup_dwh_db_password: 123456 #optional variable, default to some random password
+ovirt_engine_setup_db_password: 123456     #optional variable, default to some random password
 ```
 
 ## Example 1: extra vars for NFS deployment with DHCP - he_deployment.json
