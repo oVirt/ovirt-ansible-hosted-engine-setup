@@ -4,13 +4,13 @@
   - name: Open a port on firewalld
     firewalld:
       service: "{{ item }}"
-      permanent: false
+      permanent: true
       immediate: true
       state: enabled
-    delegate_to: "{{ he_fqdn }}" 
+    delegate_to: "{{ he_fqdn }}"
     loop:
-      - http
-      - https
+      - ovirt-http
+      - ovirt-https
   - name: Wait for ovirt-engine service to start
     uri:
       url: http://{{ he_fqdn }}/ovirt-engine/services/health

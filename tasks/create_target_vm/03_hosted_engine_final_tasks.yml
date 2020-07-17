@@ -311,16 +311,6 @@
   - debug: var=mresult
   - name: Wait for the engine to come up on the target VM
     block:
-      - name: Make sure http/https is open in firewalld on Engine VM
-        firewalld:
-          service: "{{ item }}"
-          permanent: false
-          immediate: true
-          state: enabled
-        delegate_to: "{{ he_fqdn }}"
-        loop:
-          - http
-          - https
       - name: Check engine VM health
         command: hosted-engine --vm-status --json
         environment: "{{ he_cmd_lang }}"
