@@ -14,13 +14,11 @@
   - name: Set Max memory
     set_fact:
       max_mem: "{{ free_mem.stdout|int + cached_mem.stdout|int - he_reserved_memory_MB + he_avail_memory_grace_MB }}"
-    register: max_mem
   - debug: var=max_mem
 
 - name: set he_mem_size_MB to max available if not defined
   set_fact:
     he_mem_size_MB: "{{ he_mem_size_MB if he_mem_size_MB != 'max' else max_mem }}"
-  register: he_mem_size_MB
 - debug: var=he_mem_size_MB
 
 - name: Fail if available memory is less then the minimal requirement
