@@ -8,13 +8,11 @@
   - name: Set he_maxvcpus
     set_fact:
       he_maxvcpus: "{{ max_cpus.stdout }}"
-    register: he_maxvcpus
   - debug: var=he_maxvcpus
 
 - name: Set he_vcpus to maximum amount if not defined
   set_fact:
     he_vcpus: "{{ he_vcpus if he_vcpus != 'max' else he_maxvcpus }}"
-  register: he_vcpus
 - debug: var=he_vcpus
 
 - name: Check number of chosen CPUs
