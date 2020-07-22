@@ -32,4 +32,4 @@
     msg: >-
       Only Team devices {{ team_if | join(', ') }} are present.
       Teaming is not supported.
-  when: (otopi_host_net | length == 0)
+  when: (otopi_host_net.ansible_facts.otopi_host_net | length == 0)

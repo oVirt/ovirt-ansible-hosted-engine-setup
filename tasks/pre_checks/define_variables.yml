@@ -16,7 +16,6 @@
   - name: Define he_cloud_init_host_name
     set_fact:
       he_cloud_init_host_name: "{{ he_fqdn }}"
-    register: he_cloud_init_host_name
   - debug: var=he_cloud_init_host_name
 
   - name: Define he_vm_uuid
