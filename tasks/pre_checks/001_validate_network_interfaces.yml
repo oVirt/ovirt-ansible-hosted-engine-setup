@@ -74,6 +74,6 @@
     fail:
       msg: The selected network interface is not valid
     when:
-      he_bridge_if not in otopi_host_net.ansible_facts.otopi_host_net and bridge_interface is not defined and
+      he_bridge_if not in he_net and bridge_interface is not defined and
       not he_just_collect_network_interfaces
 ...

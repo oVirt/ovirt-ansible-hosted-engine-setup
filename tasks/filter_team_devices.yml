@@ -24,7 +24,7 @@
 - debug: var=team_if
 - name: Filter unsupported interface types
   set_fact:
-    otopi_host_net: "{{ host_net | difference(team_if) }}"
+    he_net: "{{ host_net | difference(team_if) }}"
   register: otopi_host_net
 - debug: var=otopi_host_net
 - name: Failed if only teaming devices are availible
@@ -32,4 +32,4 @@
     msg: >-
       Only Team devices {{ team_if | join(', ') }} are present.
       Teaming is not supported.
-  when: (otopi_host_net.ansible_facts.otopi_host_net | length == 0)
+  when: (he_net | length == 0)
