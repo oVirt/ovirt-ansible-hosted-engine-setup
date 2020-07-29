@@ -23,7 +23,7 @@
     no_log: true
   - include_tasks: auth_sso.yml
   - name: Get local VM IP
-    shell: virsh -r net-dhcp-leases default | grep -i {{ he_vm_mac_addr }} | awk '{ print $5 }' | cut -f1 -d'/'
+    shell: virsh -r net-dhcp-leases default | grep -i {{ vm_lower_mac_addr }} | awk '{ print $5 }' | cut -f1 -d'/'
     environment: "{{ he_cmd_lang }}"
     register: local_vm_ip
     changed_when: true
@@ -209,7 +209,7 @@
         - name: vnet0
           profile_name: "{{ he_mgmt_network }}"
           interface: virtio
-          mac_address: "{{ he_vm_mac_addr }}"
+          mac_address: "{{ vm_lower_mac_addr }}"
       auth: "{{ ovirt_auth }}"
     register: he_vm_details
   - debug: var=he_vm_details
