@@ -56,7 +56,6 @@ No.
 | he_offline_deployment | false | If `True`, updates for all packages will be disabled |
 | he_additional_package_list | [] | List of additional packages to be installed on engine VM apart from ovirt-engine package |
 | he_debug_mode | false | If `True`, HE deployment will execute additional tasks for debug |
-| he_admin_password| UNDEF | Password for admin user to login to RHV Manager UI |
 | he_db_password | UNDEF | Engine database password |
 | he_dwh_db_password | UNDEF | DWH database password |
 
@@ -120,6 +119,24 @@ All the playbooks can be found inside the `examples/` folder.
   hosts: host123.localdomain
   roles:
     - role: ovirt.hosted_engine_setup
+```
+
+## passwords.yml
+
+```yml
+---
+# As an example this file is keep in plaintext, if you want to
+# encrypt this file, please execute following command:
+#
+# $ ansible-vault encrypt passwords.yml
+#
+# It will ask you for a password, which you must then pass to
+# ansible interactively when executing the playbook.
+#
+# $ ansible-playbook myplaybook.yml --ask-vault-pass
+#
+he_appliance_password: 123456
+he_admin_password: 123456
 ```
 
 ## Example 1: extra vars for NFS deployment with DHCP - he_deployment.json
