@@ -37,6 +37,22 @@
     no_log: true
     with_items:
       - "OVESETUP_CONFIG/adminPassword=str:{{ he_admin_password }}"
+  - name: Add lines to answerfile
+    lineinfile:
+      path: /root/ovirt-engine-answers
+      line: "{{ item }}"
+    no_log: true
+    with_items:
+      - "OVESETUP_DB/password=str:{{ he_db_password }}"
+    when: he_db_password is defined
+  - name: Add lines to answerfile
+    lineinfile:
+      path: /root/ovirt-engine-answers
+      line: "{{ item }}"
+    no_log: true
+    with_items:
+      - "OVESETUP_DWH_DB/password=str:{{ he_dwh_db_password }}"
+    when: he_dwh_db_password is defined
   - name: Import OpenSCAP task
     import_tasks: apply_openscap_profile.yml
     when: he_apply_openscap_profile|bool

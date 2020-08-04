@@ -56,6 +56,8 @@ No.
 | he_offline_deployment | false | If `True`, updates for all packages will be disabled |
 | he_additional_package_list | [] | List of additional packages to be installed on engine VM apart from ovirt-engine package |
 | he_debug_mode | false | If `True`, HE deployment will execute additional tasks for debug |
+| he_db_password | UNDEF | Engine database password |
+| he_dwh_db_password | UNDEF | DWH database password |
 
 ## NFS / Gluster Variables
 
