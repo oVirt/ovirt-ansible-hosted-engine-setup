@@ -201,6 +201,7 @@
       operating_system: rhel_8x64
       type: server
       high_availability_priority: 1
+      high_availability: false
       delete_protected: true
       # timezone: "{{ he_time_zone }}" # TODO: fix with the right parameter syntax
       disks:
