@@ -123,6 +123,7 @@
     template:
       src: "{{ item.src }}"
       dest: "{{ item.dest }}"
+      mode: 0644
     with_items:
       - {src: templates/vm.conf.j2, dest: "{{ he_local_vm_dir }}/vm.conf"}
       - {src: templates/broker.conf.j2, dest: "{{ he_local_vm_dir }}/broker.conf"}
@@ -148,6 +149,7 @@
       remote_src: true
       src: "{{ item.src }}"
       dest: "{{ item.dest }}"
+      mode: 0644
     with_items:
       - {src: "{{ he_local_vm_dir }}/vm.conf", dest: /var/run/ovirt-hosted-engine-ha}
       - {src: "{{ he_local_vm_dir }}/hosted-engine.conf", dest: /etc/ovirt-hosted-engine/}
