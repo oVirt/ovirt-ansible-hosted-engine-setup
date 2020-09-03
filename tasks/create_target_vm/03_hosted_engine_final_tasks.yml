@@ -10,7 +10,7 @@
       serial_console: true
       auth: "{{ ovirt_auth }}"
   - name: Wait until OVF update finishes
-    ovirt_storage_domain_facts:
+    ovirt_storage_domain_info:
       auth: "{{ ovirt_auth }}"
       fetch_nested: true
       nested_attributes:
@@ -20,15 +20,19 @@
       pattern: "name={{ he_storage_domain_name }}"
     retries: 12
     delay: 10
-    until: "ovirt_storage_domains[0].disks | selectattr('name', 'match', '^OVF_STORE$') | list"
+    register: storage_domain_details
+    until: "storage_domain_details.ovirt_storage_domains[0].disks | selectattr('name', 'match', '^OVF_STORE$') | list"
+  - debug: var=storage_domain_details
   - name: Parse OVF_STORE disk list
     set_fact:
-      ovf_store_disks: "{{ ovirt_storage_domains[0].disks | selectattr('name', 'match', '^OVF_STORE$') | list }}"
+      ovf_store_disks: >-
+        {{ storage_domain_details.ovirt_storage_domains[0].disks |
+        selectattr('name', 'match', '^OVF_STORE$') | list }}
   - debug: var=ovf_store_disks
   - name: Check OVF_STORE volume status
     command: >-
       vdsm-client Volume getInfo storagepoolID={{ datacenter_id }}
-      storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }}
+      storagedomainID={{ storage_domain_details.ovirt_storage_domains[0].id }}
       imageID={{ item.id }} volumeID={{ item.image_id  }}
     environment: "{{ he_cmd_lang }}"
     changed_when: true
@@ -43,7 +47,7 @@
   - name: Wait for OVF_STORE disk content
     shell: >-
       vdsm-client Image prepare storagepoolID={{ datacenter_id }}
-      storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.id }}
+      storagedomainID={{ storage_domain_details.ovirt_storage_domains[0].id }} imageID={{ item.id }}
       volumeID={{ item.image_id  }} | grep path | awk '{ print $2 }' |
       xargs -I{} sudo -u vdsm dd if={} | tar -tvf - {{ he_vm_details.vm.id }}.ovf
     environment: "{{ he_cmd_lang }}"
@@ -58,7 +62,7 @@
   - name: Prepare images
     command: >-
       vdsm-client Image prepare storagepoolID={{ datacenter_id }}
-      storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }}
+      storagedomainID={{ storage_domain_details.ovirt_storage_domains[0].id }}
       imageID={{ item.disk.id }} volumeID={{ item.disk.image_id  }}
     environment: "{{ he_cmd_lang }}"
     with_items:
@@ -378,7 +382,7 @@
   # is not up to date.
   - include_tasks: auth_sso.yml
   - name: Check for the local bootstrap VM
-    ovirt_vm_facts:
+    ovirt_vm_info:
       pattern: id="{{ external_local_vm_uuid.stdout_lines|first }}"
       auth: "{{ ovirt_auth }}"
     register: local_vm_f
@@ -393,11 +397,11 @@
         register: vmstop_result
       - debug: var=vmstop_result
       - name: Wait for the local bootstrap VM to be down at engine eyes
-        ovirt_vm_facts:
+        ovirt_vm_info:
           pattern: id="{{ external_local_vm_uuid.stdout_lines|first }}"
           auth: "{{ ovirt_auth }}"
         register: local_vm_status
-        until: local_vm_status.ansible_facts.ovirt_vms[0].status == "down"
+        until: local_vm_status.ovirt_vms[0].status == "down"
         retries: 24
         delay: 5
       - debug: var=local_vm_status
@@ -408,7 +412,7 @@
           auth: "{{ ovirt_auth }}"
         register: vmremove_result
       - debug: var=vmremove_result
-    when: local_vm_f.ansible_facts.ovirt_vms|length > 0
+    when: local_vm_f.ovirt_vms|length > 0
   - name: Remove ovirt-engine-appliance rpm
     yum:
       name: ovirt-engine-appliance

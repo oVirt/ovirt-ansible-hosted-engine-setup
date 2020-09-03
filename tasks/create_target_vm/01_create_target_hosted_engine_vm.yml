@@ -40,27 +40,30 @@
   - name: Fetch Cluster ID
     set_fact: cluster_id="{{ host_result.ovirt_hosts[0].cluster.id }}"
   - name: Fetch Cluster facts
-    ovirt_cluster_facts:
+    ovirt_cluster_info:
       auth: "{{ ovirt_auth }}"
     register: cluster_facts
   - debug: var=cluster_facts
   - name: Fetch Datacenter facts
-    ovirt_datacenter_facts:
+    ovirt_datacenter_info:
       auth: "{{ ovirt_auth }}"
     register: datacenter_facts
   - debug: var=datacenter_facts
   - name: Fetch Cluster name
-    set_fact: cluster_name={{ ovirt_clusters|json_query("[?id=='" + cluster_id + "'].name")|first }}
+    set_fact: cluster_name={{ cluster_facts.ovirt_clusters|json_query("[?id=='" + cluster_id + "'].name")|first }}
   - name: Fetch Datacenter ID
-    set_fact: datacenter_id={{ ovirt_clusters|json_query("[?id=='" + cluster_id + "'].data_center.id")|first }}
+    set_fact: >-
+      datacenter_id={{ cluster_facts.ovirt_clusters|json_query("[?id=='" + cluster_id + "'].data_center.id")|first }}
   - name: Fetch Datacenter name
-    set_fact: datacenter_name={{ ovirt_datacenters|json_query("[?id=='" + datacenter_id + "'].name")|first }}
+    set_fact: >-
+      datacenter_name={{ datacenter_facts.ovirt_datacenters|json_query("[?id=='" + datacenter_id + "'].name")|first }}
   - name: Parse Cluster details
     set_fact:
       cluster_cpu: >-
-        {{ ovirt_clusters|selectattr('id', 'match', '^'+cluster_id+'$')|map(attribute='cpu')|list|first }}
+        {{ cluster_facts.ovirt_clusters|selectattr('id', 'match', '^'+cluster_id+'$')|map(attribute='cpu')|list|first }}
       cluster_version: >-
-        {{ ovirt_clusters|selectattr('id', 'match', '^'+cluster_id+'$')|map(attribute='version')|list|first }}
+        {{ cluster_facts.ovirt_clusters|selectattr('id', 'match', '^'+cluster_id+'$')|
+        map(attribute='version')|list|first }}
   # TODO: use a proper ansible module for this once available
   - name: Get server CPU list via REST API
     uri:
@@ -113,7 +116,7 @@
         emulated_machine_list.json['values']['system_option_value'][0]['value'].replace(
         '[','').replace(']','').split(', ')|first
   - name: Get storage domain details
-    ovirt_storage_domain_facts:
+    ovirt_storage_domain_info:
       pattern: name={{ he_storage_domain_name }} and datacenter={{ datacenter_name }}
       auth: "{{ ovirt_auth }}"
     register: storage_domain_details
