@@ -20,7 +20,7 @@
     - "{{ he_iscsi_portal_addr.split(',') }}"
     - "{{ he_iscsi_portal_port.split(',') if he_iscsi_portal_port is string else he_iscsi_portal_port }}"
 - name: Get iSCSI LUNs
-  ovirt_host_storage_facts:
+  ovirt_host_storage_info:
     host: "{{ he_host_name }}"
     iscsi:
       username: "{{ he_iscsi_username }}"

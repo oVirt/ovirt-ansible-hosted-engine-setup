@@ -157,7 +157,7 @@
     block:
       - set_fact: host_id={{ host_result_up_check.ovirt_hosts[0].id }}
       - name: Collect error events from the Engine
-        ovirt_event_facts:
+        ovirt_event_info:
           auth: "{{ ovirt_auth }}"
           search: "severity>=error"
         register: error_events
@@ -165,7 +165,7 @@
       - name: Generate the error message from the engine events
         set_fact:
           error_description: >-
-            {% for event in error_events.ansible_facts.ovirt_events | groupby('code') %}
+            {% for event in error_events.ovirt_events | groupby('code') %}
             {% if event[1][0].host.id == host_id %}
             code {{ event[0] }}: {{ event[1][0].description }},
             {% endif %}
