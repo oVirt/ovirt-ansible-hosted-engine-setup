@@ -21,6 +21,10 @@
     register: db_vm_update
     with_items:
       - {field: 'origin', value: 6}
+      # The following is a workaround for setting custom bios type for the hosted-engine VM to prevent
+      # its bios type from changing when the cluster's bios type changes. This should be replaced in
+      # later version with a proper setting of the bios type once we use ovirt-ansible-collection
+      - {field: 'bios_type', value: 2}
   - debug: var=db_vm_update
   - name: Insert Hosted Engine configuration disk uuid into Engine database
     command: >-
