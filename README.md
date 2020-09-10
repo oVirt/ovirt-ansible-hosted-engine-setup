@@ -4,7 +4,7 @@ Ansible role for deploying oVirt Hosted-Engine
 
 # Requirements
 
- * Ansible version 2.7 or higher
+ * Ansible version 2.9.11 or higher
  * Python SDK version 4.2 or higher
  * Python netaddr library on the ansible controller node
 
