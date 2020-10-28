@@ -122,7 +122,8 @@
     register: storage_domain_details
   - debug: var=storage_domain_details
   - name: Add HE disks
-    ovirt_disk:
+    # rename it to ovirt_disk with ansible 2.8+
+    ovirt_disk_28:
       name: "{{ item.name }}"
       size: "{{ item.size }}"
       format: "{{ item.format }}"
